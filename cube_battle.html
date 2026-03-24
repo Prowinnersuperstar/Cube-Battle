@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cube Battle</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#222;color:#fff;text-align:center;font-family:Arial}
+canvas{background:#333;margin:10px auto;display:block}
+
+#topbar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:10px}
+#topbar button{padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold}
+#btn-player{background:#c0392b;color:#fff}
+#btn-enemy{background:#2980b9;color:#fff}
+#btn-start{background:#27ae60;color:#fff}
+#btn-restart{background:#555;color:#fff}
+#btn-mastery{background:#b8860b;color:#fff}
+
+#info{font-size:13px;color:#aaa;margin:2px 0 6px}
+
+/* Modal */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;justify-content:center;align-items:center}
+#modal.open{display:flex}
+#modal-box{background:#2a2a2a;border:2px solid #555;border-radius:12px;padding:20px;width:320px;max-height:80vh;display:flex;flex-direction:column}
+#modal-box h3{margin:0 0 14px;font-size:16px;color:#fff}
+#char-list{overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+.char-card{display:flex;align-items:center;gap:14px;padding:12px;border-radius:10px;border:2px solid #444;cursor:pointer;transition:border-color 0.15s,background 0.15s}
+.char-card:hover{border-color:#fff;background:#3a3a3a}
+.char-card.mastered-card{border-color:#ffd700}
+.char-card.mastered-card:hover{background:#3a3000}
+.char-icon{width:36px;height:36px;border-radius:4px;flex-shrink:0}
+.char-info{text-align:left;flex:1}
+.char-name{font-weight:bold;font-size:14px}
+.char-desc{font-size:11px;color:#aaa;margin-top:2px}
+.char-quest{font-size:11px;color:#888;margin-top:3px}
+.char-mastery-desc{font-size:11px;color:#7ec8e3;margin-top:3px}
+.mini-bar-wrap{background:#444;border-radius:3px;height:5px;margin-top:5px}
+.mini-bar{background:#ffd700;border-radius:3px;height:5px}
+#modal-cancel{margin-top:14px;padding:8px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
+#modal-cancel:hover{background:#666}
+
+/* Mastery panel */
+#mastery-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;justify-content:center;align-items:center}
+#mastery-panel.open{display:flex}
+#mastery-box{background:#2a2a2a;border:2px solid #b8860b;border-radius:12px;padding:20px;width:340px;max-height:85vh;display:flex;flex-direction:column;gap:10px}
+#mastery-box h3{margin:0;color:#ffd700;font-size:18px}
+#mastery-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.m-row{background:#333;border-radius:8px;padding:10px 12px;border:2px solid #444}
+.m-row.unlocked{border-color:#ffd700}
+.m-title{font-weight:bold;font-size:13px;display:flex;align-items:center;gap:7px}
+.m-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+.m-quest{font-size:11px;color:#aaa;margin-top:3px}
+.m-bar-wrap{background:#444;border-radius:4px;height:7px;margin-top:6px}
+.m-bar{background:#ffd700;border-radius:4px;height:7px;transition:width 0.3s}
+.m-ability{font-size:11px;color:#7ec8e3;margin-top:5px}
+#mastery-close{margin-top:4px;padding:8px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
+#mastery-close:hover{background:#666}
+/* Shop */
+#shop-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;justify-content:center;align-items:center}
+#shop-panel.open{display:flex}
+#shop-box{background:#2a2a2a;border:2px solid #ff9fc5;border-radius:12px;padding:20px;width:340px;max-height:85vh;display:flex;flex-direction:column;gap:10px}
+#shop-box h3{margin:0;color:#ff9fc5;font-size:18px;display:flex;justify-content:space-between;align-items:center}
+.shop-eggs-badge{color:#ffe082;font-size:14px}
+.shop-tabs{display:flex;gap:8px}
+.shop-tab{flex:1;padding:8px;background:#333;border:none;border-radius:6px;color:#aaa;cursor:pointer;font-size:13px}
+.shop-tab.active{background:#444;color:#fff;border-bottom:2px solid #ff9fc5}
+.shop-content{overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:80px;padding:4px 0}
+.shop-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:2px solid #555;background:#333}
+.shop-card.buyable{border-color:#ffe082;cursor:pointer}
+.shop-card.buyable:hover{background:#3a3000}
+.shop-card.owned{border-color:#4caf50;cursor:default}
+.shop-icon{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.shop-info{text-align:left;flex:1}
+.shop-name{font-weight:bold;font-size:14px}
+.shop-desc{font-size:11px;color:#aaa;margin-top:2px}
+.shop-cost{font-size:12px;color:#ffe082;margin-top:3px;font-weight:bold}
+#shop-close{padding:8px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
+#shop-close:hover{background:#666}
+</style>
+</head>
+<body>
+
+<h2 style="margin:12px 0 4px">⚔️ Cube Battle</h2>
+<div id="info">No fighters selected</div>
+
+<div id="topbar">
+  <button id="btn-player" onclick="openPicker('player')">🟥 Select Player</button>
+  <button id="btn-enemy"  onclick="openPicker('enemy')">🟦 Select Enemy</button>
+  <button id="btn-start"  onclick="startOrRestart()">▶ Start Battle</button>
+      <button id="btn-autoplay" onclick="toggleAutoplay()" style="background:#555;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px;">🔁 Auto: OFF</button>
+  <button id="btn-mastery" onclick="openMastery()">⭐ Masteries</button>
+  <button id="btn-shop" style="background:#ff69b4;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold" onclick="openShop()">🛒 Shop</button>
+</div>
+<div style="font-size:13px;margin:2px 0 4px"><span id="egg-display" style="color:#ffe082;font-size:14px;font-weight:bold"></span>
+  <button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🗑 Delete Progress</button></div>
+
+<!-- Character Picker -->
+<div id="modal">
+  <div id="modal-box">
+    <h3 id="modal-title">Choose a Fighter</h3>
+    <div id="char-list"></div>
+    <button id="modal-cancel" onclick="closePicker()">Cancel</button>
+  </div>
+</div>
+
+<!-- Mastery Panel -->
+<div id="mastery-panel">
+  <div id="mastery-box">
+    <h3>⭐ Masteries</h3>
+    <div id="mastery-list"></div>
+    <button id="mastery-close" onclick="closeMastery()">Close</button>
+  </div>
+</div>
+
+<!-- Shop Panel -->
+<div id="shop-panel">
+  <div id="shop-box">
+    <h3>&#x1F6D2; Shop <span id="shop-egg-count" class="shop-eggs-badge">&#x1F95A; 0</span></h3>
+    <div class="shop-tabs">
+      <button class="shop-tab active" id="tab-normal" onclick="switchShopTab('normal')">Normal</button>
+      <button class="shop-tab" id="tab-limited" onclick="switchShopTab('limited')">&#x1F381; Limited</button>
+    </div>
+    <div class="shop-content" id="shop-content"></div>
+    <button id="shop-close" onclick="closeShop()">Close</button>
+  </div>
+</div>
+
+<canvas id="c" width="360" height="360"></canvas>
+
+<script>
+let c=document.getElementById("c"),x=c.getContext("2d");
+let p=null,o=null,run=false;
+let selectedPlayer=null,selectedEnemy=null;
+let playerMastered=false,enemyMastered=false;
+let clones=[];
+let eggs=[];
+let hatchlings=[];
+let easterEggs=0;
+let autoPlay=false;
+const shopOwned={EasterBunny:false};
+let _shopTab="normal";
+
+// ===== MASTERY STATE =====
+const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Evolver:0,Rebirth:0,EasterBunny:0};
+const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Evolver:1,Rebirth:5,EasterBunny:30};
+const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Evolver:false,Rebirth:false,EasterBunny:false};
+
+const CHARS=[
+  {type:"Normal", color:"#c0392b",
+   desc:"Balanced fighter. Deals 1 damage on collision.",
+   quest:"Deal 25 damage total",
+   masteryDesc:"Every 10s: gains a shield bubble that blocks 1 attack"},
+  {type:"Ninja",  color:"#2980b9",
+   desc:"Dashes every 3s at 3× speed for 0.3s.",
+   quest:"Dash 20 times",
+   masteryDesc:"Completely immune to damage while dashing"},
+  {type:"Stick",  color:"#8B4513",
+   desc:"Spinning stick tip hits for 2 damage & knocks enemy.",
+   quest:"Hit enemy with stick 10 times",
+   masteryDesc:"Stick tip now deals 3 damage instead of 2"},
+  {type:"Shield", color:"#00bcd4",
+   desc:"Rotating shield arc — attackers bounce off for 1 damage.",
+   quest:"Block 10 attacks with shield",
+   masteryDesc:"Shield now reflects 2 damage to attackers instead of 1"},
+  {type:"Vampire",color:"#6a0dad",
+   desc:"Every 15s fires a drain beam — steals 3 HP from the enemy.",
+   quest:"Steal 10 HP total",
+   masteryDesc:"Drain beam charges every 8s instead of 15s"},
+  {type:"Zigzag", color:"#00ff99",
+   desc:"Moves in sharp zigzag patterns. Leaves a glowing trail.",
+   quest:"Win a match as Zigzag",
+   masteryDesc:"Swaps between zigzag and smooth movement every 5s"},
+  {type:"Cloner", color:"#e91e63",
+   desc:"Spawns a mini clone each time it gets hit. Clones have 1 HP and attack the enemy.",
+   quest:"Kill the enemy twice using clones",
+   masteryDesc:"Clones copy the enemy's special ability (except Cloner)"},
+  {type:"Swapper", color:"#ff6f00",
+   desc:"Every 20s swaps HP with the enemy for 10s. Enemy dying on swapped HP counts as a win.",
+   quest:"Kill 3 enemies with swapped health",
+   masteryDesc:"Right after the swap ends, Swapper's HP is set to 10 for 5 seconds"},
+  {type:"Stopper", color:"#9e9e9e",
+   desc:"Every 10s: activates a 1-second stop field that blocks any incoming ability & resets the enemy's cooldown.",
+   quest:"Stop 5 abilities",
+   masteryDesc:"Every 15s: stores a block token that absorbs the very next incoming ability automatically"},
+  {type:"Predictor", color:"#ce93d8",
+   desc:"AI-driven: Scared mode flees; Predicting mode charges. Switches based on risk analysis.",
+   quest:"Win 3 matches as Predictor",
+   masteryDesc:"During Predicting mode: moves 1.5x faster and deals 2 damage on contact"},
+  {type:"Evolver", color:"#43a047",
+   desc:"Evolves through 5 stages when hit. Each stage needs 1 more hit: 2,3,4,5. Gains HP/Attack/Size.",
+   quest:"Reach Stage 5 in a match",
+   masteryDesc:"Each stage requires 1 fewer hit to evolve"},
+  {type:"Rebirth", color:"#ff7043",
+   desc:"At death, rebirths as a smaller cube with 5 HP instead of losing.",
+   quest:"Revive 5 times",
+   masteryDesc:"After rebirth, can revive a second time as an even tinier cube with 2 HP"},
+  {type:"EasterBunny", color:"#ff9fc5",
+   desc:"Every 10s spawns an egg at its spot. Eggs stand still (2 HP) and hatch a random cube after 5s.",
+   quest:"Hatch 30 eggs successfully",
+   masteryDesc:"Spawns 3 eggs at a time instead of 1",
+   shopCost:40, shopSection:"limited"},
+];
+
+function checkMasteries(){
+  for(let t in masteryGoals){
+    if(!masteryUnlocked[t]&&masteryProgress[t]>=masteryGoals[t]) masteryUnlocked[t]=true;
+  }
+  saveProgress();
+}
+
+// ===== CUBE CLASS =====
+class Cube{
+constructor(type,X,Y,mastered){
+  this.t=type;
+  this.mastered=!!mastered;
+  this.hp=10;
+  this.s=40;
+  this.x=X; this.y=Y;
+  let spd=2.5;
+  let base=(Math.floor(Math.random()*4))*(Math.PI/2)+(Math.PI/4);
+  let ang=base+(Math.random()-0.5)*0.5;
+  this.vx=Math.cos(ang)*spd;
+  this.vy=Math.sin(ang)*spd;
+  this.dashActive=false;
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":"#00ff99";
+  this.lastHitByClone=false;
+  // Swapper
+  this.swapActive=false; this.lastSwap=Date.now()-15000; this.swapEnemy=null;
+  this.swapBoostActive=false; this.killedDuringSwap=false;
+  // Rebirth
+  this.rebirthCount=0; this.rebirthFlash=0;
+  // EasterBunny
+  this.lastEggSpawn=Date.now()-8000;
+  // Stopper
+  this.stopActive=false; this.lastStop=Date.now()-8000; this.stopFlash=0;
+  this.masteryBlockReady=false; this.lastMasteryBlock=Date.now()-13000;
+  // Predictor
+  this.predMode="scared"; this.predTimer=Date.now(); this.predCooldown=1500+Math.random()*1000;
+  this.predModeTimer=Date.now();
+  // Evolver
+  this.evolveStage=1; this.evolveHitsNeeded=2; this.evolveHitCount=0; this.evolveFlash=0;
+  // Zigzag
+  this.zigTimer=0; this.zigInterval=18; this.trail=[];
+  this.zigDir=1;
+  this.zigMasteryMode="zigzag"; this.zigMasteryTimer=Date.now();
+  // Timers
+  this.lastDash=Date.now(); this.angle=0; this.lastHit=0;
+  this.lastDrain=Date.now(); this.drainActive=false; this.drainTarget=null;
+  // Normal mastery shield
+  this.masteryShield=0; this.lastMasteryShield=Date.now();
+}
+
+draw(){
+  // Mastery glow
+  if(this.mastered){
+    x.save();
+    x.shadowColor="#ffd700"; x.shadowBlur=16;
+    x.fillStyle=this.c;
+    x.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
+    x.restore();
+    // Gold border
+    x.strokeStyle="#ffd700"; x.lineWidth=2;
+    x.strokeRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
+  } else {
+    x.fillStyle=this.c;
+    x.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
+  }
+
+  // Normal mastery shield bubble
+  if(this.t=="Normal"&&this.mastered&&this.masteryShield>0){
+    x.save();
+    x.strokeStyle="rgba(255,215,0,0.85)"; x.lineWidth=3;
+    x.shadowColor="#ffd700"; x.shadowBlur=10;
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+9,0,Math.PI*2); x.stroke();
+    x.restore();
+  }
+
+  // 🪵 STICK
+  if(this.t=="Stick"){
+    this.angle+=0.06;
+    let len=70;
+    let sx=this.x+Math.cos(this.angle)*len;
+    let sy=this.y+Math.sin(this.angle)*len;
+    x.strokeStyle=this.mastered?"#ffd700":"yellow"; x.lineWidth=5;
+    x.beginPath(); x.moveTo(this.x,this.y); x.lineTo(sx,sy); x.stroke();
+    this.stickTip={x:sx,y:sy};
+  }
+
+  // 🛡 SHIELD
+  if(this.t=="Shield"){
+    this.angle+=0.05;
+    let r=55;
+    x.strokeStyle=this.mastered?"#ffd700":"cyan"; x.lineWidth=10;
+    x.beginPath(); x.arc(this.x,this.y,r,this.angle-0.7,this.angle+0.7); x.stroke();
+    this.shieldZone={x:this.x+Math.cos(this.angle)*r,y:this.y+Math.sin(this.angle)*r};
+  }
+
+  // 🧛 VAMPIRE beam
+  if(this.t=="Vampire"&&this.drainActive&&this.drainTarget){
+    let t2=this.drainTarget;
+    x.save();
+    x.strokeStyle=this.mastered?"rgba(255,140,0,0.9)":"rgba(255,0,60,0.9)";
+    x.lineWidth=4; x.shadowColor=this.mastered?"#ff8c00":"#ff003c"; x.shadowBlur=12;
+    x.beginPath(); x.moveTo(this.x,this.y); x.lineTo(t2.x,t2.y); x.stroke();
+    x.strokeStyle=this.mastered?"rgba(255,140,0,0.5)":"rgba(255,0,60,0.5)"; x.lineWidth=2;
+    x.beginPath(); x.arc(t2.x,t2.y,t2.s/2+6,0,Math.PI*2); x.stroke();
+    x.restore();
+  }
+
+  // ⚡ ZIGZAG trail
+  if(this.t=="Zigzag"&&this.trail.length>1){
+    x.save();
+    x.strokeStyle=this.mastered?"rgba(255,215,0,0.5)":"rgba(0,255,153,0.5)";
+    x.lineWidth=3; x.shadowColor=this.mastered?"#ffd700":"#00ff99"; x.shadowBlur=8;
+    x.beginPath(); x.moveTo(this.trail[0].x,this.trail[0].y);
+    for(let i=1;i<this.trail.length;i++) x.lineTo(this.trail[i].x,this.trail[i].y);
+    x.stroke(); x.restore();
+  }
+
+  // 🔀 SWAPPER glow during swap
+  if(this.t=="Swapper"&&this.swapActive){
+    x.save();
+    x.strokeStyle="rgba(255,111,0,0.9)"; x.lineWidth=3;
+    x.shadowColor="#ff6f00"; x.shadowBlur=18;
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+8,0,Math.PI*2); x.stroke();
+    x.restore();
+  }
+  // Swapper boost glow (mastered)
+  if(this.t=="Swapper"&&this.swapBoostActive){
+    x.save();
+    x.strokeStyle="rgba(255,215,0,0.95)"; x.lineWidth=4;
+    x.shadowColor="#ffd700"; x.shadowBlur=22;
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+14,0,Math.PI*2); x.stroke();
+    x.restore();
+  }
+  // Swapper: glow the swapped-with enemy too
+  if(this.swapEnemy&&this.swapEnemy.swapActive===false&&this===p||this===o){
+    // (handled per-cube above)
+  }
+
+  // 🛑 STOPPER active stop field ring
+  if(this.t=="Stopper"&&this.stopActive){
+    x.save();
+    let pulse=0.6+0.4*Math.sin(Date.now()/60);
+    x.strokeStyle=`rgba(255,255,255,${pulse})`; x.lineWidth=4;
+    x.shadowColor="#ffffff"; x.shadowBlur=20;
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+12,0,Math.PI*2); x.stroke();
+    x.fillStyle=`rgba(255,255,255,${pulse})`; x.font="bold 10px Arial"; x.textAlign="center";
+    x.fillText("STOP",this.x,this.y+4);
+    x.textAlign="left";
+    x.restore();
+  }
+  // Stopper mastery block token ready — gold outer ring
+  if(this.t=="Stopper"&&this.mastered&&this.masteryBlockReady&&!this.stopActive){
+    x.save();
+    x.strokeStyle="rgba(255,215,0,0.85)"; x.lineWidth=3;
+    x.shadowColor="#ffd700"; x.shadowBlur=14;
+    x.setLineDash([5,5]);
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+12,0,Math.PI*2); x.stroke();
+    x.restore();
+  }
+
+  // Predictor mode ring
+  if(this.t==="Predictor"){
+    x.save();
+    let pulse=0.5+0.5*Math.sin(Date.now()/120);
+    if(this.predMode==="scared"){
+      x.strokeStyle="rgba(255,255,100,"+(0.4+pulse*0.5)+")"; x.lineWidth=3;
+      x.shadowColor="#ffff66"; x.shadowBlur=10;
+      x.beginPath(); x.arc(this.x,this.y,this.s/2+11,0,Math.PI*2); x.stroke();
+      x.fillStyle="rgba(255,255,100,"+(0.5+pulse*0.5)+")"; x.font="bold 11px Arial"; x.textAlign="center";
+      x.fillText("Scared!",this.x,this.y-this.s/2-16);
+    } else {
+      x.strokeStyle="rgba(200,80,255,"+(0.4+pulse*0.5)+")"; x.lineWidth=3;
+      x.shadowColor="#cc44ff"; x.shadowBlur=14;
+      x.beginPath(); x.arc(this.x,this.y,this.s/2+11,0,Math.PI*2); x.stroke();
+      x.fillStyle="rgba(200,80,255,"+(0.5+pulse*0.5)+")"; x.font="bold 11px Arial"; x.textAlign="center";
+      x.fillText("Predicting...",this.x,this.y-this.s/2-16);
+    }
+    x.textAlign="left"; x.restore();
+  }
+
+  // Evolver stage visuals
+  if(this.t==="Evolver"){
+    let stageColors=["","#43a047","#7cb342","#f9a825","#e64a19","#b71c1c"];
+    this.c=stageColors[this.evolveStage];
+    let flashAge=Date.now()-this.evolveFlash;
+    if(flashAge<400){
+      let alpha=1-(flashAge/400);
+      x.save(); x.globalAlpha=alpha*0.7; x.fillStyle="#ffffff";
+      x.fillRect(this.x-this.s/2-4,this.y-this.s/2-4,this.s+8,this.s+8); x.restore();
+    }
+    if(this.evolveStage===5){
+      x.save(); x.shadowColor="#f44336"; x.shadowBlur=22;
+      x.fillStyle=this.c; x.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s); x.restore();
+    }
+    let stageLabels=["","S1","S2","S3","S4","*S5"];
+    x.fillStyle=this.evolveStage===5?"#ffd700":"#fff";
+    x.font="bold "+(this.evolveStage===5?"12":"10")+"px Arial"; x.textAlign="center";
+    x.fillText(stageLabels[this.evolveStage],this.x,this.y-this.s/2-18);
+    x.textAlign="left";
+    let needed=this.mastered?Math.max(1,this.evolveHitsNeeded-1):this.evolveHitsNeeded;
+    if(this.evolveStage<5){
+      for(let d=0;d<needed;d++){
+        let filled=d<this.evolveHitCount;
+        x.beginPath(); x.arc(this.x-((needed-1)*5)+d*10,this.y+this.s/2+8,4,0,Math.PI*2);
+        x.fillStyle=filled?"#fff":"rgba(255,255,255,0.3)"; x.fill();
+      }
+    }
+  }
+
+  // Rebirth visuals
+  if(this.t==="Rebirth"){
+    let maxR=this.mastered?2:1;
+    let remaining=maxR-this.rebirthCount;
+    if(remaining>0){
+      x.font="12px Arial"; x.textAlign="center";
+      let hearts=""; for(let i=0;i<remaining;i++) hearts+="♻";
+      x.fillStyle="#ff7043"; x.fillText(hearts,this.x,this.y-this.s/2-18);
+      x.textAlign="left";
+    }
+    if(this.rebirthFlash&&Date.now()-this.rebirthFlash<600){
+      let prog=(Date.now()-this.rebirthFlash)/600;
+      x.save();
+      x.globalAlpha=(1-prog)*0.85;
+      x.fillStyle="#ffffff";
+      let r=this.s/2*(1+prog*2);
+      x.beginPath(); x.arc(this.x,this.y,r,0,Math.PI*2); x.fill();
+      x.restore();
+    }
+  }
+
+  // Easter Bunny egg countdown
+  if(this.t==="EasterBunny"){
+    let _now=Date.now(),_cd=10000,_el=_now-this.lastEggSpawn,_tl=Math.max(0,(_cd-_el)/1000);
+    x.save(); x.font="bold 10px Arial"; x.textAlign="center";
+    x.fillStyle="#ffe082";
+    x.fillText(_el>=_cd?"🥚 ready!":"🥚 "+_tl.toFixed(1)+"s",this.x,this.y-this.s/2-18);
+    x.textAlign="left"; x.restore();
+  }
+
+  // HP label
+  x.fillStyle="#fff"; x.font="12px Arial";
+  x.fillText((this.mastered?"⭐":"")+this.t+" "+this.hp,this.x-22,this.y-this.s/2-5);
+
+  // Dash flash
+  if(this.dashActive){ x.strokeStyle="white"; x.lineWidth=3; x.strokeRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s); }
+}
+
+move(){
+  // 🥷 Ninja dash
+  if(this.t=="Ninja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
+    // 🛑 Stopper blocks Ninja dash if enemy's stop field is active (check the other cube)
+    let ninjaEnemy=(this===p)?o:(this===o)?p:null;
+    if(ninjaEnemy&&checkStopField(ninjaEnemy)){ this.lastDash=Date.now(); return; }
+    this.dashActive=true; this.lastDash=Date.now();
+    this.vx*=3; this.vy*=3;
+    masteryProgress.Ninja=Math.min(masteryGoals.Ninja,(masteryProgress.Ninja||0)+1);
+    checkMasteries();
+    setTimeout(()=>{ this.vx/=3; this.vy/=3; this.dashActive=false; },300);
+  }
+
+  // Normal mastery: shield every 10s
+  if(this.t=="Normal"&&this.mastered&&Date.now()-this.lastMasteryShield>10000&&this.masteryShield<3){
+    this.masteryShield++;
+    this.lastMasteryShield=Date.now();
+  }
+
+  // 🛑 Stopper: activate stop field every 10s for 1s
+  if(this.t=="Stopper"&&!this.stopActive&&Date.now()-this.lastStop>=10000){
+    this.stopActive=true; this.lastStop=Date.now();
+    setTimeout(()=>{ this.stopActive=false; },1000);
+  }
+  // Stopper mastery: store a block token every 15s
+  if(this.t=="Stopper"&&this.mastered&&!this.masteryBlockReady&&Date.now()-this.lastMasteryBlock>=15000){
+    this.masteryBlockReady=true; this.lastMasteryBlock=Date.now();
+  }
+
+  // ⚡ Zigzag movement
+  if(this.t=="Zigzag"){
+    let doZig=true;
+    if(this.mastered){
+      if(Date.now()-this.zigMasteryTimer>5000){
+        this.zigMasteryMode=this.zigMasteryMode==="zigzag"?"normal":"zigzag";
+        this.zigMasteryTimer=Date.now();
+      }
+      doZig=this.zigMasteryMode==="zigzag";
+    }
+    if(doZig){
+      this.zigTimer++;
+      if(this.zigTimer>=this.zigInterval){
+        this.zigTimer=0;
+        let turnAngle=this.zigDir*(Math.PI*0.45);
+        this.zigDir*=-1;
+        let spd=3.0;
+        let ca=Math.atan2(this.vy,this.vx);
+        let na=ca+turnAngle;
+        this.vx=Math.cos(na)*spd; this.vy=Math.sin(na)*spd;
+      }
+    }
+    this.trail.push({x:this.x,y:this.y});
+    if(this.trail.length>12) this.trail.shift();
+  }
+
+  // Predictor AI
+  if(this.t==="Predictor"){
+    let other=(this===p)?o:(this===o)?p:null;
+    if(other){
+      let nowP=Date.now();
+      let dx=other.x-this.x, dy=other.y-this.y;
+      let dist=Math.sqrt(dx*dx+dy*dy)||1;
+      let atkDur=this.mastered?3000:2000;
+      if(this.predMode==="scared"&&nowP-this.predTimer>this.predCooldown){
+        let enemyHasAbility=(other.drainActive||other.swapActive||other.stopActive||other.dashActive);
+        let hpAdv=this.hp>other.hp;
+        let enemyLow=other.hp<=3;
+        let safe=enemyLow||(hpAdv&&!enemyHasAbility)||(!enemyHasAbility&&Math.random()<0.25);
+        if(safe){ this.predMode="predicting"; this.predModeTimer=nowP; }
+        this.predTimer=nowP; this.predCooldown=1500+Math.random()*1000;
+      }
+      if(this.predMode==="predicting"&&nowP-this.predModeTimer>atkDur){
+        this.predMode="scared"; this.predTimer=nowP; this.predCooldown=1200+Math.random()*800;
+      }
+      let spd=(this.mastered&&this.predMode==="predicting")?4.5:3.0;
+      let tvx,tvy;
+      if(this.predMode==="scared"){
+        let wallRange=90, wx=0, wy=0;
+        if(this.x<wallRange) wx+=(wallRange-this.x)/wallRange*2.5;
+        if(this.x>360-wallRange) wx-=(this.x-(360-wallRange))/wallRange*2.5;
+        if(this.y<wallRange) wy+=(wallRange-this.y)/wallRange*2.5;
+        if(this.y>360-wallRange) wy-=(this.y-(360-wallRange))/wallRange*2.5;
+        let fx=-dx/dist+wx, fy=-dy/dist+wy;
+        let flen=Math.sqrt(fx*fx+fy*fy)||1;
+        tvx=(fx/flen)*spd; tvy=(fy/flen)*spd;
+      } else {
+        tvx=(dx/dist)*spd; tvy=(dy/dist)*spd;
+        let hwA=this.s/2+5;
+        if(this.x<=hwA&&tvx<0) tvx=Math.abs(tvx);
+        if(this.x>=360-hwA&&tvx>0) tvx=-Math.abs(tvx);
+        if(this.y<=hwA&&tvy<0) tvy=Math.abs(tvy);
+        if(this.y>=360-hwA&&tvy>0) tvy=-Math.abs(tvy);
+      }
+      this.vx=tvx; this.vy=tvy;
+    }
+  }
+
+  this.x+=this.vx; this.y+=this.vy;
+  let half=this.s/2;
+  if(this.x<=half){this.x=half;this.vx=Math.abs(this.vx);}
+  if(this.x>=360-half){this.x=360-half;this.vx=-Math.abs(this.vx);}
+  if(this.y<=half){this.y=half;this.vy=Math.abs(this.vy);}
+  if(this.y>=360-half){this.y=360-half;this.vy=-Math.abs(this.vy);}
+}
+}
+
+// ===== CLONE CLASS =====
+class Clone {
+  constructor(owner, enemy){
+    this.owner=owner; this.enemy=enemy;
+    this.mastered=owner.mastered;
+    this.enemyType=enemy.t;
+    this.x=owner.x+(Math.random()-0.5)*24;
+    this.y=owner.y+(Math.random()-0.5)*24;
+    this.s=20; this.hp=1; this.c=owner.c;
+    let ang=Math.random()*Math.PI*2;
+    this.vx=Math.cos(ang)*2.5; this.vy=Math.sin(ang)*2.5;
+    this.lastHit=0; this.angle=Math.random()*Math.PI*2;
+    this.stickTip=null; this.shieldZone=null;
+    this.dashActive=false; this.lastDash=Date.now();
+    this.zigTimer=0; this.zigInterval=18; this.zigDir=1; this.trail=[];
+    this.lastDrain=Date.now(); this.drainActive=false;
+  }
+  abilType(){ return (!this.mastered||this.enemyType==="Cloner")?"Normal":this.enemyType; }
+  move(){
+    let at=this.abilType();
+    if(at==="Ninja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
+      this.dashActive=true; this.lastDash=Date.now();
+      this.vx*=3; this.vy*=3;
+      setTimeout(()=>{ if(this.hp>0){this.vx/=3;this.vy/=3;} this.dashActive=false; },300);
+    }
+    if(at==="Zigzag"){
+      this.zigTimer++;
+      if(this.zigTimer>=this.zigInterval){
+        this.zigTimer=0;
+        let ta=this.zigDir*(Math.PI*0.45); this.zigDir*=-1;
+        let spd=2.5,ca=Math.atan2(this.vy,this.vx),na=ca+ta;
+        this.vx=Math.cos(na)*spd; this.vy=Math.sin(na)*spd;
+      }
+      this.trail.push({x:this.x,y:this.y});
+      if(this.trail.length>8) this.trail.shift();
+    }
+    this.x+=this.vx; this.y+=this.vy;
+    let h=this.s/2;
+    if(this.x<=h){this.x=h;this.vx=Math.abs(this.vx);}
+    if(this.x>=360-h){this.x=360-h;this.vx=-Math.abs(this.vx);}
+    if(this.y<=h){this.y=h;this.vy=Math.abs(this.vy);}
+    if(this.y>=360-h){this.y=360-h;this.vy=-Math.abs(this.vy);}
+  }
+  draw(){
+    let at=this.abilType();
+    // Zigzag trail
+    if(at==="Zigzag"&&this.trail.length>1){
+      x.save(); x.strokeStyle="rgba(0,255,153,0.35)"; x.lineWidth=2;
+      x.beginPath(); x.moveTo(this.trail[0].x,this.trail[0].y);
+      for(let i=1;i<this.trail.length;i++) x.lineTo(this.trail[i].x,this.trail[i].y);
+      x.stroke(); x.restore();
+    }
+    // Stick
+    if(at==="Stick"){
+      this.angle+=0.09;
+      let len=28,sx=this.x+Math.cos(this.angle)*len,sy=this.y+Math.sin(this.angle)*len;
+      x.strokeStyle="yellow"; x.lineWidth=2;
+      x.beginPath(); x.moveTo(this.x,this.y); x.lineTo(sx,sy); x.stroke();
+      this.stickTip={x:sx,y:sy};
+    } else { this.stickTip=null; }
+    // Shield
+    if(at==="Shield"){
+      this.angle+=0.07; let r=24;
+      x.strokeStyle="cyan"; x.lineWidth=4;
+      x.beginPath(); x.arc(this.x,this.y,r,this.angle-0.7,this.angle+0.7); x.stroke();
+      this.shieldZone={x:this.x+Math.cos(this.angle)*r,y:this.y+Math.sin(this.angle)*r};
+    } else { this.shieldZone=null; }
+    // Clone body (semi-transparent, dashed border)
+    x.save(); x.globalAlpha=0.78;
+    x.fillStyle=this.c;
+    x.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
+    x.strokeStyle="rgba(255,255,255,0.85)"; x.lineWidth=1.5;
+    x.setLineDash([3,3]);
+    x.strokeRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
+    x.restore();
+    if(this.dashActive){ x.strokeStyle="rgba(255,255,255,0.6)"; x.lineWidth=2; x.strokeRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s); }
+    x.fillStyle="rgba(255,255,255,0.65)"; x.font="8px Arial";
+    x.fillText("clone",this.x-11,this.y-this.s/2-2);
+  }
+  hits(cube){ return Math.abs(this.x-cube.x)<(this.s+cube.s)/2&&Math.abs(this.y-cube.y)<(this.s+cube.s)/2; }
+}
+
+// ===== EGG + HATCHLING SYSTEM =====
+const HATCH_TYPES=["Normal","Ninja","Stick","Shield","Vampire","Zigzag","Cloner","Stopper","Predictor","Evolver","Rebirth"];
+const CHAR_COLORS_MAP={Normal:"#c0392b",Ninja:"#2980b9",Stick:"#8B4513",Shield:"#00bcd4",Vampire:"#6a0dad",Zigzag:"#00ff99",Cloner:"#e91e63",Swapper:"#ff6f00",Stopper:"#9e9e9e",Predictor:"#ce93d8",Evolver:"#43a047",Rebirth:"#ff7043"};
+
+class Egg{
+  constructor(ex,ey,owner){
+    this.x=ex; this.y=ey; this.owner=owner;
+    this.hp=2; this.spawnTime=Date.now(); this.s=18; this.alive=true; this.lastHit=0;
+  }
+  draw(){
+    if(!this.alive)return;
+    let tl=Math.max(0,5000-(Date.now()-this.spawnTime));
+    let pulse=tl<1200?(0.5+0.5*Math.sin(Date.now()/70)):1;
+    x.save();
+    x.globalAlpha=pulse;
+    x.fillStyle="#ffe082";
+    x.beginPath(); x.ellipse(this.x,this.y,this.s/2,this.s/2*1.25,0,0,Math.PI*2); x.fill();
+    if(this.hp<=1){
+      x.strokeStyle="#795548"; x.lineWidth=1;
+      x.beginPath(); x.moveTo(this.x-2,this.y-4); x.lineTo(this.x+2,this.y); x.lineTo(this.x-1,this.y+4); x.stroke();
+    }
+    x.globalAlpha=1;
+    let prog=tl/5000;
+    x.fillStyle="#222"; x.fillRect(this.x-9,this.y+this.s/2*1.25+3,18,3);
+    x.fillStyle="#4caf50"; x.fillRect(this.x-9,this.y+this.s/2*1.25+3,18*prog,3);
+    x.restore();
+  }
+  shouldHatch(){return this.alive&&this.hp>0&&(Date.now()-this.spawnTime)>=5000;}
+  hits(cube){return Math.abs(this.x-cube.x)<(this.s/2+cube.s/2)&&Math.abs(this.y-cube.y)<(this.s/2*1.25+cube.s/2);}
+}
+
+class Hatchling{
+  constructor(type,owner,enemy){
+    this.t=type; this.owner=owner; this.enemy=enemy;
+    this.hp=6; this.s=20;
+    this.c=CHAR_COLORS_MAP[type]||"#ffffff";
+    this.x=owner.x+(Math.random()-0.5)*40;
+    this.y=owner.y+(Math.random()-0.5)*40;
+    this.x=Math.max(this.s/2+2,Math.min(360-this.s/2-2,this.x));
+    this.y=Math.max(this.s/2+2,Math.min(360-this.s/2-2,this.y));
+    let ang=Math.random()*Math.PI*2;
+    this.vx=Math.cos(ang)*2.5; this.vy=Math.sin(ang)*2.5;
+    this.angle=Math.random()*Math.PI*2; this.stickTip=null;
+    this.lastHit=0; this.dashActive=false; this.lastDash=Date.now();
+    this.zigTimer=0; this.zigDir=1; this.trail=[];
+  }
+  move(){
+    if(this.t==="Ninja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
+      this.dashActive=true; this.lastDash=Date.now();
+      this.vx*=3; this.vy*=3;
+      setTimeout(()=>{if(this.hp>0){this.vx/=3;this.vy/=3;}this.dashActive=false;},300);
+    }
+    if(this.t==="Zigzag"){
+      this.zigTimer++;
+      if(this.zigTimer>=18){
+        this.zigTimer=0;
+        let ta=this.zigDir*(Math.PI*0.45); this.zigDir*=-1;
+        let spd=2.5,ca=Math.atan2(this.vy,this.vx),na=ca+ta;
+        this.vx=Math.cos(na)*spd; this.vy=Math.sin(na)*spd;
+      }
+      this.trail.push({x:this.x,y:this.y});
+      if(this.trail.length>8)this.trail.shift();
+    }
+    this.x+=this.vx; this.y+=this.vy;
+    let h=this.s/2;
+    if(this.x<=h){this.x=h;this.vx=Math.abs(this.vx);}
+    if(this.x>=360-h){this.x=360-h;this.vx=-Math.abs(this.vx);}
+    if(this.y<=h){this.y=h;this.vy=Math.abs(this.vy);}
+    if(this.y>=360-h){this.y=360-h;this.vy=-Math.abs(this.vy);}
+  }
+  draw(){
+    if(this.t==="Zigzag"&&this.trail.length>1){
+      x.save(); x.strokeStyle="rgba(0,255,153,0.35)"; x.lineWidth=2;
+      x.beginPath(); x.moveTo(this.trail[0].x,this.trail[0].y);
+      for(let i=1;i<this.trail.length;i++)x.lineTo(this.trail[i].x,this.trail[i].y);
+      x.stroke(); x.restore();
+    }
+    if(this.t==="Stick"){
+      this.angle+=0.09;
+      let len=26,sx=this.x+Math.cos(this.angle)*len,sy=this.y+Math.sin(this.angle)*len;
+      x.strokeStyle="yellow"; x.lineWidth=2;
+      x.beginPath(); x.moveTo(this.x,this.y); x.lineTo(sx,sy); x.stroke();
+      this.stickTip={x:sx,y:sy};
+    } else {this.stickTip=null;}
+    x.save(); x.globalAlpha=0.88;
+    x.fillStyle=this.c;
+    x.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
+    x.strokeStyle="rgba(255,159,197,0.9)"; x.lineWidth=1.5; x.setLineDash([2,2]);
+    x.strokeRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
+    x.restore();
+    x.fillStyle="rgba(255,255,255,0.75)"; x.font="7px Arial"; x.textAlign="center";
+    x.fillText(this.t.substring(0,3),this.x,this.y-this.s/2-2);
+    x.fillStyle="#fff"; x.font="8px Arial";
+    x.fillText(this.hp+"hp",this.x,this.y+4);
+    x.textAlign="left";
+    if(this.dashActive){x.strokeStyle="rgba(255,255,255,0.6)";x.lineWidth=2;x.strokeRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);}
+  }
+  hits(cube){return Math.abs(this.x-cube.x)<(this.s+cube.s)/2&&Math.abs(this.y-cube.y)<(this.s+cube.s)/2;}
+}
+
+function easterBunnySpawn(bunny,enemy){
+  let now=Date.now();
+  if(now-bunny.lastEggSpawn<10000)return;
+  bunny.lastEggSpawn=now;
+  let cnt=bunny.mastered?3:1;
+  for(let i=0;i<cnt;i++){
+    let ex=bunny.x+(Math.random()-0.5)*24,ey=bunny.y+(Math.random()-0.5)*24;
+    ex=Math.max(16,Math.min(344,ex)); ey=Math.max(16,Math.min(344,ey));
+    eggs.push(new Egg(ex,ey,bunny));
+  }
+}
+
+function processEggs(){
+  let surviving=[],now=Date.now();
+  for(let egg of eggs){
+    if(!egg.alive||egg.hp<=0)continue;
+    let eggEnemy=(egg.owner===p)?o:p;
+    if(eggEnemy&&eggEnemy.hp>0&&egg.hits(eggEnemy)&&now-egg.lastHit>500){
+      egg.hp--; egg.lastHit=now;
+      if(egg.hp<=0){egg.alive=false;continue;}
+    }
+    if(egg.shouldHatch()){
+      egg.alive=false;
+      let type=HATCH_TYPES[Math.floor(Math.random()*HATCH_TYPES.length)];
+      hatchlings.push(new Hatchling(type,egg.owner,eggEnemy));
+      let side=egg.owner===p?selectedPlayer:selectedEnemy;
+      if(side==="EasterBunny"){
+        masteryProgress.EasterBunny=Math.min(masteryGoals.EasterBunny,(masteryProgress.EasterBunny||0)+1);
+        checkMasteries();
+      }
+      x.save(); x.globalAlpha=0.5; x.fillStyle="#ffe082";
+      x.beginPath(); x.arc(egg.x,egg.y,28,0,Math.PI*2); x.fill(); x.restore();
+      continue;
+    }
+    egg.draw();
+    surviving.push(egg);
+  }
+  eggs=surviving;
+}
+
+function processHatchlings(){
+  let surviving=[],now=Date.now();
+  for(let h of hatchlings){
+    if(h.hp<=0)continue;
+    h.move();
+    let tgt=h.enemy;
+    if(h.stickTip&&tgt&&tgt.hp>0&&now-h.lastHit>400){
+      if(Math.abs(h.stickTip.x-tgt.x)<tgt.s/2+5&&Math.abs(h.stickTip.y-tgt.y)<tgt.s/2+5){
+        applyDamage(tgt,null,1); h.hp--; h.lastHit=now;
+      }
+    }
+    // Physical collision with enemy — bounce them
+    if(tgt&&tgt.hp>0&&h.hits(tgt)){
+      let dxH=tgt.x-h.x,dyH=tgt.y-h.y;
+      let dist=Math.sqrt(dxH*dxH+dyH*dyH)||1;
+      let nx=dxH/dist,ny=dyH/dist;
+      let overlap=(h.s/2+tgt.s/2)-dist;
+      if(overlap>0){
+        tgt.x+=nx*overlap*0.6; tgt.y+=ny*overlap*0.6;
+        h.x-=nx*overlap*0.4; h.y-=ny*overlap*0.4;
+      }
+      let relV=(h.vx-tgt.vx)*nx+(h.vy-tgt.vy)*ny;
+      if(relV>0){ tgt.vx+=relV*nx*0.8; tgt.vy+=relV*ny*0.8; h.vx-=relV*nx*0.5; h.vy-=relV*ny*0.5; }
+      if(now-h.lastHit>400){
+        if((h.vx*dxH+h.vy*dyH)>0){applyDamage(tgt,null,1);h.hp--;h.lastHit=now;}
+        else if((tgt.vx*(h.x-tgt.x)+tgt.vy*(h.y-tgt.y))>0&&h.hp>0){h.hp--;h.lastHit=now;}
+      }
+    }
+    if(h.hp>0){h.draw();surviving.push(h);}
+  }
+  hatchlings=surviving;
+}
+
+function spawnClone(owner,enemy){
+  if(clones.filter(c=>c.owner===owner).length>=6) return;
+  clones.push(new Clone(owner,enemy));
+}
+
+function processClones(){
+  clones=clones.filter(cl=>cl.hp>0);
+  for(let cl of [...clones]){
+    if(cl.hp<=0) continue;
+    cl.move();
+    let tgt=cl.enemy;
+    let now=Date.now();
+    // Clone stick tip damages enemy
+    if(cl.stickTip&&tgt.hp>0&&now-cl.lastHit>400){
+      if(Math.abs(cl.stickTip.x-tgt.x)<tgt.s/2+5&&Math.abs(cl.stickTip.y-tgt.y)<tgt.s/2+5){
+        let hit=applyDamage(tgt,null,1);
+        if(hit){ tgt.lastHitByClone=true; cl.lastHit=now; }
+      }
+    }
+    // Clone body hits enemy
+    if(cl.hits(tgt)&&tgt.hp>0&&now-cl.lastHit>400){
+      let dx=tgt.x-cl.x,dy=tgt.y-cl.y;
+      let towards=(cl.vx*dx+cl.vy*dy)>0;
+      if(towards){
+        let hit=applyDamage(tgt,null,1);
+        if(hit){ tgt.lastHitByClone=true; cl.lastHit=now; cl.hp=0; }
+      }
+    }
+    // Vampire clone: drain 1 HP to owner every 10s
+    if(cl.abilType()==="Vampire"&&!cl.drainActive&&now-cl.lastDrain>10000&&tgt.hp>0){
+      cl.drainActive=true; cl.lastDrain=now;
+      setTimeout(()=>{
+        if(!run||cl.hp<=0) return;
+        let steal=Math.min(1,tgt.hp); tgt.hp-=steal; cl.owner.hp+=steal;
+        if(steal>0) tgt.lastHitByClone=true;
+        cl.drainActive=false;
+      },600);
+    }
+    cl.draw();
+  }
+}
+
+// ===== HELPERS =====
+function collide(a,b){
+  return Math.abs(a.x-b.x)<(a.s+b.s)/2&&Math.abs(a.y-b.y)<(a.s+b.s)/2;
+}
+function bounceOff(a,b){
+  let ox=(a.s+b.s)/2-Math.abs(a.x-b.x);
+  let oy=(a.s+b.s)/2-Math.abs(a.y-b.y);
+  if(ox<oy){let d=a.x<b.x?-1:1;a.x+=d*(ox/2+1);b.x-=d*(ox/2+1);let t=a.vx;a.vx=b.vx;b.vx=t;}
+  else{let d=a.y<b.y?-1:1;a.y+=d*(oy/2+1);b.y-=d*(oy/2+1);let t=a.vy;a.vy=b.vy;b.vy=t;}
+  function nudge(cube){let spd=Math.sqrt(cube.vx**2+cube.vy**2),ang=Math.atan2(cube.vy,cube.vx)+(Math.random()-0.5)*0.3;cube.vx=Math.cos(ang)*spd;cube.vy=Math.sin(ang)*spd;}
+  nudge(a);nudge(b);
+}
+function movingTowards(a,b){let dx=b.x-a.x,dy=b.y-a.y;return(a.vx*dx+a.vy*dy)>0;}
+function hitsShieldArc(shield,px,py){
+  let dx=px-shield.x,dy=py-shield.y,dist=Math.sqrt(dx*dx+dy*dy);
+  if(Math.abs(dist-55)>18)return false;
+  let ang=Math.atan2(dy,dx),diff=ang-shield.angle;
+  while(diff>Math.PI)diff-=2*Math.PI;while(diff<-Math.PI)diff+=2*Math.PI;
+  return Math.abs(diff)<0.7;
+}
+
+// 🛑 Stopper: returns true if an ability targeting `stopper` is blocked
+function checkStopField(stopper){
+  if(!stopper||stopper.t!=="Stopper") return false;
+  if(stopper.stopActive){
+    masteryProgress.Stopper=Math.min(masteryGoals.Stopper,(masteryProgress.Stopper||0)+1);
+    checkMasteries();
+    return true;
+  }
+  if(stopper.mastered&&stopper.masteryBlockReady){
+    stopper.masteryBlockReady=false;
+    stopper.lastMasteryBlock=Date.now(); // restart the 15s timer
+    masteryProgress.Stopper=Math.min(masteryGoals.Stopper,(masteryProgress.Stopper||0)+1);
+    checkMasteries();
+    return true;
+  }
+  return false;
+}
+
+// Evolver: register hit and evolve
+function evolverHit(ev){
+  if(ev.evolveStage>=5) return;
+  ev.evolveHitCount++;
+  let needed=ev.mastered?Math.max(1,ev.evolveHitsNeeded-1):ev.evolveHitsNeeded;
+  if(ev.evolveHitCount>=needed){
+    ev.evolveStage++;
+    ev.evolveHitCount=0;
+    ev.evolveHitsNeeded++;
+    let stageHP=[0,10,11,10,20,30];
+    ev.hp=stageHP[ev.evolveStage];
+    if(ev.evolveStage===4) ev.s=50;
+    if(ev.evolveStage===5){ ev.s=55; masteryProgress.Evolver=1; checkMasteries(); }
+    ev.evolveFlash=Date.now();
+    let hw=ev.s/2+2;
+    ev.x=Math.max(hw,Math.min(360-hw,ev.x));
+    ev.y=Math.max(hw,Math.min(360-hw,ev.y));
+  }
+}
+
+// Apply damage to a cube (respects mastery shield + ninja immunity)
+function applyDamage(victim,attacker,amount){
+  // Ninja mastery: immune while dashing
+  if(victim.t=="Ninja"&&victim.mastered&&victim.dashActive) return false;
+  // Normal mastery shield bubble
+  if(victim.t=="Normal"&&victim.mastered&&victim.masteryShield>0){
+    victim.masteryShield--;
+    return false; // absorbed
+  }
+  victim.hp-=amount;
+  // Reset clone-kill flag when real cube deals damage
+  if(attacker) victim.lastHitByClone=false;
+  // Evolver: register hit
+  if(victim.t==="Evolver") evolverHit(victim);
+  // Cloner: spawn a clone when hit
+  if(victim.t==="Cloner"&&run){
+    let cloneEnemy=(victim===p)?o:(victim===o)?p:null;
+    if(cloneEnemy) spawnClone(victim,cloneEnemy);
+  }
+  // Track Normal mastery progress (damage dealt by attacker)
+  if(attacker&&attacker.t=="Normal"){
+    masteryProgress.Normal=Math.min(masteryGoals.Normal,(masteryProgress.Normal||0)+amount);
+    checkMasteries();
+  }
+  return true;
+}
+
+// 🪵 Stick
+function stickDamage(stick,enemy){
+  if(stick.t!="Stick"||!stick.stickTip)return;
+  let tip=stick.stickTip,half=enemy.s/2;
+  if(Math.abs(tip.x-enemy.x)<half+6&&Math.abs(tip.y-enemy.y)<half+6){
+    let dx=enemy.x-tip.x,dy=enemy.y-tip.y,dist=Math.sqrt(dx*dx+dy*dy)||1;
+    let spd=Math.sqrt(enemy.vx**2+enemy.vy**2)||2.5;
+    enemy.vx=(dx/dist)*spd; enemy.vy=(dy/dist)*spd;
+    enemy.x=tip.x+(dx/dist)*(half+8); enemy.y=tip.y+(dy/dist)*(half+8);
+    let now=Date.now();
+    if(now-enemy.lastHit>400){
+      // 🛑 Stopper blocks stick hit
+      if(checkStopField(enemy)){ enemy.lastHit=now; stick.lastDash=Date.now(); return; }
+      let dmg=stick.mastered?3:2;
+      let hit=applyDamage(enemy,stick,dmg);
+      if(hit){
+        masteryProgress.Stick=Math.min(masteryGoals.Stick,(masteryProgress.Stick||0)+1);
+        checkMasteries();
+      }
+      enemy.lastHit=now;
+    }
+  }
+}
+
+// 🧛 Vampire
+function vampireDrain(vampire,enemy){
+  if(vampire.t!="Vampire")return;
+  let now=Date.now();
+  let cd=vampire.mastered?8000:15000;
+  if(!vampire.drainActive&&now-vampire.lastDrain>cd){
+    // 🛑 Stopper blocks vampire drain
+    if(checkStopField(enemy)){ vampire.lastDrain=Date.now(); return; }
+    vampire.drainActive=true; vampire.drainTarget=enemy; vampire.lastDrain=now;
+    setTimeout(()=>{
+      if(!run)return;
+      let steal=Math.min(3,enemy.hp);
+      enemy.hp-=steal; vampire.hp+=steal;
+      vampire.drainActive=false; vampire.drainTarget=null;
+      masteryProgress.Vampire=Math.min(masteryGoals.Vampire,(masteryProgress.Vampire||0)+steal);
+      checkMasteries();
+    },1000);
+  }
+}
+
+// 🔀 Swapper
+function swapperAbility(swapper, enemy){
+  if(swapper.t!="Swapper"||swapper.swapActive) return;
+  let now=Date.now();
+  if(now-swapper.lastSwap<20000) return;
+  // 🛑 Stopper blocks swap
+  if(checkStopField(enemy)){ swapper.lastSwap=Date.now(); return; }
+  // Initiate swap
+  swapper.swapActive=true;
+  swapper.lastSwap=now;
+  swapper.swapEnemy=enemy;
+  enemy.killedDuringSwap=false;
+  // Swap HP
+  let tmp=swapper.hp; swapper.hp=enemy.hp; enemy.hp=tmp;
+  // Show swap indicator on enemy too
+  let savedEnemySwapActive=enemy.swapActive;
+  enemy.swapActive=true; // so it gets the orange ring too
+  setTimeout(()=>{
+    if(!run) return;
+    // Swap back (simple swap of current values)
+    let t2=swapper.hp; swapper.hp=enemy.hp; enemy.hp=t2;
+    swapper.swapActive=false;
+    enemy.swapActive=savedEnemySwapActive;
+    swapper.swapEnemy=null;
+    // Mastered: set swapper HP to 10 for 5s
+    if(swapper.mastered){
+      swapper.swapBoostActive=true;
+      let hpBefore=swapper.hp;
+      swapper.hp=Math.max(swapper.hp,10);
+      let boostedTo=swapper.hp;
+      setTimeout(()=>{
+        if(!run) return;
+        // Revert: remove the boost amount
+        let diff=boostedTo-hpBefore;
+        swapper.hp=Math.max(0,swapper.hp-diff);
+        swapper.swapBoostActive=false;
+      },5000);
+    }
+  },10000);
+}
+
+// ⚔️ Body combat
+function handleCombat(a,b){
+  if(!collide(a,b))return;
+  let now=Date.now();
+  let aTo=movingTowards(a,b),bTo=movingTowards(b,a);
+
+  // Shield check
+  if(b.t=="Shield"&&aTo&&hitsShieldArc(b,a.x,a.y)){
+    if(now-a.lastHit>400){
+      // 🛑 Stopper blocks shield reflect
+      if(checkStopField(a)){ a.lastHit=now; return; }
+
+      let dmg=b.mastered?2:1;
+      applyDamage(a,null,dmg);
+      a.lastHit=now;
+      masteryProgress.Shield=Math.min(masteryGoals.Shield,(masteryProgress.Shield||0)+1);
+      checkMasteries();
+    }
+    return;
+  }
+  if(a.t=="Shield"&&bTo&&hitsShieldArc(a,b.x,b.y)){
+    if(now-b.lastHit>400){
+      // 🛑 Stopper blocks shield reflect
+      if(checkStopField(b)){ b.lastHit=now; return; }
+      let dmg=a.mastered?2:1;
+      applyDamage(b,null,dmg);
+      b.lastHit=now;
+      masteryProgress.Shield=Math.min(masteryGoals.Shield,(masteryProgress.Shield||0)+1);
+      checkMasteries();
+    }
+    return;
+  }
+
+  let aNearBStick=b.t=="Stick"&&b.stickTip&&Math.abs(b.stickTip.x-a.x)<a.s/2+10&&Math.abs(b.stickTip.y-a.y)<a.s/2+10;
+  let bNearAStick=a.t=="Stick"&&a.stickTip&&Math.abs(a.stickTip.x-b.x)<b.s/2+10&&Math.abs(a.stickTip.y-b.y)<b.s/2+10;
+
+  if(aTo&&!aNearBStick&&now-b.lastHit>400){
+    let dmg=1;
+    if(a.t==="Predictor"&&a.mastered&&a.predMode==="predicting") dmg=2;
+    if(a.t==="Evolver") dmg=a.evolveStage>=5?3:a.evolveStage>=3?2:1;
+    applyDamage(b,a,dmg); b.lastHit=now;
+    if(a.t==="Predictor"&&a.predMode==="predicting"){a.predMode="scared";a.predTimer=now;a.predCooldown=1500+Math.random()*1000;}
+  }
+  if(bTo&&!bNearAStick&&now-a.lastHit>400){
+    let dmg=1;
+    if(b.t==="Predictor"&&b.mastered&&b.predMode==="predicting") dmg=2;
+    if(b.t==="Evolver") dmg=b.evolveStage>=5?3:b.evolveStage>=3?2:1;
+    applyDamage(a,b,dmg); a.lastHit=now;
+    if(b.t==="Predictor"&&b.predMode==="predicting"){b.predMode="scared";b.predTimer=now;b.predCooldown=1500+Math.random()*1000;}
+  }
+}
+
+// 🔄 Rebirth: intercept death and revive as smaller cube
+function checkRebirth(cube){
+  if(cube.t!=="Rebirth") return false;
+  let maxR=cube.mastered?2:1;
+  if(cube.rebirthCount>=maxR) return false;
+  cube.rebirthCount++;
+  cube.hp=cube.rebirthCount===1?5:2;
+  cube.s=cube.rebirthCount===1?26:16;
+  cube.rebirthFlash=Date.now();
+  // Clamp inside arena
+  let hw=cube.s/2+2;
+  cube.x=Math.max(hw,Math.min(360-hw,cube.x));
+  cube.y=Math.max(hw,Math.min(360-hw,cube.y));
+  // Track mastery progress
+  let side=(cube===p)?selectedPlayer:selectedEnemy;
+  if(side==="Rebirth"){
+    masteryProgress.Rebirth=Math.min(masteryGoals.Rebirth,(masteryProgress.Rebirth||0)+1);
+    checkMasteries();
+  }
+  return true;
+}
+
+// ===== GAME LOOP =====
+function loop(){
+  if(!run)return;
+  x.clearRect(0,0,360,360);
+  p.move(); o.move();
+  if(collide(p,o)){handleCombat(p,o);bounceOff(p,o);}
+  stickDamage(p,o); stickDamage(o,p);
+  vampireDrain(p,o); vampireDrain(o,p);
+  swapperAbility(p,o); swapperAbility(o,p);
+  if(p&&p.t==="EasterBunny")easterBunnySpawn(p,o);
+  if(o&&o.t==="EasterBunny")easterBunnySpawn(o,p);
+  processClones();
+  processEggs();
+  processHatchlings();
+  p.draw(); o.draw();
+  // Rebirth interception — must run before death check
+  if(p.hp<=0) checkRebirth(p);
+  if(o.hp<=0) checkRebirth(o);
+
+  if(p.hp<=0||o.hp<=0){
+    run=false;
+    clones=[]; eggs=[]; hatchlings=[];
+    let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
+    if(pWins&&selectedPlayer=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
+    if(oWins&&selectedEnemy=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
+    if(pWins&&o.lastHitByClone&&selectedPlayer=="Cloner"){masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
+    if(oWins&&p.lastHitByClone&&selectedEnemy=="Cloner"){masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
+    // Swapper: enemy died while swap was active
+    if(pWins&&p.swapActive&&selectedPlayer=="Swapper"){masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
+    if(oWins&&o.swapActive&&selectedEnemy=="Swapper"){masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
+    if(pWins&&selectedPlayer=="Predictor"){masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
+    if(oWins&&selectedEnemy=="Predictor"){masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
+    x.fillStyle="rgba(0,0,0,0.6)"; x.fillRect(0,140,360,80);
+    x.fillStyle="#fff"; x.font="bold 28px Arial"; x.textAlign="center";
+    x.fillText(p.hp<=0&&o.hp<=0?"It's a Tie!":p.hp>0?"Player Wins! 🏆":"Enemy Wins! 🏆",180,190);
+    easterEggs++;
+    updateEggDisplay();
+    saveProgress();
+    document.getElementById("btn-start").innerText="▶ Start Battle";
+    if(autoPlay) setTimeout(()=>{ if(!run) startOrRestart(); }, 1500);
+    x.textAlign="left";
+    return;
+  }
+  requestAnimationFrame(loop);
+}
+
+// ===== UI =====
+let pickerTarget=null;
+
+function openPicker(target){
+  pickerTarget=target;
+  document.getElementById("modal-title").innerText=target==="player"?"Choose Your Fighter":"Choose Your Enemy";
+  let list=document.getElementById("char-list");
+  list.innerHTML="";
+  CHARS.filter(ch=>!ch.shopSection||shopOwned[ch.type]).forEach(ch=>{
+    let unlocked=masteryUnlocked[ch.type];
+    let curType=target==="player"?selectedPlayer:selectedEnemy;
+    let curMastered=target==="player"?playerMastered:enemyMastered;
+    let prog=Math.min(masteryProgress[ch.type],masteryGoals[ch.type]);
+    let goal=masteryGoals[ch.type];
+    let pct=Math.round((prog/goal)*100);
+
+    // Normal card
+    let card=document.createElement("div");
+    card.className="char-card";
+    card.innerHTML=`
+      <div class="char-icon" style="background:${ch.color}"></div>
+      <div class="char-info">
+        <div class="char-name">${ch.type}${curType===ch.type&&!curMastered?" ✓":""}</div>
+        <div class="char-desc">${ch.desc}</div>
+        <div class="char-quest">📋 ${ch.quest} — ${prog}/${goal}</div>
+        <div class="mini-bar-wrap"><div class="mini-bar" style="width:${pct}%"></div></div>
+      </div>`;
+    card.onclick=()=>pickChar(ch.type,false);
+    list.appendChild(card);
+
+    // Mastered card (if unlocked)
+    if(unlocked){
+      let mcard=document.createElement("div");
+      mcard.className="char-card mastered-card";
+      mcard.innerHTML=`
+        <div class="char-icon" style="background:${ch.color};outline:3px solid #ffd700"></div>
+        <div class="char-info">
+          <div class="char-name" style="color:#ffd700">⭐ ${ch.type} Mastered${curType===ch.type&&curMastered?" ✓":""}</div>
+          <div class="char-desc">${ch.desc}</div>
+          <div class="char-mastery-desc">✨ ${ch.masteryDesc}</div>
+        </div>`;
+      mcard.onclick=()=>pickChar(ch.type,true);
+      list.appendChild(mcard);
+    }
+  });
+  document.getElementById("modal").classList.add("open");
+}
+
+function closePicker(){ document.getElementById("modal").classList.remove("open"); }
+
+function pickChar(type,mastered){
+  if(pickerTarget==="player"){
+    selectedPlayer=type; playerMastered=mastered;
+    document.getElementById("btn-player").innerText="🟥 Player: "+(mastered?"⭐":"")+type;
+  } else {
+    selectedEnemy=type; enemyMastered=mastered;
+    document.getElementById("btn-enemy").innerText="🟦 Enemy: "+(mastered?"⭐":"")+type;
+  }
+  updateInfo(); closePicker();
+}
+
+function updateInfo(){
+  let ps=selectedPlayer?((playerMastered?"⭐":"")+selectedPlayer):"None";
+  let es=selectedEnemy?((enemyMastered?"⭐":"")+selectedEnemy):"None";
+  document.getElementById("info").innerText="Player: "+ps+" | Enemy: "+es;
+}
+
+function openMastery(){
+  let list=document.getElementById("mastery-list");
+  list.innerHTML="";
+  CHARS.filter(ch=>!ch.shopSection||shopOwned[ch.type]).forEach(ch=>{
+    let prog=Math.min(masteryProgress[ch.type],masteryGoals[ch.type]);
+    let goal=masteryGoals[ch.type];
+    let pct=Math.round((prog/goal)*100);
+    let unlocked=masteryUnlocked[ch.type];
+    let row=document.createElement("div");
+    row.className="m-row"+(unlocked?" unlocked":"");
+    row.innerHTML=`
+      <div class="m-title">
+        <div class="m-dot" style="background:${ch.color};${unlocked?"outline:2px solid #ffd700":""}"></div>
+        ${ch.type} ${unlocked?"<span style='color:#ffd700'>⭐ MASTERED</span>":""}
+      </div>
+      <div class="m-quest">📋 ${ch.quest} — ${prog}/${goal}</div>
+      <div class="m-bar-wrap"><div class="m-bar" style="width:${pct}%"></div></div>
+      ${unlocked?`<div class="m-ability">✨ ${ch.masteryDesc}</div>`:""}
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById("mastery-panel").classList.add("open");
+}
+
+function closeMastery(){ document.getElementById("mastery-panel").classList.remove("open"); }
+
+function startOrRestart(){
+  if(run){
+    run=false;
+    if(p){p.swapActive=false;p.swapBoostActive=false;p.swapEnemy=null;p.stopActive=false;p.masteryBlockReady=false;p.predMode="scared";p.predTimer=Date.now();}
+    if(o){o.swapActive=false;o.swapBoostActive=false;o.swapEnemy=null;o.stopActive=false;o.masteryBlockReady=false;o.predMode="scared";o.predTimer=Date.now();}
+    if(p){p.rebirthCount=0;p.rebirthFlash=0;}
+    if(o){o.rebirthCount=0;o.rebirthFlash=0;}
+    p=null; o=null; clones=[]; eggs=[]; hatchlings=[];
+    x.clearRect(0,0,360,360);
+    updateInfo();
+    document.getElementById("btn-start").innerText="▶ Start Battle";
+  } else {
+    if(!selectedPlayer||!selectedEnemy){alert("Select both cubes first!");return;}
+    p=new Cube(selectedPlayer,80,180,playerMastered);
+    o=new Cube(selectedEnemy,280,180,enemyMastered);
+    run=true;
+    document.getElementById("btn-start").innerText="⏹ Stop";
+    loop();
+  }
+}
+
+// ===== SHOP + EGG DISPLAY =====
+function updateEggDisplay(){
+  let d=document.getElementById("egg-display");
+  if(d)d.innerText="\u{1F95A} "+easterEggs+" Easter Egg"+(easterEggs===1?"":"s");
+  let badge=document.getElementById("shop-egg-count");
+  if(badge)badge.innerText="\u{1F95A} "+easterEggs;
+}
+
+function openShop(){
+  updateShopContent();
+  let badge=document.getElementById("shop-egg-count");
+  if(badge)badge.innerText="\u{1F95A} "+easterEggs;
+  document.getElementById("shop-panel").classList.add("open");
+}
+function closeShop(){document.getElementById("shop-panel").classList.remove("open");}
+function switchShopTab(tab){
+  _shopTab=tab;
+  document.getElementById("tab-normal").className="shop-tab"+(tab==="normal"?" active":"");
+  document.getElementById("tab-limited").className="shop-tab"+(tab==="limited"?" active":"");
+  updateShopContent();
+}
+function updateShopContent(){
+  let cont=document.getElementById("shop-content");
+  cont.innerHTML="";
+  if(_shopTab==="normal"){
+    cont.innerHTML="<p style='color:#666;font-size:13px;text-align:center;padding:20px'>More items coming soon...</p>";
+    return;
+  }
+  let ch=CHARS.find(function(cc){return cc.type==="EasterBunny";});
+  if(!ch)return;
+  let owned=shopOwned.EasterBunny;
+  let canBuy=!owned&&easterEggs>=ch.shopCost;
+  let card=document.createElement("div");
+  card.className="shop-card "+(owned?"owned":canBuy?"buyable":"");
+  let costTxt=owned?"\u2705 Owned!":"\u{1F95A} "+ch.shopCost+" Easter Eggs"+(!canBuy&&!owned?" (need more)":"");
+  let nameCol=owned?"#4caf50":"#ff9fc5";
+  card.innerHTML="<div class='shop-icon' style='background:#ff9fc5'>\u{1F430}</div>"
+    +"<div class='shop-info'>"
+    +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+"Easter Bunny</div>"
+    +"<div class='shop-desc'>"+ch.desc+"</div>"
+    +"<div class='shop-cost'>"+costTxt+"</div>"
+    +"</div>";
+  if(!owned){
+    card.onclick=function(){
+      if(easterEggs>=ch.shopCost){
+        easterEggs-=ch.shopCost;
+        shopOwned.EasterBunny=true;
+        saveProgress();
+        updateEggDisplay();
+        updateShopContent();
+        alert("\u{1F430} Easter Bunny unlocked! Find it in the character picker.");
+      } else {
+        alert("Need "+ch.shopCost+" easter eggs! You have "+easterEggs+".");
+      }
+    };
+  }
+  cont.appendChild(card);
+}
+
+// ===== AUTOPLAY =====
+function toggleAutoplay(){
+  autoPlay=!autoPlay;
+  let btn=document.getElementById("btn-autoplay");
+  if(btn){
+    btn.innerText="\u{1F501} Auto: "+(autoPlay?"ON":"OFF");
+    btn.style.background=autoPlay?"#2a7a2a":"#555";
+    btn.style.boxShadow=autoPlay?"0 0 6px #4f4":"none";
+  }
+}
+
+// ===== PROGRESS PERSISTENCE =====
+function saveProgress(){
+  try{
+    localStorage.setItem("cubeBattle_progress", JSON.stringify({
+      masteryProgress: masteryProgress,
+      masteryUnlocked: masteryUnlocked,
+      easterEggs: easterEggs,
+      shopOwned: shopOwned
+    }));
+  }catch(e){}
+}
+
+function loadProgress(){
+  try{
+    let raw=localStorage.getItem("cubeBattle_progress");
+    if(!raw) return;
+    let d=JSON.parse(raw);
+    if(d.masteryProgress) Object.assign(masteryProgress, d.masteryProgress);
+    if(d.masteryUnlocked) Object.assign(masteryUnlocked, d.masteryUnlocked);
+    if(typeof d.easterEggs==="number") easterEggs=d.easterEggs;
+    if(d.shopOwned) Object.assign(shopOwned, d.shopOwned);
+    updateEggDisplay();
+  } catch(e){ console.warn("Failed to load progress", e); }
+}
+
+let _deleteStep=0, _deleteTimer=null;
+function deleteProgress(){
+  _deleteStep++;
+  let btn=document.getElementById("btn-delete-progress");
+  if(_deleteStep===1){
+    btn.innerText="\u26a0\ufe0f Are you sure?";
+    btn.style.background="#b8360b";
+    clearTimeout(_deleteTimer);
+    _deleteTimer=setTimeout(()=>{_deleteStep=0;if(btn){btn.innerText="\U0001f5d1 Delete Progress";btn.style.background="#6b2b2b";}},4000);
+  } else if(_deleteStep===2){
+    btn.innerText="\U0001f525 Are you REALLY sure?";
+    btn.style.background="#8b0000";
+    clearTimeout(_deleteTimer);
+    _deleteTimer=setTimeout(()=>{_deleteStep=0;if(btn){btn.innerText="\U0001f5d1 Delete Progress";btn.style.background="#6b2b2b";}},4000);
+  } else {
+    clearTimeout(_deleteTimer); _deleteStep=0;
+    localStorage.removeItem("cubeBattle_progress");
+    Object.keys(masteryProgress).forEach(k=>masteryProgress[k]=0);
+    Object.keys(masteryUnlocked).forEach(k=>masteryUnlocked[k]=false);
+    Object.keys(shopOwned).forEach(k=>shopOwned[k]=false);
+    easterEggs=0; updateEggDisplay();
+    if(btn){btn.innerText="\u2705 Progress Deleted!"; btn.style.background="#2a7a2a";}
+    setTimeout(()=>{if(btn){btn.innerText="\U0001f5d1 Delete Progress"; btn.style.background="#6b2b2b";}},2000);
+  }
+}
+
+loadProgress();
+
+</script>
+</body>
+</html>
