@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Cube Battle</title>
 <style>
 *{box-sizing:border-box}
@@ -102,6 +103,20 @@ canvas{background:#333;margin:10px auto;display:block}
 .rcard-empty{text-align:center;color:#556;font-size:13px;padding:24px 12px}
 #replay-close{padding:8px;background:#333;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
 #replay-close:hover{background:#555}
+
+/* ── Mobile responsive ── */
+#game-wrap{display:inline-block;position:relative}
+canvas{touch-action:none}
+
+@media (max-width:420px){
+  h2{font-size:16px;margin:8px 0 2px}
+  #topbar{gap:5px;padding:6px 4px}
+  #topbar button{padding:6px 9px;font-size:11px;border-radius:6px}
+  #modal-box{width:92vw;padding:14px}
+  #mastery-box,#shop-box{width:92vw;padding:14px}
+  #replay-box{width:92vw;padding:14px}
+  #btn-delete-progress{font-size:10px;padding:4px 8px}
+}
 </style>
 </head>
 <body>
@@ -166,7 +181,7 @@ canvas{background:#333;margin:10px auto;display:block}
   </div>
 </div>
 
-<canvas id="c" width="360" height="360"></canvas>
+<div id="game-wrap"><canvas id="c" width="360" height="360"></canvas></div>
 
 <script>
 let c=document.getElementById("c"),x=c.getContext("2d");
@@ -1854,6 +1869,27 @@ requestAnimationFrame(tick);
 }
 
 loadProgress();
+
+// ── Mobile canvas scaling ──
+function scaleGame(){
+  var cv=document.getElementById('c');
+  var wrap=document.getElementById('game-wrap');
+  if(!cv||!wrap) return;
+  var avail=Math.min(window.innerWidth-16, 520);
+  if(avail<364){
+    var s=avail/360;
+    cv.style.transformOrigin='top center';
+    cv.style.transform='scale('+s+')';
+    wrap.style.width='100%';
+    wrap.style.height=(360*s+20)+'px';
+  } else {
+    cv.style.transform='';
+    wrap.style.height='';
+    wrap.style.width='';
+  }
+}
+window.addEventListener('resize',scaleGame);
+document.addEventListener('DOMContentLoaded',scaleGame);
 
 </script>
 </body>
