@@ -118,26 +118,6 @@ canvas{touch-action:none}
   #btn-delete-progress{font-size:10px;padding:4px 8px}
 }
 
-/* ── Social Feed ── */
-#feed-panel{display:none;position:fixed;inset:0;background:#000;z-index:200;flex-direction:column;overflow:hidden}
-#feed-panel.open{display:flex}
-#feed-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(0,0,0,0.85);position:absolute;top:0;left:0;right:0;z-index:10;backdrop-filter:blur(4px)}
-#feed-header h3{margin:0;color:#fff;font-size:16px}
-#feed-close{background:#333;color:#fff;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px}
-#feed-scroll{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
-.feed-post{height:100vh;display:flex;align-items:center;justify-content:center;position:relative;scroll-snap-align:start;flex-shrink:0}
-.feed-canvas-wrap{position:relative;border-radius:14px;overflow:hidden;box-shadow:0 0 30px rgba(74,158,255,0.3)}
-.feed-canvas-wrap canvas{display:block}
-.feed-info{position:absolute;bottom:0;left:0;right:0;padding:14px;background:linear-gradient(transparent,rgba(0,0,0,0.88));color:#fff;pointer-events:none}
-.feed-title{font-size:15px;font-weight:bold;margin-bottom:3px}
-.feed-result{font-size:13px;color:#bbb}
-.feed-caption{font-size:13px;margin-top:5px;color:#dde;font-style:italic}
-.feed-actions{position:absolute;right:10px;bottom:90px;display:flex;flex-direction:column;gap:18px;align-items:center}
-.feed-action-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:rgba(0,0,0,0.5);border:none;color:#fff;cursor:pointer;font-size:26px;padding:10px;border-radius:50%;line-height:1;transition:transform 0.15s}
-.feed-action-btn:active{transform:scale(1.2)}
-.feed-action-btn span{font-size:11px;font-weight:bold}
-.feed-action-btn.liked{color:#ff4757}
-.feed-hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:12px;pointer-events:none}
 /* Comments overlay */
 #comments-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:flex-end}
 #comments-overlay.open{display:flex}
@@ -169,7 +149,6 @@ canvas{touch-action:none}
       <button id="btn-autoplay" onclick="toggleAutoplay()" style="background:#555;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px;">🔁 Auto: OFF</button>
   <button id="btn-mastery" onclick="openMastery()">⭐ Masteries</button>
   <button id="btn-replay" onclick="openReplays()" style="background:#4a9eff;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">🎬 Replays</button>
-  <button id="btn-feed" onclick="openFeed()" style="background:#ff4500;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">📢 Feed</button>
   <button id="btn-shop" style="background:#ff69b4;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold" onclick="openShop()">🛒 Shop</button>
 </div>
 <div style="font-size:13px;margin:2px 0 4px"><span id="egg-display" style="color:#ffe082;font-size:14px;font-weight:bold"></span>
@@ -220,30 +199,6 @@ canvas{touch-action:none}
   </div>
 </div>
 
-<!-- Social Feed Panel -->
-<div id="feed-panel">
-  <div id="feed-header">
-    <h3>📢 Cube Battle Feed</h3>
-    <button id="feed-close" onclick="closeFeed()">✕ Close</button>
-  </div>
-  <div id="feed-scroll"></div>
-</div>
-
-<!-- Comments Overlay -->
-<div id="comments-overlay" onclick="event.target===this&&closeComments()">
-  <div id="comments-box">
-    <div id="comments-header">
-      <h4 id="comments-header-count">💬 Comments</h4>
-      <button id="comments-close-btn" onclick="closeComments()">✕</button>
-    </div>
-    <div id="comments-list"></div>
-    <div id="comment-input-row">
-      <input id="comment-input" type="text" placeholder="Add a comment..." maxlength="200"
-             onkeydown="event.key==='Enter'&&submitComment()">
-      <button id="comment-submit" onclick="submitComment()">Post</button>
-    </div>
-  </div>
-</div>
 
 <div id="game-wrap"><canvas id="c" width="360" height="360"></canvas></div>
 
@@ -258,14 +213,16 @@ let ehEggs=[];
 let ehCarrots=[];
 let hatchlings=[];
 let easterEggs=0;
+let coins=0;
+let _ghostEchoes=[];
 let autoPlay=false;
-const shopOwned={EasterBunny:false,EggHunter:false};
+const shopOwned={EasterBunny:false,EggHunter:false,Phantom:false};
 let _shopTab="normal";
 
 // ===== MASTERY STATE =====
-const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Evolver:0,Rebirth:0,EasterBunny:0,EggHunter:0};
-const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Evolver:1,Rebirth:5,EasterBunny:30,EggHunter:40};
-const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Evolver:false,Rebirth:false,EasterBunny:false,EggHunter:false};
+const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Evolver:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0};
+const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Evolver:1,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30};
+const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Evolver:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -326,6 +283,11 @@ const CHARS=[
    quest:"Hunt 40 eggs as Egg Hunter",
    masteryDesc:"Egg power lasts 10s & stacks. 3 eggs spawn at once. Every 40s a carrot appears — eat it for Bunny Mode (2× speed + ears)!",
    shopCost:100, shopSection:"limited"},
+  {type:"Phantom", color:"#7b00d4",
+   desc:"Every 8s phases out for 3s: nearly invisible, 1.5× faster, deals 3 damage.",
+   quest:"Deal 30 damage while phantom",
+   masteryDesc:"Charges every 5s, lasts 5s, deals 4 damage. Leaves a glowing ghost echo decoy after each phase!",
+   shopCost:150, shopSection:"normal"},
 ];
 
 function checkMasteries(){
@@ -349,7 +311,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":"#00ff99";
   this.lastHitByClone=false;
   // Swapper
   this.swapActive=false; this.lastSwap=Date.now()-15000; this.swapEnemy=null;
@@ -365,6 +327,8 @@ constructor(type,X,Y,mastered){
   this.ehBunnyMode=false;
   this.ehBunnyExpires=0;
   this.ehBaseS=30;
+  // 👻 Phantom
+  this.phantomActive=false; this.phantomTimer=Date.now()-6000; this.phantomDmgDealt=0;
   // Stopper
   this.stopActive=false; this.lastStop=Date.now()-8000; this.stopFlash=0;
   this.masteryBlockReady=false; this.lastMasteryBlock=Date.now()-13000;
@@ -385,6 +349,8 @@ constructor(type,X,Y,mastered){
 }
 
 draw(){
+  // 👻 Phantom: go semi-transparent when phased out
+  if(this.t==="Phantom"&&this.phantomActive){ x.save(); x.globalAlpha=0.13; }
   // Mastery glow
   if(this.mastered){
     x.save();
@@ -399,6 +365,7 @@ draw(){
     x.fillStyle=this.c;
     x.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
   }
+  if(this.t==="Phantom"&&this.phantomActive){ x.restore(); }
 
   // Normal mastery shield bubble
   if(this.t=="Normal"&&this.mastered&&this.masteryShield>0){
@@ -411,7 +378,7 @@ draw(){
 
   // 🪵 STICK
   if(this.t=="Stick"){
-    this.angle+=0.06;
+    this.angle+=0.03;
     let len=70;
     let sx=this.x+Math.cos(this.angle)*len;
     let sy=this.y+Math.sin(this.angle)*len;
@@ -422,7 +389,7 @@ draw(){
 
   // 🛡 SHIELD
   if(this.t=="Shield"){
-    this.angle+=0.05;
+    this.angle+=0.025;
     let r=55;
     x.strokeStyle=this.mastered?"#ffd700":"cyan"; x.lineWidth=10;
     x.beginPath(); x.arc(this.x,this.y,r,this.angle-0.7,this.angle+0.7); x.stroke();
@@ -466,10 +433,6 @@ draw(){
     x.shadowColor="#ffd700"; x.shadowBlur=22;
     x.beginPath(); x.arc(this.x,this.y,this.s/2+14,0,Math.PI*2); x.stroke();
     x.restore();
-  }
-  // Swapper: glow the swapped-with enemy too
-  if(this.swapEnemy&&this.swapEnemy.swapActive===false&&this===p||this===o){
-    // (handled per-cube above)
   }
 
   // 🛑 STOPPER active stop field ring
@@ -579,22 +542,17 @@ draw(){
     // Rabbit ears in Bunny Mode
     if(this.ehBunnyMode){
       x.save();
-      // ear left
       x.fillStyle="#e67e22";
       x.beginPath();x.ellipse(this.x-7,this.y-this.s/2-14,5,12,-0.18,0,Math.PI*2);x.fill();
-      // ear right
       x.beginPath();x.ellipse(this.x+7,this.y-this.s/2-14,5,12,0.18,0,Math.PI*2);x.fill();
-      // inner ears
       x.fillStyle="#ff9fc5";
       x.beginPath();x.ellipse(this.x-7,this.y-this.s/2-14,2.5,7,-0.18,0,Math.PI*2);x.fill();
       x.beginPath();x.ellipse(this.x+7,this.y-this.s/2-14,2.5,7,0.18,0,Math.PI*2);x.fill();
-      // golden speed glow
       x.strokeStyle="rgba(255,215,0,0.75)";x.lineWidth=3;
       x.shadowColor="#ffd700";x.shadowBlur=14;
       x.beginPath();x.arc(this.x,this.y,this.s/2+10,0,Math.PI*2);x.stroke();
       x.restore();
     }
-    // Active buff dots below cube
     let _ehActive=this.ehBuffs.filter(b=>_ehNow<b.expires);
     if(_ehActive.length>0){
       let _bColors={size:"#3498db",speed:"#f39c12",strength:"#e74c3c",health:"#27ae60"};
@@ -608,13 +566,11 @@ draw(){
         x.restore();
       });
     }
-    // Egg spawn timer above cube
     let _ehEl=_ehNow-this.ehEggSpawnTimer,_ehCd=10000;
     x.save();x.font="bold 10px Arial";x.textAlign="center";
     x.fillStyle="#f39c12";
     x.fillText(_ehEl>=_ehCd?"🥚 ready!":"🥚 "+Math.max(0,(_ehCd-_ehEl)/1000).toFixed(1)+"s",this.x,this.y-this.s/2-(this.ehBunnyMode?34:20));
     x.textAlign="left";x.restore();
-    // Carrot timer (mastered)
     if(this.mastered){
       let _cEl=_ehNow-this.ehCarrotSpawnTimer,_cCd=40000;
       x.save();x.font="9px Arial";x.textAlign="center";
@@ -622,6 +578,27 @@ draw(){
       x.fillText(_cEl>=_cCd?"🥕 ready!":"🥕 "+Math.max(0,(_cCd-_cEl)/1000).toFixed(0)+"s",this.x,this.y+this.s/2+26);
       x.textAlign="left";x.restore();
     }
+  }
+
+  // 👻 Phantom visuals
+  if(this.t==="Phantom"&&this.phantomActive){
+    x.save();
+    x.strokeStyle="rgba(180,0,255,0.7)"; x.lineWidth=2;
+    x.shadowColor="#bf00ff"; x.shadowBlur=20;
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+10,0,Math.PI*2); x.stroke();
+    x.restore();
+    x.save(); x.font="bold 9px Arial"; x.textAlign="center";
+    x.fillStyle="rgba(200,120,255,0.95)";
+    x.fillText("👻 PHASE",this.x,this.y-this.s/2-22);
+    x.textAlign="left"; x.restore();
+  }
+  if(this.t==="Phantom"&&!this.phantomActive){
+    let _pCd=this.mastered?5000:8000;
+    let _pEl=Date.now()-this.phantomTimer;
+    x.save(); x.font="9px Arial"; x.textAlign="center";
+    x.fillStyle="rgba(180,0,255,0.75)";
+    x.fillText(_pEl>=_pCd?"👻 ready!":"👻 "+Math.max(0,(_pCd-_pEl)/1000).toFixed(1)+"s",this.x,this.y-this.s/2-20);
+    x.textAlign="left"; x.restore();
   }
 
   // HP label
@@ -635,7 +612,6 @@ draw(){
 move(){
   // 🥷 Ninja dash
   if(this.t=="Ninja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
-    // 🛑 Stopper blocks Ninja dash if enemy's stop field is active (check the other cube)
     let ninjaEnemy=(this===p)?o:(this===o)?p:null;
     if(ninjaEnemy&&checkStopField(ninjaEnemy)){ this.lastDash=Date.now(); return; }
     this.dashActive=true; this.lastDash=Date.now();
@@ -732,14 +708,10 @@ move(){
   // 🥚 EGG HUNTER AI
   if(this.t==="EggHunter"){
     let _ehNow=Date.now();
-    // Clean expired buffs
     this.ehBuffs=this.ehBuffs.filter(b=>_ehNow<b.expires);
-    // Bunny mode expiry
     if(this.ehBunnyMode&&_ehNow>this.ehBunnyExpires) this.ehBunnyMode=false;
-    // Update size from size buffs (cap 80)
     let _szCnt=this.ehBuffs.filter(b=>b.type==='size').length;
     this.s=Math.min(this.ehBaseS*Math.pow(2,_szCnt),80);
-    // Spawn hunter eggs every 10s
     let _ehEggCnt=this.mastered?3:1;
     if(_ehNow-this.ehEggSpawnTimer>=10000){
       this.ehEggSpawnTimer=_ehNow;
@@ -747,12 +719,10 @@ move(){
         ehEggs.push(new EhEgg(Math.random()*300+30,Math.random()*300+30));
       }
     }
-    // Spawn carrot every 40s (mastered)
     if(this.mastered&&_ehNow-this.ehCarrotSpawnTimer>=40000){
       this.ehCarrotSpawnTimer=_ehNow;
       ehCarrots.push(new EhCarrot(Math.random()*280+40,Math.random()*280+40));
     }
-    // Find target (priority: EB eggs > hunter eggs > carrots > enemy)
     let _ehEnemy=(this===p)?o:p;
     let _ehTarget=null;
     if(_ehEnemy&&_ehEnemy.t==="EasterBunny"){
@@ -776,14 +746,32 @@ move(){
         return(!best||d<Math.hypot(best.x-this.x,best.y-this.y))?c:best;
       },null);
     }
-    // Compute speed
     let _spCnt=this.ehBuffs.filter(b=>b.type==='speed').length;
     let _ehSpd=Math.min(3.0*Math.pow(2,_spCnt)*(this.ehBunnyMode?2:1),14);
-    // Steer toward target or enemy
     let _tx=_ehTarget?_ehTarget.x:(_ehEnemy?_ehEnemy.x:this.x);
     let _ty=_ehTarget?_ehTarget.y:(_ehEnemy?_ehEnemy.y:this.y);
     let _dx=_tx-this.x,_dy=_ty-this.y,_dd=Math.sqrt(_dx*_dx+_dy*_dy)||1;
     this.vx=(_dx/_dd)*_ehSpd; this.vy=(_dy/_dd)*_ehSpd;
+  }
+
+  // 👻 Phantom phase activation
+  if(this.t==="Phantom"){
+    let _pCd=this.mastered?5000:8000;
+    let _pDur=this.mastered?5000:3000;
+    let _pNow=Date.now();
+    if(!this.phantomActive&&_pNow-this.phantomTimer>=_pCd){
+      this.phantomActive=true; this.phantomTimer=_pNow;
+      this.vx*=1.5; this.vy*=1.5;
+      let _pSelf=this;
+      setTimeout(function(){
+        if(_pSelf.hp<=0)return;
+        _pSelf.phantomActive=false; _pSelf.phantomTimer=Date.now();
+        _pSelf.vx/=1.5; _pSelf.vy/=1.5;
+        if(_pSelf.mastered){
+          _ghostEchoes.push({x:_pSelf.x,y:_pSelf.y,born:Date.now(),s:_pSelf.s,c:_pSelf.c});
+        }
+      }, _pDur);
+    }
   }
 
   this.x+=this.vx; this.y+=this.vy;
@@ -840,29 +828,25 @@ class Clone {
   }
   draw(){
     let at=this.abilType();
-    // Zigzag trail
     if(at==="Zigzag"&&this.trail.length>1){
       x.save(); x.strokeStyle="rgba(0,255,153,0.35)"; x.lineWidth=2;
       x.beginPath(); x.moveTo(this.trail[0].x,this.trail[0].y);
       for(let i=1;i<this.trail.length;i++) x.lineTo(this.trail[i].x,this.trail[i].y);
       x.stroke(); x.restore();
     }
-    // Stick
     if(at==="Stick"){
-      this.angle+=0.09;
+      this.angle+=0.045;
       let len=28,sx=this.x+Math.cos(this.angle)*len,sy=this.y+Math.sin(this.angle)*len;
       x.strokeStyle="yellow"; x.lineWidth=2;
       x.beginPath(); x.moveTo(this.x,this.y); x.lineTo(sx,sy); x.stroke();
       this.stickTip={x:sx,y:sy};
     } else { this.stickTip=null; }
-    // Shield
     if(at==="Shield"){
-      this.angle+=0.07; let r=24;
+      this.angle+=0.035; let r=24;
       x.strokeStyle="cyan"; x.lineWidth=4;
       x.beginPath(); x.arc(this.x,this.y,r,this.angle-0.7,this.angle+0.7); x.stroke();
       this.shieldZone={x:this.x+Math.cos(this.angle)*r,y:this.y+Math.sin(this.angle)*r};
     } else { this.shieldZone=null; }
-    // Clone body (semi-transparent, dashed border)
     x.save(); x.globalAlpha=0.78;
     x.fillStyle=this.c;
     x.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);
@@ -955,7 +939,7 @@ class Hatchling{
       x.stroke(); x.restore();
     }
     if(this.t==="Stick"){
-      this.angle+=0.09;
+      this.angle+=0.045;
       let len=26,sx=this.x+Math.cos(this.angle)*len,sy=this.y+Math.sin(this.angle)*len;
       x.strokeStyle="yellow"; x.lineWidth=2;
       x.beginPath(); x.moveTo(this.x,this.y); x.lineTo(sx,sy); x.stroke();
@@ -1003,7 +987,6 @@ class EhEgg{
     x.beginPath();x.ellipse(this.x,this.y,this.s/2,this.s/2*1.25,0,0,Math.PI*2);x.fill();
     x.strokeStyle="#e67e22";x.lineWidth=1.5;
     x.beginPath();x.ellipse(this.x,this.y,this.s/2,this.s/2*1.25,0,0,Math.PI*2);x.stroke();
-    // sparkle
     x.globalAlpha=pulse*0.9;x.fillStyle="#fff";
     x.beginPath();x.arc(this.x-2,this.y-3,2,0,Math.PI*2);x.fill();
     x.globalAlpha=1;x.restore();
@@ -1019,7 +1002,6 @@ class EhCarrot{
     if(!this.alive)return;
     let bob=Math.sin(Date.now()/300)*2;
     x.save();
-    // carrot body
     x.fillStyle="#e67e22";
     x.shadowColor="#e67e22";x.shadowBlur=10;
     x.beginPath();
@@ -1027,7 +1009,6 @@ class EhCarrot{
     x.lineTo(this.x-this.s/2,this.y-this.s/2+bob);
     x.lineTo(this.x+this.s/2,this.y-this.s/2+bob);
     x.closePath();x.fill();
-    // greens
     x.fillStyle="#27ae60";
     x.beginPath();x.arc(this.x-4,this.y-this.s/2-4+bob,4,0,Math.PI*2);x.fill();
     x.beginPath();x.arc(this.x+4,this.y-this.s/2-4+bob,3,0,Math.PI*2);x.fill();
@@ -1044,14 +1025,12 @@ function applyEhEggBuff(hunter){
   let type=types[Math.floor(Math.random()*types.length)];
   let dur=hunter.mastered?10000:5000;
   if(!hunter.mastered){
-    // Non-mastered: replace same-type buff (no stack)
     hunter.ehBuffs=hunter.ehBuffs.filter(b=>b.type!==type);
   }
   if(type==="health"){
     hunter.hp+=5;
   }
   hunter.ehBuffs.push({type,expires:Date.now()+dur});
-  // Mastery tracking
   let side=(hunter===p)?selectedPlayer:selectedEnemy;
   if(side==="EggHunter"){
     masteryProgress.EggHunter=Math.min(masteryGoals.EggHunter,(masteryProgress.EggHunter||0)+1);
@@ -1063,7 +1042,6 @@ function processEhEggs(){
   let surviving=[],now=Date.now();
   for(let eg of ehEggs){
     if(!eg.alive)continue;
-    // Check if any EggHunter collects it
     let collected=false;
     for(let hunter of [p,o]){
       if(hunter&&hunter.t==="EggHunter"&&hunter.hp>0&&eg.hits(hunter)){
@@ -1100,7 +1078,6 @@ function processEggs(){
     let eggEnemy=(egg.owner===p)?o:p;
     if(eggEnemy&&eggEnemy.hp>0&&egg.hits(eggEnemy)&&now-egg.lastHit>500){
       if(eggEnemy.t==="EggHunter"){
-        // EggHunter eats Easter Bunny eggs for a buff!
         egg.alive=false; applyEhEggBuff(eggEnemy); continue;
       }
       egg.hp--; egg.lastHit=now;
@@ -1136,7 +1113,6 @@ function processHatchlings(){
         applyDamage(tgt,null,1); h.hp--; h.lastHit=now;
       }
     }
-    // Physical collision with enemy — bounce them
     if(tgt&&tgt.hp>0&&h.hits(tgt)){
       let dxH=tgt.x-h.x,dyH=tgt.y-h.y;
       let dist=Math.sqrt(dxH*dxH+dyH*dyH)||1;
@@ -1170,14 +1146,12 @@ function processClones(){
     cl.move();
     let tgt=cl.enemy;
     let now=Date.now();
-    // Clone stick tip damages enemy
     if(cl.stickTip&&tgt.hp>0&&now-cl.lastHit>400){
       if(Math.abs(cl.stickTip.x-tgt.x)<tgt.s/2+5&&Math.abs(cl.stickTip.y-tgt.y)<tgt.s/2+5){
         let hit=applyDamage(tgt,null,1);
         if(hit){ tgt.lastHitByClone=true; cl.lastHit=now; }
       }
     }
-    // Clone body hits enemy
     if(cl.hits(tgt)&&tgt.hp>0&&now-cl.lastHit>400){
       let dx=tgt.x-cl.x,dy=tgt.y-cl.y;
       let towards=(cl.vx*dx+cl.vy*dy)>0;
@@ -1186,7 +1160,6 @@ function processClones(){
         if(hit){ tgt.lastHitByClone=true; cl.lastHit=now; cl.hp=0; }
       }
     }
-    // Vampire clone: drain 1 HP to owner every 10s
     if(cl.abilType()==="Vampire"&&!cl.drainActive&&now-cl.lastDrain>10000&&tgt.hp>0){
       cl.drainActive=true; cl.lastDrain=now;
       setTimeout(()=>{
@@ -1221,7 +1194,6 @@ function hitsShieldArc(shield,px,py){
   return Math.abs(diff)<0.7;
 }
 
-// 🛑 Stopper: returns true if an ability targeting `stopper` is blocked
 function checkStopField(stopper){
   if(!stopper||stopper.t!=="Stopper") return false;
   if(stopper.stopActive){
@@ -1231,7 +1203,7 @@ function checkStopField(stopper){
   }
   if(stopper.mastered&&stopper.masteryBlockReady){
     stopper.masteryBlockReady=false;
-    stopper.lastMasteryBlock=Date.now(); // restart the 15s timer
+    stopper.lastMasteryBlock=Date.now();
     masteryProgress.Stopper=Math.min(masteryGoals.Stopper,(masteryProgress.Stopper||0)+1);
     checkMasteries();
     return true;
@@ -1239,7 +1211,6 @@ function checkStopField(stopper){
   return false;
 }
 
-// Evolver: register hit and evolve
 function evolverHit(ev){
   if(ev.evolveStage>=5) return;
   ev.evolveHitCount++;
@@ -1259,26 +1230,19 @@ function evolverHit(ev){
   }
 }
 
-// Apply damage to a cube (respects mastery shield + ninja immunity)
 function applyDamage(victim,attacker,amount){
-  // Ninja mastery: immune while dashing
   if(victim.t=="Ninja"&&victim.mastered&&victim.dashActive) return false;
-  // Normal mastery shield bubble
   if(victim.t=="Normal"&&victim.mastered&&victim.masteryShield>0){
     victim.masteryShield--;
-    return false; // absorbed
+    return false;
   }
   victim.hp-=amount;
-  // Reset clone-kill flag when real cube deals damage
   if(attacker) victim.lastHitByClone=false;
-  // Evolver: register hit
   if(victim.t==="Evolver") evolverHit(victim);
-  // Cloner: spawn a clone when hit
   if(victim.t==="Cloner"&&run){
     let cloneEnemy=(victim===p)?o:(victim===o)?p:null;
     if(cloneEnemy) spawnClone(victim,cloneEnemy);
   }
-  // Track Normal mastery progress (damage dealt by attacker)
   if(attacker&&attacker.t=="Normal"){
     masteryProgress.Normal=Math.min(masteryGoals.Normal,(masteryProgress.Normal||0)+amount);
     checkMasteries();
@@ -1286,7 +1250,6 @@ function applyDamage(victim,attacker,amount){
   return true;
 }
 
-// 🪵 Stick
 function stickDamage(stick,enemy){
   if(stick.t!="Stick"||!stick.stickTip)return;
   let tip=stick.stickTip,half=enemy.s/2;
@@ -1297,7 +1260,6 @@ function stickDamage(stick,enemy){
     enemy.x=tip.x+(dx/dist)*(half+8); enemy.y=tip.y+(dy/dist)*(half+8);
     let now=Date.now();
     if(now-enemy.lastHit>400){
-      // 🛑 Stopper blocks stick hit
       if(checkStopField(enemy)){ enemy.lastHit=now; stick.lastDash=Date.now(); return; }
       let dmg=stick.mastered?3:2;
       let hit=applyDamage(enemy,stick,dmg);
@@ -1310,13 +1272,11 @@ function stickDamage(stick,enemy){
   }
 }
 
-// 🧛 Vampire
 function vampireDrain(vampire,enemy){
   if(vampire.t!="Vampire")return;
   let now=Date.now();
   let cd=vampire.mastered?8000:15000;
   if(!vampire.drainActive&&now-vampire.lastDrain>cd){
-    // 🛑 Stopper blocks vampire drain
     if(checkStopField(enemy)){ vampire.lastDrain=Date.now(); return; }
     vampire.drainActive=true; vampire.drainTarget=enemy; vampire.lastDrain=now;
     setTimeout(()=>{
@@ -1330,31 +1290,24 @@ function vampireDrain(vampire,enemy){
   }
 }
 
-// 🔀 Swapper
 function swapperAbility(swapper, enemy){
   if(swapper.t!="Swapper"||swapper.swapActive) return;
   let now=Date.now();
   if(now-swapper.lastSwap<20000) return;
-  // 🛑 Stopper blocks swap
   if(checkStopField(enemy)){ swapper.lastSwap=Date.now(); return; }
-  // Initiate swap
   swapper.swapActive=true;
   swapper.lastSwap=now;
   swapper.swapEnemy=enemy;
   enemy.killedDuringSwap=false;
-  // Swap HP
   let tmp=swapper.hp; swapper.hp=enemy.hp; enemy.hp=tmp;
-  // Show swap indicator on enemy too
   let savedEnemySwapActive=enemy.swapActive;
-  enemy.swapActive=true; // so it gets the orange ring too
+  enemy.swapActive=true;
   setTimeout(()=>{
     if(!run) return;
-    // Swap back (simple swap of current values)
     let t2=swapper.hp; swapper.hp=enemy.hp; enemy.hp=t2;
     swapper.swapActive=false;
     enemy.swapActive=savedEnemySwapActive;
     swapper.swapEnemy=null;
-    // Mastered: set swapper HP to 10 for 5s
     if(swapper.mastered){
       swapper.swapBoostActive=true;
       let hpBefore=swapper.hp;
@@ -1362,7 +1315,6 @@ function swapperAbility(swapper, enemy){
       let boostedTo=swapper.hp;
       setTimeout(()=>{
         if(!run) return;
-        // Revert: remove the boost amount
         let diff=boostedTo-hpBefore;
         swapper.hp=Math.max(0,swapper.hp-diff);
         swapper.swapBoostActive=false;
@@ -1371,18 +1323,14 @@ function swapperAbility(swapper, enemy){
   },10000);
 }
 
-// ⚔️ Body combat
 function handleCombat(a,b){
   if(!collide(a,b))return;
   let now=Date.now();
   let aTo=movingTowards(a,b),bTo=movingTowards(b,a);
 
-  // Shield check
   if(b.t=="Shield"&&aTo&&hitsShieldArc(b,a.x,a.y)){
     if(now-a.lastHit>400){
-      // 🛑 Stopper blocks shield reflect
       if(checkStopField(a)){ a.lastHit=now; return; }
-
       let dmg=b.mastered?2:1;
       applyDamage(a,null,dmg);
       a.lastHit=now;
@@ -1393,7 +1341,6 @@ function handleCombat(a,b){
   }
   if(a.t=="Shield"&&bTo&&hitsShieldArc(a,b.x,b.y)){
     if(now-b.lastHit>400){
-      // 🛑 Stopper blocks shield reflect
       if(checkStopField(b)){ b.lastHit=now; return; }
       let dmg=a.mastered?2:1;
       applyDamage(b,null,dmg);
@@ -1412,6 +1359,7 @@ function handleCombat(a,b){
     if(a.t==="Predictor"&&a.mastered&&a.predMode==="predicting") dmg=2;
     if(a.t==="Evolver") dmg=a.evolveStage>=5?3:a.evolveStage>=3?2:1;
     if(a.t==="EggHunter"){let sc=a.ehBuffs.filter(b=>now<b.expires&&b.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
+    if(a.t==="Phantom"&&a.phantomActive){dmg=a.mastered?4:3;a.phantomDmgDealt=(a.phantomDmgDealt||0)+dmg;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,a.phantomDmgDealt);checkMasteries();}
     applyDamage(b,a,dmg); b.lastHit=now;
     if(a.t==="Predictor"&&a.predMode==="predicting"){a.predMode="scared";a.predTimer=now;a.predCooldown=1500+Math.random()*1000;}
   }
@@ -1420,12 +1368,12 @@ function handleCombat(a,b){
     if(b.t==="Predictor"&&b.mastered&&b.predMode==="predicting") dmg=2;
     if(b.t==="Evolver") dmg=b.evolveStage>=5?3:b.evolveStage>=3?2:1;
     if(b.t==="EggHunter"){let sc=b.ehBuffs.filter(b2=>now<b2.expires&&b2.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
+    if(b.t==="Phantom"&&b.phantomActive){dmg=b.mastered?4:3;b.phantomDmgDealt=(b.phantomDmgDealt||0)+dmg;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,b.phantomDmgDealt);checkMasteries();}
     applyDamage(a,b,dmg); a.lastHit=now;
     if(b.t==="Predictor"&&b.predMode==="predicting"){b.predMode="scared";b.predTimer=now;b.predCooldown=1500+Math.random()*1000;}
   }
 }
 
-// 🔄 Rebirth: intercept death and revive as smaller cube
 function checkRebirth(cube){
   if(cube.t!=="Rebirth") return false;
   let maxR=cube.mastered?2:1;
@@ -1434,11 +1382,9 @@ function checkRebirth(cube){
   cube.hp=cube.rebirthCount===1?5:2;
   cube.s=cube.rebirthCount===1?26:16;
   cube.rebirthFlash=Date.now();
-  // Clamp inside arena
   let hw=cube.s/2+2;
   cube.x=Math.max(hw,Math.min(360-hw,cube.x));
   cube.y=Math.max(hw,Math.min(360-hw,cube.y));
-  // Track mastery progress
   let side=(cube===p)?selectedPlayer:selectedEnemy;
   if(side==="Rebirth"){
     masteryProgress.Rebirth=Math.min(masteryGoals.Rebirth,(masteryProgress.Rebirth||0)+1);
@@ -1447,9 +1393,40 @@ function checkRebirth(cube){
   return true;
 }
 
+function processGhostEchoes(){
+  let now=Date.now();
+  _ghostEchoes=_ghostEchoes.filter(function(e){return now-e.born<1500;});
+  _ghostEchoes.forEach(function(e){
+    let prog=(now-e.born)/1500;
+    x.save();
+    x.globalAlpha=(1-prog)*0.45;
+    x.fillStyle=e.c;
+    x.shadowColor="#bf00ff"; x.shadowBlur=14;
+    x.fillRect(e.x-e.s/2,e.y-e.s/2,e.s,e.s);
+    x.globalAlpha=(1-prog)*0.28;
+    x.strokeStyle="#bf00ff"; x.lineWidth=1.5;
+    x.strokeRect(e.x-e.s/2,e.y-e.s/2,e.s,e.s);
+    x.restore();
+  });
+}
+
 // ===== GAME LOOP =====
-function loop(){
-  if(!run)return;
+// FIX 1: Delta-time guard so the game runs at consistent speed on all displays
+// requestAnimationFrame fires at the display's refresh rate (60, 120, 144Hz, etc.)
+// Without this guard, cubes move faster on high-refresh screens.
+// We target ~60fps by skipping frames that arrive too soon (< 75% of 16.67ms).
+let _lastLoopTs = 0;
+const _FRAME_TARGET = 1000 / 60; // ~16.67ms
+
+function loop(ts){
+  if(!run) return;
+  // Skip if called too soon (high refresh rate display)
+  if(ts && _lastLoopTs && (ts - _lastLoopTs) < _FRAME_TARGET * 0.75){
+    requestAnimationFrame(loop);
+    return;
+  }
+  _lastLoopTs = ts || performance.now();
+
   captureFrame();
   x.clearRect(0,0,360,360);
   p.move(); o.move();
@@ -1465,7 +1442,7 @@ function loop(){
   processEhCarrots();
   processHatchlings();
   p.draw(); o.draw();
-  // Rebirth interception — must run before death check
+  processGhostEchoes();
   if(p.hp<=0) checkRebirth(p);
   if(o.hp<=0) checkRebirth(o);
 
@@ -1474,13 +1451,12 @@ function loop(){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[];
     let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
     if(pWins&&selectedPlayer=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
     if(oWins&&selectedEnemy=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
     if(pWins&&o.lastHitByClone&&selectedPlayer=="Cloner"){masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
     if(oWins&&p.lastHitByClone&&selectedEnemy=="Cloner"){masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
-    // Swapper: enemy died while swap was active
     if(pWins&&p.swapActive&&selectedPlayer=="Swapper"){masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
     if(oWins&&o.swapActive&&selectedEnemy=="Swapper"){masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
     if(pWins&&selectedPlayer=="Predictor"){masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
@@ -1489,6 +1465,7 @@ function loop(){
     x.fillStyle="#fff"; x.font="bold 28px Arial"; x.textAlign="center";
     x.fillText(p.hp<=0&&o.hp<=0?"It's a Tie!":p.hp>0?"Player Wins! 🏆":"Enemy Wins! 🏆",180,190);
     easterEggs++;
+    coins++;
     updateEggDisplay();
     saveProgress();
     document.getElementById("btn-start").innerText="▶ Start Battle";
@@ -1515,7 +1492,6 @@ function openPicker(target){
     let goal=masteryGoals[ch.type];
     let pct=Math.round((prog/goal)*100);
 
-    // Normal card
     let card=document.createElement("div");
     card.className="char-card";
     card.innerHTML=`
@@ -1529,7 +1505,6 @@ function openPicker(target){
     card.onclick=()=>pickChar(ch.type,false);
     list.appendChild(card);
 
-    // Mastered card (if unlocked)
     if(unlocked){
       let mcard=document.createElement("div");
       mcard.className="char-card mastered-card";
@@ -1609,26 +1584,27 @@ function startOrRestart(){
     replayRecording=true;
     replayFrameCount=0;
     replayBattleStart=Date.now();
+    _lastLoopTs=0; // reset delta-time tracker for new battle
     p=new Cube(selectedPlayer,80,180,playerMastered);
     o=new Cube(selectedEnemy,280,180,enemyMastered);
     run=true;
     document.getElementById("btn-start").innerText="⏹ Stop";
-    loop();
+    requestAnimationFrame(loop);
   }
 }
 
 // ===== SHOP + EGG DISPLAY =====
 function updateEggDisplay(){
   let d=document.getElementById("egg-display");
-  if(d)d.innerText="\u{1F95A} "+easterEggs+" Easter Egg"+(easterEggs===1?"":"s");
+  if(d)d.innerText="\u{1F95A} "+easterEggs+" Easter Egg"+(easterEggs===1?"":"s")+"  \u{1FA99} "+coins+" Coin"+(coins===1?"":"s");
   let badge=document.getElementById("shop-egg-count");
-  if(badge)badge.innerText="\u{1F95A} "+easterEggs;
+  if(badge)badge.innerText="\u{1F95A} "+easterEggs+"  \u{1FA99} "+coins;
 }
 
 function openShop(){
   updateShopContent();
   let badge=document.getElementById("shop-egg-count");
-  if(badge)badge.innerText="\u{1F95A} "+easterEggs;
+  if(badge)badge.innerText="\u{1F95A} "+easterEggs+"  \u{1FA99} "+coins;
   document.getElementById("shop-panel").classList.add("open");
 }
 function closeShop(){document.getElementById("shop-panel").classList.remove("open");}
@@ -1642,7 +1618,41 @@ function updateShopContent(){
   let cont=document.getElementById("shop-content");
   cont.innerHTML="";
   if(_shopTab==="normal"){
-    cont.innerHTML="<p style='color:#666;font-size:13px;text-align:center;padding:20px'>More items coming soon...</p>";
+    let normalChars=CHARS.filter(function(cc){return cc.shopSection==="normal";});
+    if(!normalChars.length){cont.innerHTML="<p style='color:#666;font-size:13px;text-align:center;padding:20px'>More items coming soon...</p>";return;}
+    let shopIcons={Phantom:"\u{1F47B}"};
+    normalChars.forEach(function(ch){
+      let owned=shopOwned[ch.type]||false;
+      let canBuy=!owned&&coins>=ch.shopCost;
+      let card=document.createElement("div");
+      card.className="shop-card "+(owned?"owned":canBuy?"buyable":"");
+      let costTxt=owned?"\u2705 Owned!":"\u{1FA99} "+ch.shopCost+" Coins"+(!canBuy&&!owned?" (need more)":"");
+      let nameCol=owned?"#4caf50":ch.color;
+      let icon=shopIcons[ch.type]||"\u{1F4E6}";
+      card.innerHTML="<div class='shop-icon' style='background:"+ch.color+"'>"+icon+"</div>"
+        +"<div class='shop-info'>"
+        +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+ch.type+"</div>"
+        +"<div class='shop-desc'>"+ch.desc+"</div>"
+        +"<div class='shop-cost'>"+costTxt+"</div>"
+        +"</div>";
+      if(!owned){
+        (function(chRef){
+          card.onclick=function(){
+            if(coins>=chRef.shopCost){
+              coins-=chRef.shopCost;
+              shopOwned[chRef.type]=true;
+              saveProgress();
+              updateEggDisplay();
+              updateShopContent();
+              alert(chRef.type+" unlocked! Find it in the character picker.");
+            } else {
+              alert("Need "+chRef.shopCost+" coins! You have "+coins+".");
+            }
+          };
+        })(ch);
+      }
+      cont.appendChild(card);
+    });
     return;
   }
   let limitedChars=CHARS.filter(function(cc){return cc.shopSection==="limited";});
@@ -1699,7 +1709,9 @@ function saveProgress(){
       masteryProgress: masteryProgress,
       masteryUnlocked: masteryUnlocked,
       easterEggs: easterEggs,
-      shopOwned: shopOwned
+      coins: coins,
+      shopOwned: shopOwned,
+      dataVersion: 2
     }));
   }catch(e){}
 }
@@ -1712,7 +1724,9 @@ function loadProgress(){
     if(d.masteryProgress) Object.assign(masteryProgress, d.masteryProgress);
     if(d.masteryUnlocked) Object.assign(masteryUnlocked, d.masteryUnlocked);
     if(typeof d.easterEggs==="number") easterEggs=d.easterEggs;
+    if(typeof d.coins==="number") coins=d.coins;
     if(d.shopOwned) Object.assign(shopOwned, d.shopOwned);
+    if((d.dataVersion||0)<2){ shopOwned.Phantom=false; }
     updateEggDisplay();
   } catch(e){ console.warn("Failed to load progress", e); }
 }
@@ -1737,7 +1751,7 @@ function deleteProgress(){
     Object.keys(masteryProgress).forEach(k=>masteryProgress[k]=0);
     Object.keys(masteryUnlocked).forEach(k=>masteryUnlocked[k]=false);
     Object.keys(shopOwned).forEach(k=>shopOwned[k]=false);
-    easterEggs=0; updateEggDisplay();
+    easterEggs=0; coins=0; updateEggDisplay();
     if(btn){btn.innerText="\u2705 Progress Deleted!"; btn.style.background="#2a7a2a";}
     setTimeout(()=>{if(btn){btn.innerText="\U0001f5d1 Delete Progress"; btn.style.background="#6b2b2b";}},2000);
   }
@@ -1749,8 +1763,8 @@ let replayFrames=[];
 let replayRecording=false;
 let replayFrameCount=0;
 let replayBattleStart=0;
-const REPLAY_SKIP=3;         // record every 3rd frame (~20fps)
-const MAX_REPLAY_FRAMES=2400; // cap at 2400 frames (~2 min)
+const REPLAY_SKIP=3;
+const MAX_REPLAY_FRAMES=2400;
 let _replayTab='recent';
 
 function captureCubeState(cube){
@@ -1824,7 +1838,6 @@ function toggleFavorite(id){
     let all=[...loadReplayList(),...favs];
     let r=all.find(r=>r.id===id);
     if(!r)return;
-    // avoid dupes
     if(!favs.find(f=>f.id===id)) favs.unshift(r);
     try{localStorage.setItem('cubeBattle_favs',JSON.stringify(favs));}catch(e){}
   }
@@ -1876,7 +1889,6 @@ function renderReplayList(){
       <div class="rcard-btns">
         <button class="rbtn-watch" onclick="watchReplay(${r.id})">▶ Watch</button>
         <button class="${isFav?'rbtn-unfav':'rbtn-fav'}" onclick="toggleFavorite(${r.id})">${isFav?'★ Unfavorite':'☆ Favorite'}</button>
-        <button class="rbtn-post" onclick="postReplayToFeed(${r.id})">📤 Post</button>
       </div>
     `;
     list.appendChild(card);
@@ -1885,7 +1897,6 @@ function renderReplayList(){
 
 function watchReplay(id){
   let allReplays=[...loadReplayList(),...loadFavorites()];
-  // deduplicate
   let seen=new Set(),deduped=[];
   for(let r of allReplays){if(!seen.has(r.id)){seen.add(r.id);deduped.push(r);}}
   let replay=deduped.find(r=>r.id===id);
@@ -1930,9 +1941,7 @@ input[type=range]{width:260px;cursor:pointer;accent-color:#4a9eff}
 .sp:hover{background:#3a4a5a;color:#fff}
 .sp.on{background:#4a9eff;color:#fff;border-color:#4a9eff}
 #meta{font-size:11px;color:#556;margin-top:8px}
-/* canvas scaling wrapper */
 #c-wrap{display:inline-block;width:100%}
-/* mobile tweaks */
 @media(max-width:420px){
   h2{font-size:16px;margin:6px 0 2px}
   .subtitle{font-size:12px}
@@ -1970,7 +1979,12 @@ const frames=${frameJson};
 const canv=document.getElementById('c');
 const ctx=canv.getContext('2d');
 let curFrame=0,playing=true,speed=1;
-let lastTs=0,frameDur=50;
+let lastTs=0;
+
+// FIX 2: frameDur corrected to match actual recording interval.
+// Game records every 3rd frame at ~60fps => 3 * (1000/60) ≈ 50ms per frame.
+// Old value was 100ms which made replay play at half real speed.
+const frameDur=50;
 
 const scrub=document.getElementById('scrub');
 scrub.max=Math.max(0,frames.length-1);
@@ -1986,11 +2000,11 @@ function togglePlay(){
   playing=!playing;
   document.getElementById('btn-pp').innerText=playing?'⏸ Pause':'▶ Play';
   document.getElementById('btn-pp').style.background=playing?'#27ae60':'#2980b9';
-  if(playing) requestAnimationFrame(tick);
+  if(playing){lastTs=0;requestAnimationFrame(tick);}
 }
 
 function restartReplay(){
-  curFrame=0; playing=true;
+  curFrame=0; playing=true; lastTs=0;
   document.getElementById('btn-pp').innerText='⏸ Pause';
   document.getElementById('btn-pp').style.background='#27ae60';
   requestAnimationFrame(tick);
@@ -2004,31 +2018,37 @@ function scrubTo(v){
 
 function tick(ts){
   if(!playing) return;
-  if(!lastTs||ts-lastTs>=frameDur/speed){
-    lastTs=ts;
+  // FIX 2: correct speed multiplier — advance a frame when enough time has passed
+  // at 1x speed: advance every 50ms; at 2x: every 25ms; at 0.5x: every 100ms
+  let elapsed = lastTs ? (ts - lastTs) : 0;
+  lastTs = ts;
+  let framesToAdvance = elapsed > 0 ? Math.floor(elapsed / (frameDur / speed)) : 1;
+  // clamp so we don't skip too many frames at once
+  framesToAdvance = Math.max(1, Math.min(framesToAdvance, Math.ceil(speed) + 1));
+
+  curFrame += framesToAdvance;
+  if(curFrame >= frames.length){
+    curFrame = frames.length - 1;
     if(frames[curFrame]) drawFrame(frames[curFrame]);
-    scrub.value=curFrame;
-    document.getElementById('frame-info').innerText=(curFrame+1)+' / '+frames.length;
-    curFrame++;
-    if(curFrame>=frames.length){
-      curFrame=frames.length-1;
-      playing=false;
-      document.getElementById('btn-pp').innerText='▶ Play';
-      document.getElementById('btn-pp').style.background='#2980b9';
-      return;
-    }
+    scrub.value = curFrame;
+    document.getElementById('frame-info').innerText = (curFrame+1)+' / '+frames.length;
+    playing = false;
+    document.getElementById('btn-pp').innerText = '▶ Play';
+    document.getElementById('btn-pp').style.background = '#2980b9';
+    return;
   }
+  if(frames[curFrame]) drawFrame(frames[curFrame]);
+  scrub.value = curFrame;
+  document.getElementById('frame-info').innerText = (curFrame+1)+' / '+frames.length;
   requestAnimationFrame(tick);
 }
 
 function drawFrame(f){
   ctx.clearRect(0,0,360,360);
   ctx.fillStyle='#2a2a3a';ctx.fillRect(0,0,360,360);
-  // subtle grid
   ctx.strokeStyle='rgba(255,255,255,0.03)';ctx.lineWidth=1;
   for(let i=40;i<360;i+=40){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,360);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(360,i);ctx.stroke();}
 
-  // Hunter Eggs (EhEgg)
   for(let e of f.ehEg||[]){
     ctx.save();
     let pulse=0.5+0.5*Math.sin(Date.now()/180);
@@ -2040,7 +2060,6 @@ function drawFrame(f){
     ctx.beginPath();ctx.arc(e.x-2,e.y-3,2,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=1;ctx.restore();
   }
-  // Carrots (EhCarrot)
   for(let c of f.ehCar||[]){
     ctx.save();
     ctx.fillStyle="#e67e22";ctx.shadowColor="#e67e22";ctx.shadowBlur=8;
@@ -2052,7 +2071,6 @@ function drawFrame(f){
     ctx.restore();
   }
 
-  // Eggs
   for(let e of f.eg||[]){
     ctx.save();
     let pulse=e.prog>0.8?(0.5+0.5*Math.sin(Date.now()/70)):1;
@@ -2066,7 +2084,6 @@ function drawFrame(f){
     ctx.restore();
   }
 
-  // Clones
   for(let cl of f.cl||[]){
     ctx.save();ctx.globalAlpha=0.78;
     ctx.fillStyle=cl.c;ctx.fillRect(cl.x-cl.s/2,cl.y-cl.s/2,cl.s,cl.s);
@@ -2076,7 +2093,6 @@ function drawFrame(f){
     ctx.fillText('clone',cl.x,cl.y-cl.s/2-2);ctx.textAlign='left';
   }
 
-  // Hatchlings
   for(let h of f.ht||[]){
     if(h.t==='Stick'){
       let len=26,sx=h.x+Math.cos(h.angle)*len,sy=h.y+Math.sin(h.angle)*len;
@@ -2093,7 +2109,6 @@ function drawFrame(f){
     ctx.fillText(h.hp+'hp',h.x,h.y+4);ctx.textAlign='left';
   }
 
-  // Main cubes (player behind enemy)
   drawCubeR(f.p);
   drawCubeR(f.o);
 }
@@ -2102,7 +2117,6 @@ function drawCubeR(cb){
   if(!cb)return;
   ctx.setLineDash([]);
 
-  // Zigzag/trail
   if(cb.t==='Zigzag'&&cb.tr&&cb.tr.length>1){
     ctx.save();
     ctx.strokeStyle=cb.m?'rgba(255,215,0,0.5)':'rgba(0,255,153,0.5)';
@@ -2112,7 +2126,6 @@ function drawCubeR(cb){
     ctx.stroke();ctx.restore();
   }
 
-  // Swapper glow
   if(cb.swap){
     ctx.save();ctx.strokeStyle='rgba(255,111,0,0.9)';ctx.lineWidth=3;
     ctx.shadowColor='#ff6f00';ctx.shadowBlur=18;
@@ -2124,7 +2137,6 @@ function drawCubeR(cb){
     ctx.beginPath();ctx.arc(cb.x,cb.y,cb.s/2+14,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
 
-  // Stopper ring
   if(cb.stop){
     ctx.save();ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.lineWidth=4;
     ctx.shadowColor='#fff';ctx.shadowBlur=20;
@@ -2133,7 +2145,6 @@ function drawCubeR(cb){
     ctx.fillText('STOP',cb.x,cb.y+4);ctx.textAlign='left';ctx.restore();
   }
 
-  // Predictor ring
   if(cb.t==='Predictor'){
     ctx.save();
     if(cb.pm==='scared'){
@@ -2150,7 +2161,6 @@ function drawCubeR(cb){
     ctx.textAlign='left';ctx.restore();
   }
 
-  // Evolver stage label
   if(cb.t==='Evolver'){
     let stageColors=['','#43a047','#7cb342','#f9a825','#e64a19','#b71c1c'];
     cb.c=stageColors[cb.es]||cb.c;
@@ -2160,13 +2170,11 @@ function drawCubeR(cb){
     ctx.fillText(sl[cb.es],cb.x,cb.y-cb.s/2-18);ctx.textAlign='left';
   }
 
-  // Rebirth flash
   if(cb.t==='Rebirth'&&cb.rb){
     ctx.save();ctx.globalAlpha=0.45;ctx.fillStyle='#fff';
     ctx.beginPath();ctx.arc(cb.x,cb.y,cb.s*1.2,0,Math.PI*2);ctx.fill();ctx.restore();
   }
 
-  // Mastered glow + cube body
   if(cb.m){
     ctx.save();ctx.shadowColor='#ffd700';ctx.shadowBlur=16;
     ctx.fillStyle=cb.c;ctx.fillRect(cb.x-cb.s/2,cb.y-cb.s/2,cb.s,cb.s);ctx.restore();
@@ -2176,37 +2184,32 @@ function drawCubeR(cb){
     ctx.fillStyle=cb.c;ctx.fillRect(cb.x-cb.s/2,cb.y-cb.s/2,cb.s,cb.s);
   }
 
-  // Normal mastery shield bubble
   if(cb.t==='Normal'&&cb.m&&cb.ms>0){
     ctx.save();ctx.strokeStyle='rgba(255,215,0,0.85)';ctx.lineWidth=3;
     ctx.shadowColor='#ffd700';ctx.shadowBlur=10;
     ctx.beginPath();ctx.arc(cb.x,cb.y,cb.s/2+9,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
 
-  // Stick
   if(cb.t==='Stick'){
     let len=70,sx=cb.x+Math.cos(cb.angle)*len,sy=cb.y+Math.sin(cb.angle)*len;
     ctx.strokeStyle=cb.m?'#ffd700':'yellow';ctx.lineWidth=5;ctx.setLineDash([]);
     ctx.beginPath();ctx.moveTo(cb.x,cb.y);ctx.lineTo(sx,sy);ctx.stroke();
   }
 
-  // Shield arc
   if(cb.t==='Shield'){
     ctx.strokeStyle=cb.m?'#ffd700':'cyan';ctx.lineWidth=10;ctx.setLineDash([]);
     ctx.beginPath();ctx.arc(cb.x,cb.y,55,cb.angle-0.7,cb.angle+0.7);ctx.stroke();
   }
 
-  // Dash flash
   ctx.setLineDash([]);
   if(cb.da){ctx.strokeStyle='white';ctx.lineWidth=3;ctx.strokeRect(cb.x-cb.s/2,cb.y-cb.s/2,cb.s,cb.s);}
 
-  // HP label
   ctx.fillStyle='#fff';ctx.font='12px Arial';ctx.setLineDash([]);
   ctx.fillText((cb.m?'\\u2B50':'')+cb.t+' '+cb.hp,cb.x-22,cb.y-cb.s/2-5);
 }
 
-// Start playback
 if(frames.length>0){drawFrame(frames[0]);}
+lastTs=0;
 requestAnimationFrame(tick);
 <\/script>
 <script>
@@ -2236,7 +2239,6 @@ requestAnimationFrame(tick);
 
 loadProgress();
 
-// ── Mobile canvas scaling ──
 function scaleGame(){
   var cv=document.getElementById('c');
   var wrap=document.getElementById('game-wrap');
@@ -2256,291 +2258,6 @@ function scaleGame(){
 }
 window.addEventListener('resize',scaleGame);
 document.addEventListener('DOMContentLoaded',scaleGame);
-
-
-
-// ═══════════════════════════════════════
-//  SOCIAL FEED
-// ═══════════════════════════════════════
-const FEED_KEY = 'cubeBattleSocialFeed';
-function loadFeed(){ try{return JSON.parse(localStorage.getItem(FEED_KEY)||'[]');}catch(e){return[];} }
-function saveFeed(f){ try{localStorage.setItem(FEED_KEY,JSON.stringify(f));}catch(e){} }
-
-function postReplayToFeed(id){
-  let allReplays=[...loadReplayList(),...loadFavorites()];
-  let seen=new Set(),deduped=[];
-  for(let r of allReplays){if(!seen.has(r.id)){seen.add(r.id);deduped.push(r);}}
-  let replay=deduped.find(r=>r.id===id);
-  if(!replay){alert('Replay not found!');return;}
-  let feed=loadFeed();
-  if(feed.some(p=>p.replayId===id)){alert('Already posted to feed!');return;}
-  let caption=prompt('Add a caption (optional):')||'';
-  let post={
-    id:Date.now(),replayId:id,caption:caption.slice(0,120),
-    player:replay.player,enemy:replay.enemy,pm:replay.pm,em:replay.em,
-    result:replay.result,ts:replay.ts,dur:replay.dur,frames:replay.frames,
-    likes:0,liked:false,comments:[],postedAt:Date.now()
-  };
-  feed.unshift(post);
-  if(feed.length>50)feed=feed.slice(0,50);
-  saveFeed(feed);
-  alert('📢 Posted to Feed!');
-}
-
-let _feedObserver=null;
-let _feedAnimFrames={};
-let _feedCached=null;
-
-function openFeed(){
-  _feedCached=loadFeed();
-  renderFeed(_feedCached);
-  document.getElementById('feed-panel').classList.add('open');
-}
-
-function closeFeed(){
-  document.getElementById('feed-panel').classList.remove('open');
-  for(let id in _feedAnimFrames){cancelAnimationFrame(_feedAnimFrames[id]);}
-  _feedAnimFrames={};
-  if(_feedObserver){_feedObserver.disconnect();_feedObserver=null;}
-}
-
-function renderFeed(feed){
-  let scroll=document.getElementById('feed-scroll');
-  scroll.innerHTML='';
-  if(feed.length===0){
-    scroll.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#888;font-size:16px;text-align:center;padding:40px;flex-direction:column"><div style="font-size:48px;margin-bottom:16px">🎬</div>No posts yet!<br><br>Open <b>Replays</b>, play some battles,<br>then hit <b>📤 Post</b> to share!</div>';
-    return;
-  }
-  feed.forEach((post)=>{
-    let pName=(post.pm?'⭐':'')+post.player;
-    let eName=(post.em?'⭐':'')+post.enemy;
-    let resultEmoji=post.result==='player'?'🏆 Player Wins':post.result==='enemy'?'💀 Enemy Wins':'🤝 Tie';
-    let dateStr=new Date(post.postedAt).toLocaleDateString();
-    let cw=Math.min(window.innerWidth-20,340);
-    let ch=cw;
-    let div=document.createElement('div');
-    div.className='feed-post';
-    div.dataset.postId=post.id;
-    div.innerHTML=`
-      <div class="feed-canvas-wrap">
-        <canvas id="fc-${post.id}" width="${cw}" height="${ch}"></canvas>
-        <div class="feed-info">
-          <div class="feed-title">${pName} vs ${eName}</div>
-          <div class="feed-result">${resultEmoji} &middot; ${post.dur}s &middot; ${dateStr}</div>
-          ${post.caption?`<div class="feed-caption">"${escHtml(post.caption)}"</div>`:''}
-        </div>
-      </div>
-      <div class="feed-actions">
-        <button class="feed-action-btn${post.liked?' liked':''}" id="flike-${post.id}" onclick="toggleFeedLike(${post.id})">
-          ❤️<span id="flike-c-${post.id}">${post.likes}</span>
-        </button>
-        <button class="feed-action-btn" onclick="openComments(${post.id})">
-          💬<span id="fcmt-c-${post.id}">${post.comments.length}</span>
-        </button>
-      </div>
-      <div class="feed-hint">↕ Scroll for more</div>
-    `;
-    scroll.appendChild(div);
-  });
-  // IntersectionObserver to auto-play visible post
-  if(_feedObserver){_feedObserver.disconnect();}
-  _feedObserver=new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      let pid=parseInt(e.target.dataset.postId);
-      if(e.isIntersecting){startFeedReplay(pid);}
-      else{stopFeedReplay(pid);}
-    });
-  },{threshold:0.5});
-  scroll.querySelectorAll('.feed-post').forEach(el=>_feedObserver.observe(el));
-}
-
-const FEED_COLORS={Normal:'#c0392b',Ninja:'#2980b9',Stick:'#8B4513',Shield:'#00bcd4',Vampire:'#6a0dad',Zigzag:'#00ff99',Cloner:'#e91e63',Swapper:'#ff6f00',Stopper:'#9e9e9e',Predictor:'#ce93d8',Evolver:'#43a047',Rebirth:'#ff7043',EasterBunny:'#ff9fc5',EggHunter:'#e67e22'};
-
-function startFeedReplay(postId){
-  if(_feedAnimFrames[postId])return;
-  let post=_feedCached&&_feedCached.find(p=>p.id===postId);
-  if(!post||!post.frames||post.frames.length===0)return;
-  let canvas=document.getElementById('fc-'+postId);
-  if(!canvas)return;
-  let ctx=canvas.getContext('2d');
-  let frames=post.frames;
-  let fi=0,lastTime=0,msPerFrame=50;
-  function tick(ts){
-    if(ts-lastTime>=msPerFrame){
-      lastTime=ts;
-      drawFeedFrame(ctx,canvas.width,canvas.height,frames[fi]);
-      fi=(fi+1)%frames.length;
-    }
-    _feedAnimFrames[postId]=requestAnimationFrame(tick);
-  }
-  _feedAnimFrames[postId]=requestAnimationFrame(tick);
-}
-
-function stopFeedReplay(postId){
-  if(_feedAnimFrames[postId]){cancelAnimationFrame(_feedAnimFrames[postId]);delete _feedAnimFrames[postId];}
-}
-
-function drawFeedFrame(ctx,W,H,frame){
-  let scale=W/360;
-  ctx.save();
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='#4a9eff';ctx.lineWidth=1.5;ctx.strokeRect(1,1,W-2,H-2);
-  ctx.scale(scale,scale);
-  if(!frame){ctx.restore();return;}
-  function drawCube(f,color,mastered){
-    if(!f||f.hp<=0)return;
-    ctx.save();
-    if(mastered){ctx.shadowColor='#ffd700';ctx.shadowBlur=10;}
-    ctx.fillStyle=color;
-    ctx.fillRect(f.x-f.s/2,f.y-f.s/2,f.s,f.s);
-    ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=1;
-    ctx.strokeRect(f.x-f.s/2,f.y-f.s/2,f.s,f.s);
-    let bw=f.s*1.2,bh=4,bx=f.x-bw/2,by=f.y-f.s/2-8;
-    ctx.fillStyle='#222';ctx.fillRect(bx,by,bw,bh);
-    ctx.fillStyle=f.hp>5?'#27ae60':'#e74c3c';
-    ctx.fillRect(bx,by,bw*Math.max(0,Math.min(1,f.hp/10)),bh);
-    ctx.restore();
-  }
-  // EB eggs
-  if(frame.eg)frame.eg.forEach(e=>{
-    ctx.save();ctx.fillStyle='#ffe082';ctx.beginPath();
-    ctx.ellipse(e.x,e.y,7,9,0,0,Math.PI*2);ctx.fill();ctx.restore();
-  });
-  // EhEggs
-  if(frame.ehEg)frame.ehEg.forEach(e=>{
-    let bc=e.type==='speed'?'#2196f3':e.type==='strength'?'#e74c3c':e.type==='health'?'#4caf50':'#ff9800';
-    ctx.save();ctx.fillStyle=bc;ctx.beginPath();ctx.arc(e.x,e.y,8,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
-  });
-  // Carrots
-  if(frame.ehCar)frame.ehCar.forEach(c=>{
-    ctx.save();ctx.font='14px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('🥕',c.x,c.y);ctx.restore();
-  });
-  // Hatchlings
-  if(frame.ht)frame.ht.forEach(h=>{
-    if(!h||h.hp<=0)return;
-    ctx.save();ctx.fillStyle='#aaa';ctx.fillRect(h.x-h.s/2,h.y-h.s/2,h.s,h.s);ctx.restore();
-  });
-  // Clones
-  if(frame.cl)frame.cl.forEach(cl=>{
-    if(!cl||cl.hp<=0)return;
-    ctx.save();ctx.globalAlpha=0.65;ctx.fillStyle=FEED_COLORS[cl.t]||'#aaa';
-    ctx.fillRect(cl.x-cl.s/2,cl.y-cl.s/2,cl.s,cl.s);ctx.restore();
-  });
-  // Player & Enemy
-  drawCube(frame.p,FEED_COLORS[frame.pt]||'#c0392b',frame.pm);
-  drawCube(frame.o,FEED_COLORS[frame.ot]||'#2980b9',frame.om);
-  ctx.restore();
-}
-
-function toggleFeedLike(postId){
-  let feed=loadFeed();
-  let post=feed.find(p=>p.id===postId);
-  if(!post)return;
-  post.liked=!post.liked;
-  post.likes=Math.max(0,post.likes+(post.liked?1:-1));
-  saveFeed(feed);
-  if(_feedCached){let cp=_feedCached.find(p=>p.id===postId);if(cp){cp.liked=post.liked;cp.likes=post.likes;}}
-  let btn=document.getElementById('flike-'+postId);
-  let cnt=document.getElementById('flike-c-'+postId);
-  if(btn)btn.className='feed-action-btn'+(post.liked?' liked':'');
-  if(cnt)cnt.textContent=post.likes;
-}
-
-let _commentsPostId=null;
-
-function openComments(postId){
-  _commentsPostId=postId;
-  let feed=loadFeed();
-  let post=feed.find(p=>p.id===postId);
-  if(!post)return;
-  renderComments(post);
-  document.getElementById('comments-overlay').classList.add('open');
-}
-
-function closeComments(){
-  document.getElementById('comments-overlay').classList.remove('open');
-  _commentsPostId=null;
-}
-
-function renderComments(post){
-  let list=document.getElementById('comments-list');
-  let hdr=document.getElementById('comments-header-count');
-  if(hdr)hdr.textContent='💬 '+post.comments.length+' Comment'+(post.comments.length!==1?'s':'');
-  list.innerHTML='';
-  // update count badge in feed
-  let cntEl=document.getElementById('fcmt-c-'+post.id);
-  if(cntEl)cntEl.textContent=post.comments.length;
-  if(post.comments.length===0){
-    list.innerHTML='<div style="color:#888;font-size:13px;text-align:center;padding:20px">No comments yet — be first! 🎮</div>';
-    return;
-  }
-  post.comments.forEach(c=>{
-    let div=document.createElement('div');
-    div.className='comment-item';
-    div.innerHTML='<div>'+escHtml(c.text)+'</div><div class="comment-time">'+new Date(c.time).toLocaleString()+'</div>';
-    list.appendChild(div);
-  });
-}
-
-function submitComment(){
-  let input=document.getElementById('comment-input');
-  let text=input.value.trim();
-  if(!text)return;
-  if(hasProfanity(text)){
-    input.value='';
-    input.style.borderColor='#e74c3c';
-    input.placeholder='⚠️ No swearing allowed!';
-    setTimeout(()=>{input.placeholder='Add a comment...';input.style.borderColor='';},2500);
-    return;
-  }
-  let feed=loadFeed();
-  let post=feed.find(p=>p.id===_commentsPostId);
-  if(!post)return;
-  post.comments.push({id:Date.now(),text:text.slice(0,200),time:Date.now()});
-  saveFeed(feed);
-  if(_feedCached){let cp=_feedCached.find(p=>p.id===_commentsPostId);if(cp)cp.comments=post.comments;}
-  input.value='';
-  renderComments(post);
-}
-
-function escHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Profanity Filter ──────────────────────────────────────────────────────────
-const _BAD = ['fuck','fuk','fck','fvck','phuck','fucc','fuxk','shi','shit','sht','ass','arse','bitch','btch','cunt','cnt','dick','dik','piss','cock','pussy','pus5y','nigger','nigga','niga','nigg','bastard','slut','slt','whore','wh0re','twat','wanker','fag','faggot','dyke','retard','kys','kms','rape','raping','rapist','motherfucker','mofo','asshole','arsehole','bollocks','bugger','prick','tosser','bellend','knob','jackass','dipshit','dumbass','fuckface','bullshit','bullsh','horseshit','jizz','boner','cumshot'];
-
-function _normalize(s){
-  return s.toLowerCase()
-    .replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e')
-    .replace(/4/g,'a').replace(/5/g,'s').replace(/6/g,'g')
-    .replace(/7/g,'t').replace(/8/g,'b').replace(/9/g,'g')
-    .replace(/@/g,'a').replace(/\$/g,'s').replace(/!/g,'i')
-    .replace(/\+/g,'t').replace(/\|/g,'l').replace(/ph/g,'f')
-    .replace(/[^a-z]/g,'');
-}
-
-function hasProfanity(text){
-  let n=_normalize(text);
-  // also check without stripping spaces for multi-word
-  let n2=text.toLowerCase()
-    .replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e')
-    .replace(/4/g,'a').replace(/5/g,'s').replace(/6/g,'g')
-    .replace(/7/g,'t').replace(/8/g,'b').replace(/9/g,'g')
-    .replace(/@/g,'a').replace(/\$/g,'s').replace(/!/g,'i')
-    .replace(/\+/g,'t').replace(/\|/g,'l').replace(/ph/g,'f');
-  for(let w of _BAD){
-    if(n.includes(w))return true;
-    if(n2.includes(w))return true;
-    // spaced out letters: f u c k
-    let spaced=new RegExp(w.split('').join('[\s\-\.\*_~]*'));
-    if(spaced.test(n2))return true;
-  }
-  return false;
-}
 
 </script>
 </body>
