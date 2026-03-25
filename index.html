@@ -1602,6 +1602,7 @@ function buildReplayHTML(replay){
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Cube Battle Replay</title>
 <style>
 *{box-sizing:border-box}
@@ -1623,6 +1624,20 @@ input[type=range]{width:260px;cursor:pointer;accent-color:#4a9eff}
 .sp:hover{background:#3a4a5a;color:#fff}
 .sp.on{background:#4a9eff;color:#fff;border-color:#4a9eff}
 #meta{font-size:11px;color:#556;margin-top:8px}
+/* canvas scaling wrapper */
+#c-wrap{display:inline-block;width:100%}
+/* mobile tweaks */
+@media(max-width:420px){
+  h2{font-size:16px;margin:6px 0 2px}
+  .subtitle{font-size:12px}
+  #result{font-size:15px}
+  #controls button{padding:6px 10px;font-size:12px}
+  input[type=range]{width:90%;max-width:260px}
+  .speed-row{gap:5px}
+  .sp{padding:4px 9px;font-size:11px}
+  #meta{font-size:10px}
+  button[onclick="window.close()"]{font-size:11px;padding:5px 10px}
+}
 </style>
 </head>
 <body>
@@ -1630,7 +1645,7 @@ input[type=range]{width:260px;cursor:pointer;accent-color:#4a9eff}
 <h2>⚔️ Cube Battle Replay</h2>
 <div class="subtitle">${pName} <span style="color:#555">vs</span> ${eName}</div>
 <div id="result">${resultText}</div>
-<canvas id="c" width="360" height="360"></canvas>
+<div id="c-wrap"><canvas id="c" width="360" height="360"></canvas></div>
 <div id="controls">
   <button id="btn-pp" onclick="togglePlay()">⏸ Pause</button>
   <input type="range" id="scrub" min="0" value="0" oninput="scrubTo(this.value)">
@@ -1863,6 +1878,27 @@ function drawCubeR(cb){
 // Start playback
 if(frames.length>0){drawFrame(frames[0]);}
 requestAnimationFrame(tick);
+<\/script>
+<script>
+(function scaleReplay(){
+  var cv=document.getElementById('c');
+  var wrap=document.getElementById('c-wrap');
+  if(!cv||!wrap) return;
+  function doScale(){
+    var avail=Math.min(window.innerWidth-16,520);
+    if(avail<364){
+      var s=avail/360;
+      cv.style.transformOrigin='top center';
+      cv.style.transform='scale('+s+')';
+      wrap.style.height=(360*s)+'px';
+    } else {
+      cv.style.transform='';
+      wrap.style.height='';
+    }
+  }
+  doScale();
+  window.addEventListener('resize',doScale);
+})();
 <\/script>
 </body>
 </html>`;
