@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -215,14 +216,15 @@ let hatchlings=[];
 let easterEggs=0;
 let coins=0;
 let _ghostEchoes=[];
+let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={EasterBunny:false,EggHunter:false,Phantom:false};
+const shopOwned={EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false};
 let _shopTab="normal";
 
 // ===== MASTERY STATE =====
-const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Evolver:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0};
-const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Evolver:1,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30};
-const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Evolver:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false};
+const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Evolver:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0};
+const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Evolver:1,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50};
+const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Evolver:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -287,7 +289,12 @@ const CHARS=[
    desc:"Every 8s phases out for 3s: nearly invisible, 1.5× faster, deals 3 damage.",
    quest:"Deal 30 damage while phantom",
    masteryDesc:"Charges every 5s, lasts 5s, deals 4 damage. Leaves a glowing ghost echo decoy after each phase!",
-   shopCost:150, shopSection:"normal"},
+   shopCost:68, shopSection:"normal"},
+  {type:"Dragon", color:"#cc3300",
+   desc:"Breathes fire randomly! Fire burns enemies — 1 dmg every 0.5s for 3s.",
+   quest:"Deal 50 fire damage",
+   masteryDesc:"Fire auto-aims at the enemy! Gains wings and 1.5× speed boost.",
+   shopCost:70, shopSection:"normal"},
 ];
 
 function checkMasteries(){
@@ -311,7 +318,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":"#00ff99";
   this.lastHitByClone=false;
   // Swapper
   this.swapActive=false; this.lastSwap=Date.now()-15000; this.swapEnemy=null;
@@ -328,7 +335,11 @@ constructor(type,X,Y,mastered){
   this.ehBunnyExpires=0;
   this.ehBaseS=30;
   // 👻 Phantom
-  this.phantomActive=false; this.phantomTimer=Date.now()-6000; this.phantomDmgDealt=0;
+  this.phantomActive=false; this.phantomTimer=Date.now()-6000;
+  // 🐉 Dragon
+  this.dragonFireTimer=Date.now()-2000; this.dragonNextFire=1000+Math.random()*2000;
+  this.burningUntil=0; this.lastBurnTick=0;
+  if(type==="Dragon"&&this.mastered){this.vx*=1.5;this.vy*=1.5;}
   // Stopper
   this.stopActive=false; this.lastStop=Date.now()-8000; this.stopFlash=0;
   this.masteryBlockReady=false; this.lastMasteryBlock=Date.now()-13000;
@@ -598,6 +609,33 @@ draw(){
     x.save(); x.font="9px Arial"; x.textAlign="center";
     x.fillStyle="rgba(180,0,255,0.75)";
     x.fillText(_pEl>=_pCd?"👻 ready!":"👻 "+Math.max(0,(_pCd-_pEl)/1000).toFixed(1)+"s",this.x,this.y-this.s/2-20);
+
+  // 🐉 Dragon visuals
+  if(this.t==="Dragon"){
+    if(this.mastered){
+      x.save();
+      x.fillStyle="rgba(160,50,0,0.85)";
+      x.shadowColor="#ff4400"; x.shadowBlur=10;
+      // Left wing
+      x.beginPath();
+      x.moveTo(this.x-this.s/2,this.y-4);
+      x.lineTo(this.x-this.s/2-20,this.y-22);
+      x.lineTo(this.x-this.s/2-6,this.y+8);
+      x.closePath(); x.fill();
+      // Right wing
+      x.beginPath();
+      x.moveTo(this.x+this.s/2,this.y-4);
+      x.lineTo(this.x+this.s/2+20,this.y-22);
+      x.lineTo(this.x+this.s/2+6,this.y+8);
+      x.closePath(); x.fill();
+      x.restore();
+    }
+    let _dNow=Date.now(),_dEl=_dNow-this.dragonFireTimer;
+    x.save(); x.font="bold 9px Arial"; x.textAlign="center";
+    x.fillStyle="#ff6600";
+    x.fillText(_dEl>=this.dragonNextFire?"🔥 ready!":"🔥 "+Math.max(0,(this.dragonNextFire-_dEl)/1000).toFixed(1)+"s",this.x,this.y-this.s/2-20);
+    x.textAlign="left"; x.restore();
+  }
     x.textAlign="left"; x.restore();
   }
 
@@ -748,10 +786,10 @@ move(){
     }
     let _spCnt=this.ehBuffs.filter(b=>b.type==='speed').length;
     let _ehSpd=Math.min(3.0*Math.pow(2,_spCnt)*(this.ehBunnyMode?2:1),14);
-    let _tx=_ehTarget?_ehTarget.x:(_ehEnemy?_ehEnemy.x:this.x);
-    let _ty=_ehTarget?_ehTarget.y:(_ehEnemy?_ehEnemy.y:this.y);
-    let _dx=_tx-this.x,_dy=_ty-this.y,_dd=Math.sqrt(_dx*_dx+_dy*_dy)||1;
-    this.vx=(_dx/_dd)*_ehSpd; this.vy=(_dy/_dd)*_ehSpd;
+    if(_ehTarget){
+      let _dx=_ehTarget.x-this.x,_dy=_ehTarget.y-this.y,_dd=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+      this.vx=(_dx/_dd)*_ehSpd; this.vy=(_dy/_dd)*_ehSpd;
+    }
   }
 
   // 👻 Phantom phase activation
@@ -771,6 +809,27 @@ move(){
           _ghostEchoes.push({x:_pSelf.x,y:_pSelf.y,born:Date.now(),s:_pSelf.s,c:_pSelf.c});
         }
       }, _pDur);
+    }
+  }
+
+  // 🐉 Dragon fire breath
+  if(this.t==="Dragon"){
+    let _dFNow=Date.now();
+    if(_dFNow-this.dragonFireTimer>=this.dragonNextFire){
+      this.dragonFireTimer=_dFNow;
+      this.dragonNextFire=1000+Math.random()*2000;
+      let _dEnemy=(this===p)?o:p;
+      let _baseAngle;
+      if(this.mastered&&_dEnemy&&_dEnemy.hp>0){
+        _baseAngle=Math.atan2(_dEnemy.y-this.y,_dEnemy.x-this.x);
+      } else {
+        _baseAngle=Math.atan2(this.vy,this.vx)+(Math.random()-0.5)*Math.PI*1.5;
+      }
+      for(let _di=0;_di<8;_di++){
+        let _a=_baseAngle+(Math.random()-0.5)*(this.mastered?0.55:1.4);
+        let _spd=2.5+Math.random()*2;
+        dragonParticles.push({x:this.x,y:this.y,vx:Math.cos(_a)*_spd,vy:Math.sin(_a)*_spd,born:_dFNow,owner:this,r:5+Math.random()*3});
+      }
     }
   }
 
@@ -1359,7 +1418,7 @@ function handleCombat(a,b){
     if(a.t==="Predictor"&&a.mastered&&a.predMode==="predicting") dmg=2;
     if(a.t==="Evolver") dmg=a.evolveStage>=5?3:a.evolveStage>=3?2:1;
     if(a.t==="EggHunter"){let sc=a.ehBuffs.filter(b=>now<b.expires&&b.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
-    if(a.t==="Phantom"&&a.phantomActive){dmg=a.mastered?4:3;a.phantomDmgDealt=(a.phantomDmgDealt||0)+dmg;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,a.phantomDmgDealt);checkMasteries();}
+    if(a.t==="Phantom"&&a.phantomActive){dmg=a.mastered?4:3;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,(masteryProgress.Phantom||0)+dmg);checkMasteries();}
     applyDamage(b,a,dmg); b.lastHit=now;
     if(a.t==="Predictor"&&a.predMode==="predicting"){a.predMode="scared";a.predTimer=now;a.predCooldown=1500+Math.random()*1000;}
   }
@@ -1368,7 +1427,7 @@ function handleCombat(a,b){
     if(b.t==="Predictor"&&b.mastered&&b.predMode==="predicting") dmg=2;
     if(b.t==="Evolver") dmg=b.evolveStage>=5?3:b.evolveStage>=3?2:1;
     if(b.t==="EggHunter"){let sc=b.ehBuffs.filter(b2=>now<b2.expires&&b2.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
-    if(b.t==="Phantom"&&b.phantomActive){dmg=b.mastered?4:3;b.phantomDmgDealt=(b.phantomDmgDealt||0)+dmg;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,b.phantomDmgDealt);checkMasteries();}
+    if(b.t==="Phantom"&&b.phantomActive){dmg=b.mastered?4:3;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,(masteryProgress.Phantom||0)+dmg);checkMasteries();}
     applyDamage(a,b,dmg); a.lastHit=now;
     if(b.t==="Predictor"&&b.predMode==="predicting"){b.predMode="scared";b.predTimer=now;b.predCooldown=1500+Math.random()*1000;}
   }
@@ -1411,6 +1470,51 @@ function processGhostEchoes(){
 }
 
 // ===== GAME LOOP =====
+function processDragonFire(){
+  let _dfNow=Date.now();
+  dragonParticles=dragonParticles.filter(function(fp){return _dfNow-fp.born<900;});
+  dragonParticles.forEach(function(fp){
+    fp.x+=fp.vx; fp.y+=fp.vy;
+    let _prog=(_dfNow-fp.born)/900;
+    x.save();
+    x.globalAlpha=(1-_prog)*0.88;
+    x.fillStyle=_prog<0.35?"#ffee00":_prog<0.65?"#ff6600":"#cc2200";
+    x.shadowColor="#ff5500"; x.shadowBlur=12;
+    x.beginPath(); x.arc(fp.x,fp.y,Math.max(1.5,fp.r*(1-_prog*0.5)),0,Math.PI*2); x.fill();
+    x.restore();
+    [p,o].forEach(function(cube){
+      if(!cube||cube===fp.owner||cube.hp<=0)return;
+      let _dx=fp.x-cube.x,_dy=fp.y-cube.y;
+      if(Math.sqrt(_dx*_dx+_dy*_dy)<cube.s/2+fp.r){
+        cube.burningUntil=Math.max(cube.burningUntil||0,_dfNow+3000);
+        if(!cube.lastBurnTick||cube.lastBurnTick===0) cube.lastBurnTick=_dfNow;
+      }
+    });
+  });
+  // Burning tick damage
+  [p,o].forEach(function(cube){
+    if(!cube||cube.hp<=0)return;
+    if(cube.burningUntil&&_dfNow<cube.burningUntil){
+      if(_dfNow-cube.lastBurnTick>=500){
+        cube.hp=Math.max(0,cube.hp-1);
+        cube.lastBurnTick=_dfNow;
+        let _fireOwner=cube===p?o:p;
+        if(_fireOwner&&_fireOwner.t==="Dragon"&&_fireOwner.hp>0){
+          masteryProgress.Dragon=Math.min(masteryGoals.Dragon,(masteryProgress.Dragon||0)+1);
+          checkMasteries();
+        }
+      }
+      // Burn glow on victim
+      x.save();
+      x.strokeStyle="rgba(255,120,0,0.65)"; x.lineWidth=2.5;
+      x.shadowColor="#ff4400"; x.shadowBlur=14;
+      x.beginPath(); x.arc(cube.x,cube.y,cube.s/2+7,0,Math.PI*2); x.stroke();
+      x.restore();
+    }
+  });
+}
+
+
 // FIX 1: Delta-time guard so the game runs at consistent speed on all displays
 // requestAnimationFrame fires at the display's refresh rate (60, 120, 144Hz, etc.)
 // Without this guard, cubes move faster on high-refresh screens.
@@ -1443,6 +1547,7 @@ function loop(ts){
   processHatchlings();
   p.draw(); o.draw();
   processGhostEchoes();
+  processDragonFire();
   if(p.hp<=0) checkRebirth(p);
   if(o.hp<=0) checkRebirth(o);
 
@@ -1451,7 +1556,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[];
     let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
     if(pWins&&selectedPlayer=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
     if(oWins&&selectedEnemy=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
@@ -1711,7 +1816,7 @@ function saveProgress(){
       easterEggs: easterEggs,
       coins: coins,
       shopOwned: shopOwned,
-      dataVersion: 2
+      dataVersion: 3
     }));
   }catch(e){}
 }
@@ -1727,6 +1832,7 @@ function loadProgress(){
     if(typeof d.coins==="number") coins=d.coins;
     if(d.shopOwned) Object.assign(shopOwned, d.shopOwned);
     if((d.dataVersion||0)<2){ shopOwned.Phantom=false; }
+    if((d.dataVersion||0)<3){ shopOwned.Dragon=false; }
     updateEggDisplay();
   } catch(e){ console.warn("Failed to load progress", e); }
 }
