@@ -153,7 +153,7 @@ canvas{touch-action:none}
   <button id="btn-shop" style="background:#ff69b4;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold" onclick="openShop()">🛒 Shop</button>
 </div>
 <div style="font-size:13px;margin:2px 0 4px"><span id="egg-display" style="color:#ffe082;font-size:14px;font-weight:bold"></span>
-  <button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🗑 Delete Progress</button></div>
+  <button onclick="_sfxMuted=!_sfxMuted;this.textContent=_sfxMuted?'🔇 Muted':'🔊 Sound'" style="background:#335;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🔊 Sound</button><button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🗑 Delete Progress</button></div>
 
 <!-- Character Picker -->
 <div id="modal">
@@ -204,6 +204,57 @@ canvas{touch-action:none}
 <div id="game-wrap"><canvas id="c" width="360" height="360"></canvas></div>
 
 <script>
+// ===== SFX ENGINE =====
+let _sfxCtx=null, _sfxMuted=false;
+function _sfxInit(){
+  if(!_sfxCtx)try{_sfxCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+}
+function _sfxPlay(fn){
+  if(_sfxMuted)return;
+  _sfxInit();
+  if(!_sfxCtx)return;
+  if(_sfxCtx.state==='suspended')_sfxCtx.resume();
+  try{fn(_sfxCtx);}catch(e){}
+}
+function _sfxBeep(type,freq,dur,vol,rampDown,delay){
+  rampDown=rampDown!==false; delay=delay||0;
+  _sfxPlay(ctx=>{
+    let o=ctx.createOscillator(),g=ctx.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,ctx.currentTime+delay);
+    if(rampDown)g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(ctx.currentTime+delay); o.stop(ctx.currentTime+delay+dur+0.05);
+  });
+}
+function _sfxNoise(dur,vol){
+  _sfxPlay(ctx=>{
+    let buf=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*dur),ctx.sampleRate);
+    let d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
+    let src=ctx.createBufferSource(),g=ctx.createGain();
+    g.gain.setValueAtTime(vol,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+    src.buffer=buf; src.connect(g); g.connect(ctx.destination);
+    src.start(); src.stop(ctx.currentTime+dur+0.05);
+  });
+}
+const SFX={
+  hit:()=>{ _sfxBeep('square',200,0.07,0.15); _sfxNoise(0.05,0.04); },
+  death:()=>{ [440,330,220,110].forEach((f,i)=>_sfxBeep('sawtooth',f,0.12,0.2,true,i*0.09)); },
+  win:()=>{ [523,659,784,1047].forEach((f,i)=>_sfxBeep('sine',f,0.15,0.22,true,i*0.1)); },
+  dragonFire:()=>{ _sfxNoise(0.35,0.2); _sfxBeep('sawtooth',90,0.28,0.1,true,0.05); },
+  eggCollect:()=>{ _sfxBeep('sine',880,0.1,0.2); _sfxBeep('sine',1100,0.1,0.18,true,0.08); _sfxBeep('sine',1320,0.12,0.2,true,0.15); },
+  phantomIn:()=>{ _sfxBeep('sine',600,0.25,0.13,true,0); _sfxBeep('sine',400,0.22,0.11,true,0.06); },
+  phantomOut:()=>{ _sfxBeep('sine',300,0.18,0.11); _sfxBeep('sine',500,0.14,0.09,true,0.06); },
+  buy:()=>{ _sfxBeep('sine',1046,0.07,0.18); _sfxBeep('sine',1318,0.07,0.18,true,0.07); _sfxBeep('sine',1568,0.1,0.22,true,0.13); },
+  battleStart:()=>{ [330,440,550,660].forEach((f,i)=>_sfxBeep('square',f,0.09,0.18,true,i*0.06)); },
+  ninjaDash:()=>{ _sfxBeep('square',500,0.04,0.18); _sfxBeep('square',700,0.03,0.15,true,0.04); _sfxNoise(0.06,0.07); },
+  eggHatch:()=>{ _sfxBeep('sine',660,0.08,0.2); _sfxBeep('sine',880,0.08,0.22,true,0.07); _sfxBeep('sine',1100,0.12,0.25,true,0.14); _sfxNoise(0.08,0.06); },
+};
+// ===== END SFX ENGINE =====
+
+
 let c=document.getElementById("c"),x=c.getContext("2d");
 let p=null,o=null,run=false;
 let selectedPlayer=null,selectedEnemy=null;
@@ -294,7 +345,7 @@ const CHARS=[
    desc:"Breathes fire randomly! Fire burns enemies — 1 dmg every 0.5s for 3s.",
    quest:"Deal 50 fire damage",
    masteryDesc:"Fire auto-aims at the enemy! Gains wings and 1.5× speed boost.",
-   shopCost:70, shopSection:"normal"},
+   shopCost:120, shopSection:"normal"},
 ];
 
 function checkMasteries(){
@@ -652,7 +703,7 @@ move(){
   if(this.t=="Ninja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
     let ninjaEnemy=(this===p)?o:(this===o)?p:null;
     if(ninjaEnemy&&checkStopField(ninjaEnemy)){ this.lastDash=Date.now(); return; }
-    this.dashActive=true; this.lastDash=Date.now();
+    this.dashActive=true; this.lastDash=Date.now(); SFX.ninjaDash();
     this.vx*=3; this.vy*=3;
     masteryProgress.Ninja=Math.min(masteryGoals.Ninja,(masteryProgress.Ninja||0)+1);
     checkMasteries();
@@ -798,12 +849,12 @@ move(){
     let _pDur=this.mastered?5000:3000;
     let _pNow=Date.now();
     if(!this.phantomActive&&_pNow-this.phantomTimer>=_pCd){
-      this.phantomActive=true; this.phantomTimer=_pNow;
+      this.phantomActive=true; this.phantomTimer=_pNow; SFX.phantomIn();
       this.vx*=1.5; this.vy*=1.5;
       let _pSelf=this;
       setTimeout(function(){
         if(_pSelf.hp<=0)return;
-        _pSelf.phantomActive=false; _pSelf.phantomTimer=Date.now();
+        _pSelf.phantomActive=false; _pSelf.phantomTimer=Date.now(); SFX.phantomOut();
         _pSelf.vx/=1.5; _pSelf.vy/=1.5;
         if(_pSelf.mastered){
           _ghostEchoes.push({x:_pSelf.x,y:_pSelf.y,born:Date.now(),s:_pSelf.s,c:_pSelf.c});
@@ -817,6 +868,7 @@ move(){
     let _dFNow=Date.now();
     if(_dFNow-this.dragonFireTimer>=this.dragonNextFire){
       this.dragonFireTimer=_dFNow;
+      SFX.dragonFire();
       this.dragonNextFire=1000+Math.random()*2000;
       let _dEnemy=(this===p)?o:p;
       let _baseAngle;
@@ -863,7 +915,7 @@ class Clone {
   move(){
     let at=this.abilType();
     if(at==="Ninja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
-      this.dashActive=true; this.lastDash=Date.now();
+      this.dashActive=true; this.lastDash=Date.now(); SFX.ninjaDash();
       this.vx*=3; this.vy*=3;
       setTimeout(()=>{ if(this.hp>0){this.vx/=3;this.vy/=3;} this.dashActive=false; },300);
     }
@@ -1079,7 +1131,7 @@ class EhCarrot{
   }
 }
 
-function applyEhEggBuff(hunter){
+function applyEhEggBuff(hunter){ SFX.eggCollect();
   let types=["size","speed","strength","health"];
   let type=types[Math.floor(Math.random()*types.length)];
   let dur=hunter.mastered?10000:5000;
@@ -1145,6 +1197,7 @@ function processEggs(){
     if(egg.shouldHatch()){
       egg.alive=false;
       let type=HATCH_TYPES[Math.floor(Math.random()*HATCH_TYPES.length)];
+      SFX.eggHatch();
       hatchlings.push(new Hatchling(type,egg.owner,eggEnemy));
       let side=egg.owner===p?selectedPlayer:selectedEnemy;
       if(side==="EasterBunny"){
@@ -1296,6 +1349,7 @@ function applyDamage(victim,attacker,amount){
     return false;
   }
   victim.hp-=amount;
+  SFX.hit();
   if(attacker) victim.lastHitByClone=false;
   if(victim.t==="Evolver") evolverHit(victim);
   if(victim.t==="Cloner"&&run){
@@ -1558,6 +1612,7 @@ function loop(ts){
     run=false;
     clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[];
     let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
+    if(pWins)SFX.win(); else SFX.death();
     if(pWins&&selectedPlayer=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
     if(oWins&&selectedEnemy=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
     if(pWins&&o.lastHitByClone&&selectedPlayer=="Cloner"){masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
@@ -1693,6 +1748,7 @@ function startOrRestart(){
     p=new Cube(selectedPlayer,80,180,playerMastered);
     o=new Cube(selectedEnemy,280,180,enemyMastered);
     run=true;
+    SFX.battleStart();
     document.getElementById("btn-start").innerText="⏹ Stop";
     requestAnimationFrame(loop);
   }
@@ -1746,6 +1802,7 @@ function updateShopContent(){
             if(coins>=chRef.shopCost){
               coins-=chRef.shopCost;
               shopOwned[chRef.type]=true;
+              SFX.buy();
               saveProgress();
               updateEggDisplay();
               updateShopContent();
@@ -1782,6 +1839,7 @@ function updateShopContent(){
           if(easterEggs>=chRef.shopCost){
             easterEggs-=chRef.shopCost;
             shopOwned[chRef.type]=true;
+            SFX.buy();
             saveProgress();
             updateEggDisplay();
             updateShopContent();
