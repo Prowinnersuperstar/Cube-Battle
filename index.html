@@ -1915,14 +1915,20 @@ function loop(ts){
       let _playerWon=o.hp<=0;
       if(_playerWon){
         let _bt=activeBossType||currentBossType;
+        console.log("[BossWin] Win detected! _bt="+_bt+" bossProgress="+JSON.stringify(bossProgress));
         if(_bt&&bossProgress[_bt]){
           bossProgress[_bt].wins=(bossProgress[_bt].wins||0)+1;
           if(bossProgress[_bt].wins>=3)bossProgress[_bt].owned=true;
+          saveBossProgress(); // dedicated save first
           saveProgress();
         } else if(_bt){ // boss type exists but not in bossProgress — add it
           bossProgress[_bt]={wins:1,owned:false};
+          saveBossProgress(); // dedicated save first
           saveProgress();
+        } else {
+          console.warn("[BossWin] WARNING: _bt is null/undefined! activeBossType="+activeBossType+" currentBossType="+currentBossType);
         }
+        saveBossProgress(); // extra dedicated save to be safe
         saveProgress(); // extra save to be safe
         activeBossType=null;
         SFX.win();
@@ -2656,6 +2662,12 @@ function confirmPartyFight(){
   requestAnimationFrame(loop);
 }
 
+function saveBossProgress(){
+  try{
+    localStorage.setItem("cubeBattle_bossProgress", JSON.stringify(bossProgress));
+    console.log("[BossWin] Saved bossProgress:", JSON.stringify(bossProgress));
+  }catch(e){ console.warn("[BossWin] saveBossProgress failed:",e); }
+}
 function saveProgress(){
   try{
     localStorage.setItem("cubeBattle_progress", JSON.stringify({
@@ -2667,6 +2679,7 @@ function saveProgress(){
       bossProgress: bossProgress,
       dataVersion: 6
     }));
+    saveBossProgress(); // always mirror boss progress to dedicated key
   }catch(e){}
 }
 
@@ -2687,6 +2700,23 @@ function loadProgress(){
     if((d.dataVersion||0)<6){ shopOwned.Gummy=false; shopOwned.CubeCubePrank=false; }
     updateEggDisplay();
   } catch(e){ console.warn("Failed to load progress", e); }
+  // Load dedicated boss progress key — always take higher wins
+  try{
+    let _braw=localStorage.getItem("cubeBattle_bossProgress");
+    if(_braw){
+      let _bd=JSON.parse(_braw);
+      for(let _bk in _bd){
+        if(bossProgress[_bk]){
+          // Take the HIGHER win count between main save and dedicated save
+          if((_bd[_bk].wins||0)>(bossProgress[_bk].wins||0)){
+            bossProgress[_bk].wins=_bd[_bk].wins;
+          }
+          if(_bd[_bk].owned) bossProgress[_bk].owned=true;
+        }
+      }
+      console.log("[BossWin] Loaded bossProgress:", JSON.stringify(bossProgress));
+    }
+  }catch(e){ console.warn("[BossWin] Failed to load dedicated boss progress", e); }
 }
 
 let _deleteStep=0, _deleteTimer=null;
