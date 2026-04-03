@@ -370,7 +370,7 @@ const BOSSES=[
    reward:"Conquer the darkness itself."},
 ];
 const bossProgress={CubeKing:{wins:0,owned:false},ShadowCube:{wins:0,owned:false}};
-let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null;
+let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBossType=null;
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
@@ -1914,12 +1914,16 @@ function loop(ts){
       clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];gummyPartner=null;window.bananaPeels=[];
       let _playerWon=o.hp<=0;
       if(_playerWon){
-        let _bt=currentBossType;
+        let _bt=activeBossType||currentBossType;
         if(_bt&&bossProgress[_bt]){
           bossProgress[_bt].wins=(bossProgress[_bt].wins||0)+1;
           if(bossProgress[_bt].wins>=3)bossProgress[_bt].owned=true;
           saveProgress();
+        } else if(_bt){ // boss type exists but not in bossProgress — add it
+          bossProgress[_bt]={wins:1,owned:false};
+          saveProgress();
         }
+        activeBossType=null;
         SFX.win();
         let _bdat2=BOSSES.find(function(b){return b.type===_bt;})||{label:"Boss",color:"#ffd700"};
         x.fillStyle="rgba(0,0,0,0.72)";x.fillRect(0,85,360,190);
@@ -2431,6 +2435,25 @@ function processGummyPartner(enemy,now){
     let _spd=Math.sqrt(gummyPartner.vx**2+gummyPartner.vy**2)||2.5;
     gummyPartner.vx=Math.cos(_a)*_spd; gummyPartner.vy=Math.sin(_a)*_spd;
   }
+  // Enemy damages the partner (partner can be hurt too)
+  if(enemy&&enemy.hp>0&&gummyPartner.hits(enemy)&&now-(gummyPartner.lastDmgTaken||0)>500){
+    let _eto=movingTowards(enemy,{x:gummyPartner.x,y:gummyPartner.y});
+    if(_eto){
+      gummyPartner.hp=Math.max(0,gummyPartner.hp-1);
+      gummyPartner.lastDmgTaken=now;
+      SFX.hit();
+      // Knock partner away from enemy
+      let _da=Math.atan2(gummyPartner.y-enemy.y,gummyPartner.x-enemy.x);
+      let _dspd=Math.sqrt(gummyPartner.vx**2+gummyPartner.vy**2)||2.5;
+      gummyPartner.vx=Math.cos(_da)*_dspd*1.2; gummyPartner.vy=Math.sin(_da)*_dspd*1.2;
+    }
+  }
+  // In boss mode, boss always moves toward partner - deal damage without direction check
+  if(enemy&&enemy.hp>0&&enemy._isBoss&&gummyPartner.hits(enemy)&&now-(gummyPartner.lastDmgTaken||0)>500){
+    gummyPartner.hp=Math.max(0,gummyPartner.hp-2); // boss hits harder
+    gummyPartner.lastDmgTaken=now;
+    SFX.hit();
+  }
   gummyPartner.draw();
 }
 
@@ -2624,6 +2647,7 @@ function confirmPartyFight(){
   // Build party with mastery info
   bossParty=_bossPartyPicked.map(function(t){return{type:t,mastered:!!masteryUnlocked[t]};});
   bossPartyIdx=0;
+  activeBossType=_savedBossType; // lock in boss type for win tracking
   // Start boss fight
   if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];gummyPartner=null;window.bananaPeels=[];}
   _lastLoopTs=0;
