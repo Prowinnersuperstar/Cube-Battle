@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -78,6 +79,54 @@ canvas{background:#333;margin:10px auto;display:block}
 .shop-cost{font-size:12px;color:#ffe082;margin-top:3px;font-weight:bold}
 #shop-close{padding:8px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
 #shop-close:hover{background:#666}
+/* Quest Panel */
+#quest-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:100;justify-content:center;align-items:center}
+#quest-panel.open{display:flex}
+#quest-box{background:#1a1a2e;border:2px solid #ffd700;border-radius:12px;padding:20px;width:340px;max-height:85vh;display:flex;flex-direction:column;gap:10px}
+#quest-box h3{margin:0;color:#ffd700;font-size:18px}
+#quest-list{overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.bq-row{background:#2a2a3e;border:2px solid #444;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.bq-row.owned{border-color:#ffd700;background:#2a2600}
+.bq-name{font-weight:bold;font-size:15px;color:#fff}
+.bq-sub{font-size:12px;color:#aaa;margin-top:2px}
+.bq-owned{color:#ffd700;font-size:13px;font-weight:bold;margin-top:3px}
+.bq-bar-wrap{height:6px;background:#333;border-radius:4px;overflow:hidden;margin-top:4px}
+.bq-bar{height:100%;background:#ffd700;border-radius:4px}
+#quest-close{padding:8px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
+#quest-close:hover{background:#666}
+/* Boss Selection Panel */
+#boss-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:100;justify-content:center;align-items:center}
+#boss-panel.open{display:flex}
+#boss-box{background:#1a0a0a;border:2px solid #f44336;border-radius:12px;padding:20px;width:340px;max-height:85vh;display:flex;flex-direction:column;gap:10px}
+#boss-box h3{margin:0;color:#f44336;font-size:18px}
+#boss-list{display:flex;flex-direction:column;gap:10px}
+.bcard{background:#2a1010;border:2px solid #554;border-radius:10px;padding:12px;cursor:pointer}
+.bcard:hover{background:#3a1818;border-color:#f44336}
+.bcard-name{font-size:15px;font-weight:bold;color:#fff}
+.bcard-desc{font-size:11px;color:#aaa;margin-top:3px}
+.bcard-wins{font-size:11px;color:#ffd700;margin-top:3px}
+#boss-close{padding:8px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
+#boss-close:hover{background:#666}
+/* Party Picker Panel */
+#party-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:101;justify-content:center;align-items:center}
+#party-panel.open{display:flex}
+#party-box{background:#181818;border:2px solid #f44336;border-radius:12px;padding:20px;width:340px;max-height:90vh;display:flex;flex-direction:column;gap:10px}
+#party-box h3{margin:0;color:#f44336;font-size:16px}
+#party-slots{display:flex;gap:8px;justify-content:center}
+.pslot{width:58px;height:58px;border-radius:10px;border:2px dashed #555;background:#222;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#555;text-align:center;overflow:hidden}
+.pslot.filled{border-style:solid}
+#party-cube-list{overflow-y:auto;display:flex;flex-direction:column;gap:7px;max-height:280px}
+.pccard{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:2px solid #444;background:#2a2a2a;cursor:pointer}
+.pccard:hover{background:#333}
+.pccard.psel{border-color:#ffd700;background:#2a2600}
+.pcicon{width:30px;height:30px;border-radius:6px;flex-shrink:0}
+.pcname{font-size:13px;font-weight:bold;color:#fff}
+.pcsub{font-size:10px;color:#888;margin-top:1px}
+#party-fight-btn{padding:10px;background:#555;border:none;border-radius:8px;color:#ccc;font-size:14px;font-weight:bold;width:100%;cursor:not-allowed}
+#party-fight-btn.ready{background:#27ae60;color:#fff;cursor:pointer}
+#party-fight-btn.ready:hover{background:#219a52}
+#party-cancel{padding:8px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;width:100%}
+#party-cancel:hover{background:#666}
 
 /* ===== REPLAY PANEL ===== */
 #replay-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:100;justify-content:center;align-items:center}
@@ -115,6 +164,7 @@ canvas{touch-action:none}
   #topbar button{padding:6px 9px;font-size:11px;border-radius:6px}
   #modal-box{width:92vw;padding:14px}
   #mastery-box,#shop-box{width:92vw;padding:14px}
+  #quest-box,#boss-box,#party-box{width:92vw;padding:14px}
   #replay-box{width:92vw;padding:14px}
   #btn-delete-progress{font-size:10px;padding:4px 8px}
 }
@@ -151,9 +201,45 @@ canvas{touch-action:none}
   <button id="btn-mastery" onclick="openMastery()">⭐ Masteries</button>
   <button id="btn-replay" onclick="openReplays()" style="background:#4a9eff;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">🎬 Replays</button>
   <button id="btn-shop" style="background:#ff69b4;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold" onclick="openShop()">🛒 Shop</button>
+  <button id="btn-quests" onclick="openQuests()" style="background:#b8860b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">📋 Quests</button>
+  <button id="btn-boss" onclick="openBossPanel()" style="background:#c0392b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">⚔️ Boss Fight</button>
 </div>
 <div style="font-size:13px;margin:2px 0 4px"><span id="egg-display" style="color:#ffe082;font-size:14px;font-weight:bold"></span>
   <button onclick="_sfxMuted=!_sfxMuted;this.textContent=_sfxMuted?'🔇 Muted':'🔊 Sound'" style="background:#335;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🔊 Sound</button><button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🗑 Delete Progress</button></div>
+
+<!-- Quest Panel -->
+<div id="quest-panel">
+  <div id="quest-box">
+    <h3>📋 Boss Quests</h3>
+    <div id="quest-list"></div>
+    <button id="quest-close" onclick="closeQuests()">Close</button>
+  </div>
+</div>
+
+<!-- Boss Selection Panel -->
+<div id="boss-panel">
+  <div id="boss-box">
+    <h3>⚔️ Boss Fight</h3>
+    <p style="margin:0;font-size:12px;color:#aaa">Defeat a boss 3 times to own it! Choose your 3-cube party.</p>
+    <div id="boss-list"></div>
+    <button id="boss-close" onclick="closeBossPanel()">Close</button>
+  </div>
+</div>
+
+<!-- Party Picker Panel -->
+<div id="party-panel">
+  <div id="party-box">
+    <h3 id="party-title">⚔️ Choose Your Party (3 cubes)</h3>
+    <div id="party-slots">
+      <div class="pslot" id="pslot-0">Empty</div>
+      <div class="pslot" id="pslot-1">Empty</div>
+      <div class="pslot" id="pslot-2">Empty</div>
+    </div>
+    <div id="party-cube-list"></div>
+    <button id="party-fight-btn" onclick="confirmPartyFight()">Fight! (pick 3)</button>
+    <button id="party-cancel" onclick="closePartyPanel()">Cancel</button>
+  </div>
+</div>
 
 <!-- Character Picker -->
 <div id="modal">
@@ -180,6 +266,7 @@ canvas{touch-action:none}
     <div class="shop-tabs">
       <button class="shop-tab active" id="tab-normal" onclick="switchShopTab('normal')">Normal</button>
       <button class="shop-tab" id="tab-limited" onclick="switchShopTab('limited')">&#x1F381; Limited</button>
+      <button class="shop-tab" id="tab-skins" onclick="switchShopTab('skins')">&#x1F3A8; Skins</button>
     </div>
     <div class="shop-content" id="shop-content"></div>
     <button id="shop-close" onclick="closeShop()">Close</button>
@@ -269,13 +356,27 @@ let coins=0;
 let _ghostEchoes=[];
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false};
+const shopOwned={EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false};
 let _shopTab="normal";
+let gummyPartner=null; // active partner half when Gummy has split
+
+// ===== BOSS FIGHT DATA =====
+const BOSSES=[
+  {type:"CubeKing",   label:"👑 Cube King",   color:"#ffd700",
+   desc:"The ruler of all cubes. Aggressive, hits hard.",
+   reward:"Prove you can dethrone royalty."},
+  {type:"ShadowCube", label:"🌙 Shadow Cube", color:"#9c27b0",
+   desc:"A dark phantom born from lost games. Relentless.",
+   reward:"Conquer the darkness itself."},
+];
+const bossProgress={CubeKing:{wins:0,owned:false},ShadowCube:{wins:0,owned:false}};
+let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null;
+let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Evolver:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0};
-const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Evolver:1,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50};
-const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Evolver:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false};
+const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0};
+const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40};
+const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -286,6 +387,9 @@ const CHARS=[
    desc:"Dashes every 3s at 3× speed for 0.3s.",
    quest:"Dash 20 times",
    masteryDesc:"Completely immune to damage while dashing"},
+  {type:"FocusedNinja", name:"Focused (Ninja)", color:"#1565c0",
+   desc:"Dashes toward the enemy every 3s, phasing through on contact.",
+   isSkin:true, baseCube:"Ninja", shopSection:"normal", shopCost:43},
   {type:"Stick",  color:"#8B4513",
    desc:"Spinning stick tip hits for 2 damage & knocks enemy.",
    quest:"Hit enemy with stick 10 times",
@@ -318,10 +422,7 @@ const CHARS=[
    desc:"AI-driven: Scared mode flees; Predicting mode charges. Switches based on risk analysis.",
    quest:"Win 3 matches as Predictor",
    masteryDesc:"During Predicting mode: moves 1.5x faster and deals 2 damage on contact"},
-  {type:"Evolver", color:"#43a047",
-   desc:"Evolves through 5 stages when hit. Each stage needs 1 more hit: 2,3,4,5. Gains HP/Attack/Size.",
-   quest:"Reach Stage 5 in a match",
-   masteryDesc:"Each stage requires 1 fewer hit to evolve"},
+  // Evolver removed (banned)
   {type:"Rebirth", color:"#ff7043",
    desc:"At death, rebirths as a smaller cube with 5 HP instead of losing.",
    quest:"Revive 5 times",
@@ -346,6 +447,19 @@ const CHARS=[
    quest:"Deal 50 fire damage",
    masteryDesc:"Fire auto-aims at the enemy! Gains wings and 1.5× speed boost.",
    shopCost:120, shopSection:"normal"},
+  {type:"CubeCube", color:"#E040FB",
+   desc:"Does absolutely nothing. Just vibes. 🎣",
+   quest:"Play 100 games with Cube Cube",
+   masteryDesc:"After mastery: randomly throws banana peels & does surprise long dashes!",
+   shopCost:0, shopSection:"limited"},
+  {type:"Gummy", color:"#4caf50",
+   desc:"A wobbly gummy cube! After 10s it splits into 2 smaller halves (8 HP each). If one half dies the other absorbs it and grows stronger, but loses the ability to split.",
+   quest:"Split 40 times",
+   masteryDesc:"When a half dies, the survivor gets a shield → when the shield is used, it splits again into 5 HP cubes. The true survivor earns a final shield (no more splits).",
+   shopCost:75, shopSection:"limited"},
+  {type:"CubeCubePrank", name:"CubeCube (Prank)", color:"#FF9800",
+   desc:"A chaotic CubeCube variant! Every 20s it spins and fires banana peels in all 8 directions. Enemies hit by a peel are stunned for 0.5s!",
+   isSkin:true, baseCube:"CubeCube", shopSection:"limited", shopCost:40},
 ];
 
 function checkMasteries(){
@@ -358,7 +472,7 @@ function checkMasteries(){
 // ===== CUBE CLASS =====
 class Cube{
 constructor(type,X,Y,mastered){
-  this.t=type;
+  this.t=type; this.n=(CHARS.find(function(ch){return ch.type===type;})||{}).name||type;
   this.mastered=!!mastered;
   this.hp=10;
   this.s=40;
@@ -368,8 +482,14 @@ constructor(type,X,Y,mastered){
   let ang=base+(Math.random()-0.5)*0.5;
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
-  this.dashActive=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":"#00ff99";
+  this.dashActive=false; this.dashThrough=false;
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:"#00ff99";
+  // Gummy state
+  this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
+  // Stun (used by CubeCubePrank banana peels)
+  this.stunUntil=0;
+  // CubeCubePrank peel timer
+  this.ccpLastPeel=Date.now();
   this.lastHitByClone=false;
   // Swapper
   this.swapActive=false; this.lastSwap=Date.now()-15000; this.swapEnemy=null;
@@ -690,9 +810,78 @@ draw(){
     x.textAlign="left"; x.restore();
   }
 
+  // 🍬 GUMMY visual — rounded jelly body + shine (drawn over base rect)
+  if(this.t==="Gummy"){
+    let _gs=this.s,_glx=this.x-_gs/2,_gly=this.y-_gs/2,_gr=_gs*0.28;
+    x.save();
+    x.fillStyle=this.c; x.shadowColor=this.c; x.shadowBlur=10;
+    x.beginPath();
+    x.moveTo(_glx+_gr,_gly); x.lineTo(_glx+_gs-_gr,_gly);
+    x.arcTo(_glx+_gs,_gly,_glx+_gs,_gly+_gr,_gr);
+    x.lineTo(_glx+_gs,_gly+_gs-_gr);
+    x.arcTo(_glx+_gs,_gly+_gs,_glx+_gs-_gr,_gly+_gs,_gr);
+    x.lineTo(_glx+_gr,_gly+_gs);
+    x.arcTo(_glx,_gly+_gs,_glx,_gly+_gs-_gr,_gr);
+    x.lineTo(_glx,_gly+_gr);
+    x.arcTo(_glx,_gly,_glx+_gr,_gly,_gr);
+    x.closePath(); x.fill();
+    // Glossy shine
+    x.globalAlpha=0.38; x.fillStyle="#ffffff";
+    x.beginPath(); x.ellipse(_glx+_gs*0.28,_gly+_gs*0.22,_gs*0.16,_gs*0.1,-0.4,0,Math.PI*2); x.fill();
+    x.globalAlpha=1; x.restore();
+    // Split state label
+    if(this.gummyState==="half"||this.gummyState==="survivor"||this.gummyState==="supersurvivor"){
+      x.save(); x.font="bold 9px Arial"; x.textAlign="center";
+      x.fillStyle=this.gummyState==="half"?"#aaffaa":this.gummyState==="survivor"?"#ffcc00":"#ff88ff";
+      x.fillText(this.gummyState==="half"?"🍬 Half":this.gummyState==="survivor"?"💪 Survivor":"💀 Last",this.x,this.y-this.s/2-28);
+      x.textAlign="left"; x.restore();
+    }
+    // Split countdown (only when whole)
+    if(this.gummyState==="whole"&&this.gummyCanSplit){
+      let _rem=Math.max(0,10000-(Date.now()-this.gummySplitTimer))/1000;
+      x.save(); x.font="9px Arial"; x.textAlign="center";
+      x.fillStyle="#aaffaa";
+      x.fillText(_rem<0.1?"✂ SPLIT!":"✂ "+_rem.toFixed(1)+"s",this.x,this.y-this.s/2-18);
+      x.textAlign="left"; x.restore();
+    }
+  }
+
+  // 🛡 Gummy shield ring
+  if(this.gummyShields>0){
+    x.save();
+    let _pulse=0.6+0.4*Math.sin(Date.now()/80);
+    x.strokeStyle="rgba(100,220,100,"+_pulse+")"; x.lineWidth=3;
+    x.shadowColor="#4caf50"; x.shadowBlur=14;
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+11,0,Math.PI*2); x.stroke();
+    x.fillStyle="#4caf50"; x.font="bold 10px Arial"; x.textAlign="center";
+    x.fillText("🛡".repeat(this.gummyShields),this.x,this.y+this.s/2+18);
+    x.textAlign="left"; x.restore();
+  }
+
+  // 💫 Stun ring
+  if(this.stunUntil&&Date.now()<this.stunUntil){
+    x.save();
+    let _sz=0.65+0.35*Math.sin(Date.now()/40);
+    x.strokeStyle="rgba(255,255,0,"+_sz+")"; x.lineWidth=3;
+    x.shadowColor="#ffff00"; x.shadowBlur=14;
+    x.beginPath(); x.arc(this.x,this.y,this.s/2+9,0,Math.PI*2); x.stroke();
+    x.font="bold 12px Arial"; x.textAlign="center"; x.fillStyle="#ffff00";
+    x.fillText("💫",this.x,this.y-this.s/2-14);
+    x.textAlign="left"; x.restore();
+  }
+
+  // 🎉 CubeCubePrank peel cooldown
+  if(this.t==="CubeCubePrank"){
+    let _ccpEl=Date.now()-(this.ccpLastPeel||Date.now()),_ccpCd=20000;
+    x.save(); x.font="9px Arial"; x.textAlign="center";
+    x.fillStyle="#FF9800";
+    x.fillText(_ccpEl>=_ccpCd?"🍌 SPIN!":"🍌 "+Math.max(0,(_ccpCd-_ccpEl)/1000).toFixed(1)+"s",this.x,this.y-this.s/2-18);
+    x.textAlign="left"; x.restore();
+  }
+
   // HP label
   x.fillStyle="#fff"; x.font="12px Arial";
-  x.fillText((this.mastered?"⭐":"")+this.t+" "+this.hp,this.x-22,this.y-this.s/2-5);
+  x.fillText((this.mastered?"⭐":"")+this.n+" "+this.hp,this.x-22,this.y-this.s/2-5);
 
   // Dash flash
   if(this.dashActive){ x.strokeStyle="white"; x.lineWidth=3; x.strokeRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s); }
@@ -705,9 +894,29 @@ move(){
     if(ninjaEnemy&&checkStopField(ninjaEnemy)){ this.lastDash=Date.now(); return; }
     this.dashActive=true; this.lastDash=Date.now(); SFX.ninjaDash();
     this.vx*=3; this.vy*=3;
-    masteryProgress.Ninja=Math.min(masteryGoals.Ninja,(masteryProgress.Ninja||0)+1);
+    if(!bossMode)masteryProgress.Ninja=Math.min(masteryGoals.Ninja,(masteryProgress.Ninja||0)+1);
     checkMasteries();
     setTimeout(()=>{ this.vx/=3; this.vy/=3; this.dashActive=false; },300);
+  }
+
+  // 🎯 Focused Ninja dash (toward enemy, phases through)
+  if(this.t=="FocusedNinja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
+    let fnEnemy=(this===p)?o:(this===o)?p:null;
+    if(!fnEnemy){ this.lastDash=Date.now(); }
+    else {
+      if(checkStopField(fnEnemy)){ this.lastDash=Date.now(); return; }
+      let dx=fnEnemy.x-this.x, dy=fnEnemy.y-this.y;
+      let dist=Math.sqrt(dx*dx+dy*dy)||1;
+      let spd=Math.sqrt(this.vx**2+this.vy**2)*3||7.5;
+      this.vx=(dx/dist)*spd; this.vy=(dy/dist)*spd;
+      this.dashActive=true; this.dashThrough=true; this.lastDash=Date.now(); SFX.ninjaDash();
+      setTimeout(()=>{
+        let s=Math.sqrt(this.vx**2+this.vy**2)||7.5;
+        let a=Math.atan2(this.vy,this.vx)+(Math.random()-0.5)*0.5;
+        this.vx=Math.cos(a)*(s/3); this.vy=Math.sin(a)*(s/3);
+        this.dashActive=false; this.dashThrough=false;
+      },300);
+    }
   }
 
   // Normal mastery: shield every 10s
@@ -885,6 +1094,8 @@ move(){
     }
   }
 
+  // 💫 Stun: freeze position but still bounce walls on stun-end
+  if(this.stunUntil && Date.now()<this.stunUntil){ return; }
   this.x+=this.vx; this.y+=this.vy;
   let half=this.s/2;
   if(this.x<=half){this.x=half;this.vx=Math.abs(this.vx);}
@@ -973,7 +1184,7 @@ class Clone {
 }
 
 // ===== EGG + HATCHLING SYSTEM =====
-const HATCH_TYPES=["Normal","Ninja","Stick","Shield","Vampire","Zigzag","Cloner","Stopper","Predictor","Evolver","Rebirth"];
+const HATCH_TYPES=["Normal","Ninja","Stick","Shield","Vampire","Zigzag","Cloner","Stopper","Predictor","Rebirth"];
 const CHAR_COLORS_MAP={Normal:"#c0392b",Ninja:"#2980b9",Stick:"#8B4513",Shield:"#00bcd4",Vampire:"#6a0dad",Zigzag:"#00ff99",Cloner:"#e91e63",Swapper:"#ff6f00",Stopper:"#9e9e9e",Predictor:"#ce93d8",Evolver:"#43a047",Rebirth:"#ff7043"};
 
 class Egg{
@@ -1144,7 +1355,7 @@ function applyEhEggBuff(hunter){ SFX.eggCollect();
   hunter.ehBuffs.push({type,expires:Date.now()+dur});
   let side=(hunter===p)?selectedPlayer:selectedEnemy;
   if(side==="EggHunter"){
-    masteryProgress.EggHunter=Math.min(masteryGoals.EggHunter,(masteryProgress.EggHunter||0)+1);
+    if(!bossMode)masteryProgress.EggHunter=Math.min(masteryGoals.EggHunter,(masteryProgress.EggHunter||0)+1);
     checkMasteries();
   }
 }
@@ -1201,7 +1412,7 @@ function processEggs(){
       hatchlings.push(new Hatchling(type,egg.owner,eggEnemy));
       let side=egg.owner===p?selectedPlayer:selectedEnemy;
       if(side==="EasterBunny"){
-        masteryProgress.EasterBunny=Math.min(masteryGoals.EasterBunny,(masteryProgress.EasterBunny||0)+1);
+        if(!bossMode)masteryProgress.EasterBunny=Math.min(masteryGoals.EasterBunny,(masteryProgress.EasterBunny||0)+1);
         checkMasteries();
       }
       x.save(); x.globalAlpha=0.5; x.fillStyle="#ffe082";
@@ -1309,14 +1520,14 @@ function hitsShieldArc(shield,px,py){
 function checkStopField(stopper){
   if(!stopper||stopper.t!=="Stopper") return false;
   if(stopper.stopActive){
-    masteryProgress.Stopper=Math.min(masteryGoals.Stopper,(masteryProgress.Stopper||0)+1);
+    if(!bossMode)masteryProgress.Stopper=Math.min(masteryGoals.Stopper,(masteryProgress.Stopper||0)+1);
     checkMasteries();
     return true;
   }
   if(stopper.mastered&&stopper.masteryBlockReady){
     stopper.masteryBlockReady=false;
     stopper.lastMasteryBlock=Date.now();
-    masteryProgress.Stopper=Math.min(masteryGoals.Stopper,(masteryProgress.Stopper||0)+1);
+    if(!bossMode)masteryProgress.Stopper=Math.min(masteryGoals.Stopper,(masteryProgress.Stopper||0)+1);
     checkMasteries();
     return true;
   }
@@ -1334,7 +1545,7 @@ function evolverHit(ev){
     let stageHP=[0,10,11,10,20,30];
     ev.hp=stageHP[ev.evolveStage];
     if(ev.evolveStage===4) ev.s=50;
-    if(ev.evolveStage===5){ ev.s=55; masteryProgress.Evolver=1; checkMasteries(); }
+    if(ev.evolveStage===5){ ev.s=55; if(!bossMode)masteryProgress.Evolver=1; checkMasteries(); }
     ev.evolveFlash=Date.now();
     let hw=ev.s/2+2;
     ev.x=Math.max(hw,Math.min(360-hw,ev.x));
@@ -1348,6 +1559,8 @@ function applyDamage(victim,attacker,amount){
     victim.masteryShield--;
     return false;
   }
+  // Gummy mastery shield check
+  if(victim.t==="Gummy"&&victim.mastered&&checkGummyShield(victim,Date.now())) return false;
   victim.hp-=amount;
   SFX.hit();
   if(attacker) victim.lastHitByClone=false;
@@ -1357,7 +1570,7 @@ function applyDamage(victim,attacker,amount){
     if(cloneEnemy) spawnClone(victim,cloneEnemy);
   }
   if(attacker&&attacker.t=="Normal"){
-    masteryProgress.Normal=Math.min(masteryGoals.Normal,(masteryProgress.Normal||0)+amount);
+    if(!bossMode)masteryProgress.Normal=Math.min(masteryGoals.Normal,(masteryProgress.Normal||0)+amount);
     checkMasteries();
   }
   return true;
@@ -1377,7 +1590,7 @@ function stickDamage(stick,enemy){
       let dmg=stick.mastered?3:2;
       let hit=applyDamage(enemy,stick,dmg);
       if(hit){
-        masteryProgress.Stick=Math.min(masteryGoals.Stick,(masteryProgress.Stick||0)+1);
+        if(!bossMode)masteryProgress.Stick=Math.min(masteryGoals.Stick,(masteryProgress.Stick||0)+1);
         checkMasteries();
       }
       enemy.lastHit=now;
@@ -1397,7 +1610,7 @@ function vampireDrain(vampire,enemy){
       let steal=Math.min(3,enemy.hp);
       enemy.hp-=steal; vampire.hp+=steal;
       vampire.drainActive=false; vampire.drainTarget=null;
-      masteryProgress.Vampire=Math.min(masteryGoals.Vampire,(masteryProgress.Vampire||0)+steal);
+      if(!bossMode)masteryProgress.Vampire=Math.min(masteryGoals.Vampire,(masteryProgress.Vampire||0)+steal);
       checkMasteries();
     },1000);
   }
@@ -1447,7 +1660,7 @@ function handleCombat(a,b){
       let dmg=b.mastered?2:1;
       applyDamage(a,null,dmg);
       a.lastHit=now;
-      masteryProgress.Shield=Math.min(masteryGoals.Shield,(masteryProgress.Shield||0)+1);
+      if(!bossMode)masteryProgress.Shield=Math.min(masteryGoals.Shield,(masteryProgress.Shield||0)+1);
       checkMasteries();
     }
     return;
@@ -1458,7 +1671,7 @@ function handleCombat(a,b){
       let dmg=a.mastered?2:1;
       applyDamage(b,null,dmg);
       b.lastHit=now;
-      masteryProgress.Shield=Math.min(masteryGoals.Shield,(masteryProgress.Shield||0)+1);
+      if(!bossMode)masteryProgress.Shield=Math.min(masteryGoals.Shield,(masteryProgress.Shield||0)+1);
       checkMasteries();
     }
     return;
@@ -1472,7 +1685,7 @@ function handleCombat(a,b){
     if(a.t==="Predictor"&&a.mastered&&a.predMode==="predicting") dmg=2;
     if(a.t==="Evolver") dmg=a.evolveStage>=5?3:a.evolveStage>=3?2:1;
     if(a.t==="EggHunter"){let sc=a.ehBuffs.filter(b=>now<b.expires&&b.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
-    if(a.t==="Phantom"&&a.phantomActive){dmg=a.mastered?4:3;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,(masteryProgress.Phantom||0)+dmg);checkMasteries();}
+    if(a.t==="Phantom"&&a.phantomActive){dmg=a.mastered?4:3;if(!bossMode)masteryProgress.Phantom=Math.min(masteryGoals.Phantom,(masteryProgress.Phantom||0)+dmg);checkMasteries();}
     applyDamage(b,a,dmg); b.lastHit=now;
     if(a.t==="Predictor"&&a.predMode==="predicting"){a.predMode="scared";a.predTimer=now;a.predCooldown=1500+Math.random()*1000;}
   }
@@ -1481,7 +1694,7 @@ function handleCombat(a,b){
     if(b.t==="Predictor"&&b.mastered&&b.predMode==="predicting") dmg=2;
     if(b.t==="Evolver") dmg=b.evolveStage>=5?3:b.evolveStage>=3?2:1;
     if(b.t==="EggHunter"){let sc=b.ehBuffs.filter(b2=>now<b2.expires&&b2.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
-    if(b.t==="Phantom"&&b.phantomActive){dmg=b.mastered?4:3;masteryProgress.Phantom=Math.min(masteryGoals.Phantom,(masteryProgress.Phantom||0)+dmg);checkMasteries();}
+    if(b.t==="Phantom"&&b.phantomActive){dmg=b.mastered?4:3;if(!bossMode)masteryProgress.Phantom=Math.min(masteryGoals.Phantom,(masteryProgress.Phantom||0)+dmg);checkMasteries();}
     applyDamage(a,b,dmg); a.lastHit=now;
     if(b.t==="Predictor"&&b.predMode==="predicting"){b.predMode="scared";b.predTimer=now;b.predCooldown=1500+Math.random()*1000;}
   }
@@ -1500,7 +1713,7 @@ function checkRebirth(cube){
   cube.y=Math.max(hw,Math.min(360-hw,cube.y));
   let side=(cube===p)?selectedPlayer:selectedEnemy;
   if(side==="Rebirth"){
-    masteryProgress.Rebirth=Math.min(masteryGoals.Rebirth,(masteryProgress.Rebirth||0)+1);
+    if(!bossMode)masteryProgress.Rebirth=Math.min(masteryGoals.Rebirth,(masteryProgress.Rebirth||0)+1);
     checkMasteries();
   }
   return true;
@@ -1554,7 +1767,7 @@ function processDragonFire(){
         cube.lastBurnTick=_dfNow;
         let _fireOwner=cube===p?o:p;
         if(_fireOwner&&_fireOwner.t==="Dragon"&&_fireOwner.hp>0){
-          masteryProgress.Dragon=Math.min(masteryGoals.Dragon,(masteryProgress.Dragon||0)+1);
+          if(!bossMode)masteryProgress.Dragon=Math.min(masteryGoals.Dragon,(masteryProgress.Dragon||0)+1);
           checkMasteries();
         }
       }
@@ -1588,7 +1801,27 @@ function loop(ts){
   captureFrame();
   x.clearRect(0,0,360,360);
   p.move(); o.move();
-  if(collide(p,o)){handleCombat(p,o);bounceOff(p,o);}
+  // Boss homing - slowly steers toward player
+  if(bossMode&&o&&p){
+    let _hx=p.x-o.x,_hy=p.y-o.y,_hd=Math.sqrt(_hx*_hx+_hy*_hy);
+    if(_hd>4){o.vx+=(_hx/_hd)*0.14;o.vy+=(_hy/_hd)*0.14;}
+    let _hs=Math.sqrt(o.vx*o.vx+o.vy*o.vy),_hmax=4.0;
+    if(_hs>_hmax){o.vx=(o.vx/_hs)*_hmax;o.vy=(o.vy/_hs)*_hmax;}
+  }
+  if(p.t==="CubeCube") updateCubeCubeAbilities(p,[o],c,Date.now());
+  if(o.t==="CubeCube") updateCubeCubeAbilities(o,[p],c,Date.now());
+  if(p.t==="CubeCubePrank") updateCubeCubePrankAbility(p,[o],c,Date.now());
+  if(o.t==="CubeCubePrank") updateCubeCubePrankAbility(o,[p],c,Date.now());
+  if(p.t==="Gummy") updateGummyCubeAbility(p,o,Date.now());
+  if(o.t==="Gummy") updateGummyCubeAbility(o,p,Date.now());
+  applyBananaPeels(p,Date.now()); applyBananaPeels(o,Date.now());
+  let _pHpPre=p.hp;
+  if(collide(p,o)){
+    handleCombat(p,o);
+    let _fnThrough=(p.t==="FocusedNinja"&&p.dashThrough)||(o.t==="FocusedNinja"&&o.dashThrough);
+    if(!_fnThrough) bounceOff(p,o);
+  }
+  if(bossMode&&p.hp<_pHpPre)p.hp=Math.max(0,p.hp-1);// boss deals +1 extra
   stickDamage(p,o); stickDamage(o,p);
   vampireDrain(p,o); vampireDrain(o,p);
   swapperAbility(p,o); swapperAbility(o,p);
@@ -1600,12 +1833,121 @@ function loop(ts){
   processEhCarrots();
   processHatchlings();
   p.draw(); o.draw();
+  // Boss HUD overlay
+  if(bossMode&&o&&p){
+    let _bdat=BOSSES.find(function(b){return b.type===currentBossType;})||{label:"Boss",color:"#f44336"};
+    x.save();
+    // Boss HP bar (above boss)
+    let _bhp=Math.max(0,o.hp),_bmax=35,_bpct=_bhp/_bmax;
+    let _bw=72,_bx2=o.x-36,_by2=o.y-o.s/2-20;
+    x.fillStyle="#111";x.fillRect(_bx2,_by2,_bw,8);
+    x.fillStyle=_bpct>0.5?"#f44336":_bpct>0.25?"#ff9800":"#ffeb3b";
+    x.fillRect(_bx2,_by2,_bw*_bpct,8);
+    x.strokeStyle="rgba(255,255,255,0.5)";x.lineWidth=1;x.strokeRect(_bx2,_by2,_bw,8);
+    x.font="bold 10px Arial";x.textAlign="center";x.fillStyle=_bdat.color;
+    x.shadowColor=_bdat.color;x.shadowBlur=8;
+    x.fillText(_bdat.label+" ("+Math.ceil(_bhp)+" HP)",o.x,o.y-o.s/2-24);
+    // Boss glow border
+    x.shadowColor=_bdat.color;x.shadowBlur=18;
+    x.strokeStyle=_bdat.color;x.lineWidth=3;
+    x.strokeRect(o.x-o.s/2-4,o.y-o.s/2-4,o.s+8,o.s+8);
+    x.restore();
+    // Party HUD bottom-left
+    x.save();
+    x.font="bold 10px Arial";x.textAlign="left";x.fillStyle="#ccc";x.shadowBlur=0;
+    x.fillText("Party:",6,354);
+    for(let _pi=0;_pi<bossParty.length;_pi++){
+      let _pch=CHARS.find(function(cc){return cc.type===bossParty[_pi].type;});
+      x.globalAlpha=_pi<bossPartyIdx?0.22:1;
+      x.fillStyle=_pch?_pch.color:"#888";
+      x.fillRect(46+_pi*25,342,20,16);
+      if(_pi===bossPartyIdx){x.strokeStyle="#ffd700";x.lineWidth=2;x.strokeRect(46+_pi*25,342,20,16);}
+      x.globalAlpha=1;
+    }
+    x.restore();
+  }
+  // Process Gummy partner (after p/o drawn so partner draws on top)
+  if(p.t==="Gummy"&&gummyPartner&&gummyPartner.hp>0) processGummyPartner(o,Date.now());
+  if(o.t==="Gummy"&&gummyPartner&&gummyPartner.hp>0) processGummyPartner(p,Date.now());
+  // Partner absorption: if the main Gummy died but partner lives, partner takes over
+  if(p.t==="Gummy"&&p.hp<=0&&gummyPartner&&gummyPartner.hp>0){
+    // Partner becomes p
+    let _gpc=new Cube("Gummy",gummyPartner.x,gummyPartner.y,p.mastered);
+    _gpc.hp=gummyPartner.hp; _gpc.s=gummyPartner.s; _gpc.c=gummyPartner.c;
+    _gpc.gummyState="survivor"; _gpc.gummyCanSplit=false; _gpc.vx=gummyPartner.vx; _gpc.vy=gummyPartner.vy;
+    if(p.mastered) _gpc.gummyShields=1; // mastery: survivor gets a shield
+    gummyPartner=null; p=_gpc;
+  }
+  // Partner death: main Gummy grows, loses split
+  if(p.t==="Gummy"&&p.gummyState==="half"&&gummyPartner&&gummyPartner.hp<=0){
+    gummyPartner=null; p.s=Math.min(34,p.s+7); p.gummyState="survivor"; p.gummyCanSplit=false;
+    if(p.mastered) p.gummyShields=1;
+  }
   processGhostEchoes();
   processDragonFire();
+  drawBananaPeels(x,Date.now());
+  for(let _cb of [p,o]){
+    if(_cb.ccLabel&&Date.now()<_cb.ccLabelEnd){
+      let _lc=_cb.t==="CubeCubePrank"?"#FF9800":"#E040FB";
+      x.save();x.font="bold 13px sans-serif";x.fillStyle=_lc;x.textAlign="center";
+      x.fillText(_cb.ccLabel,_cb.x,_cb.y-_cb.s-8);x.restore();
+    }
+  }
   if(p.hp<=0) checkRebirth(p);
   if(o.hp<=0) checkRebirth(o);
 
   if(p.hp<=0||o.hp<=0){
+    // ===== BOSS MODE RESULT =====
+    if(bossMode){
+      if(p.hp<=0&&o.hp>0){
+        // Try next party member
+        bossPartyIdx++;
+        if(bossPartyIdx<bossParty.length){
+          clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];
+          let _np=bossParty[bossPartyIdx];
+          p=new Cube(_np.type,80,180,_np.mastered);
+          requestAnimationFrame(loop);return;
+        }
+      }
+      // Final result
+      bossMode=false;run=false;
+      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];gummyPartner=null;window.bananaPeels=[];
+      let _playerWon=o.hp<=0;
+      if(_playerWon){
+        let _bt=currentBossType;
+        if(_bt&&bossProgress[_bt]){
+          bossProgress[_bt].wins=(bossProgress[_bt].wins||0)+1;
+          if(bossProgress[_bt].wins>=3)bossProgress[_bt].owned=true;
+          saveProgress();
+        }
+        SFX.win();
+        let _bdat2=BOSSES.find(function(b){return b.type===_bt;})||{label:"Boss",color:"#ffd700"};
+        x.fillStyle="rgba(0,0,0,0.72)";x.fillRect(0,85,360,190);
+        x.fillStyle="#ffd700";x.font="bold 26px Arial";x.textAlign="center";
+        x.shadowColor="#ffd700";x.shadowBlur=12;
+        x.fillText("Boss Defeated! ??",180,150);
+        x.shadowBlur=0;
+        let _bw2=bossProgress[_bt].wins;
+        x.fillStyle="#fff";x.font="16px Arial";
+        x.fillText("Wins: "+_bw2+"/3",180,180);
+        if(_bw2>=3){x.fillStyle="#ffd700";x.font="bold 15px Arial";x.fillText("?? BOSS OWNED!",180,205);}
+        x.fillStyle="#aaa";x.font="12px Arial";
+        x.fillText("Check ?? Quests for progress!",180,228);
+        x.textAlign="left";x.shadowBlur=0;
+      } else {
+        SFX.death();
+        x.fillStyle="rgba(0,0,0,0.72)";x.fillRect(0,85,360,190);
+        x.fillStyle="#f44336";x.font="bold 26px Arial";x.textAlign="center";
+        x.fillText("Boss Wins! ??",180,150);
+        x.fillStyle="#aaa";x.font="13px Arial";
+        x.fillText("All 3 party cubes fell...",180,180);
+        x.fillText("Try a different party!",180,204);
+        x.textAlign="left";
+      }
+      document.getElementById("btn-start").innerText="▶ Start Battle";
+      return;
+    }
+    // ===== NORMAL GAME END =====
     let _replayResult=p.hp<=0&&o.hp<=0?'tie':p.hp>0?'player':'enemy';
     replayRecording=false;
     saveReplayToStorage(_replayResult);
@@ -1613,14 +1955,15 @@ function loop(ts){
     clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[];
     let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
     if(pWins)SFX.win(); else SFX.death();
-    if(pWins&&selectedPlayer=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
-    if(oWins&&selectedEnemy=="Zigzag"){masteryProgress.Zigzag=1;checkMasteries();}
-    if(pWins&&o.lastHitByClone&&selectedPlayer=="Cloner"){masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
-    if(oWins&&p.lastHitByClone&&selectedEnemy=="Cloner"){masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
-    if(pWins&&p.swapActive&&selectedPlayer=="Swapper"){masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
-    if(oWins&&o.swapActive&&selectedEnemy=="Swapper"){masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
-    if(pWins&&selectedPlayer=="Predictor"){masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
-    if(oWins&&selectedEnemy=="Predictor"){masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
+    if(pWins&&selectedPlayer=="Zigzag"){if(!bossMode)masteryProgress.Zigzag=1;checkMasteries();}
+    if(selectedPlayer==="CubeCube"||selectedEnemy==="CubeCube"){if(!bossMode)masteryProgress.CubeCube=Math.min(masteryGoals.CubeCube,(masteryProgress.CubeCube||0)+1);checkMasteries();}
+    if(oWins&&selectedEnemy=="Zigzag"){if(!bossMode)masteryProgress.Zigzag=1;checkMasteries();}
+    if(pWins&&o.lastHitByClone&&selectedPlayer=="Cloner"){if(!bossMode)masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
+    if(oWins&&p.lastHitByClone&&selectedEnemy=="Cloner"){if(!bossMode)masteryProgress.Cloner=Math.min(masteryGoals.Cloner,(masteryProgress.Cloner||0)+1);checkMasteries();}
+    if(pWins&&p.swapActive&&selectedPlayer=="Swapper"){if(!bossMode)masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
+    if(oWins&&o.swapActive&&selectedEnemy=="Swapper"){if(!bossMode)masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
+    if(pWins&&selectedPlayer=="Predictor"){if(!bossMode)masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
+    if(oWins&&selectedEnemy=="Predictor"){if(!bossMode)masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
     x.fillStyle="rgba(0,0,0,0.6)"; x.fillRect(0,140,360,80);
     x.fillStyle="#fff"; x.font="bold 28px Arial"; x.textAlign="center";
     x.fillText(p.hp<=0&&o.hp<=0?"It's a Tie!":p.hp>0?"Player Wins! 🏆":"Enemy Wins! 🏆",180,190);
@@ -1654,14 +1997,24 @@ function openPicker(target){
 
     let card=document.createElement("div");
     card.className="char-card";
-    card.innerHTML=`
+    if(ch.isSkin){
+      card.innerHTML=`
       <div class="char-icon" style="background:${ch.color}"></div>
       <div class="char-info">
-        <div class="char-name">${ch.type}${curType===ch.type&&!curMastered?" ✓":""}</div>
+        <div class="char-name">${ch.name||ch.type}${curType===ch.type?" ✓":""} <span style="font-size:10px;color:#aaa;background:#333;padding:1px 4px;border-radius:4px">Skin</span></div>
+        <div class="char-desc">${ch.desc}</div>
+        <div class="char-quest" style="color:#888">🎯 Skin of: ${ch.baseCube} — No mastery</div>
+      </div>`;
+    } else {
+      card.innerHTML=`
+      <div class="char-icon" style="background:${ch.color}"></div>
+      <div class="char-info">
+        <div class="char-name">${ch.name||ch.type}${curType===ch.type&&!curMastered?" ✓":""}</div>
         <div class="char-desc">${ch.desc}</div>
         <div class="char-quest">📋 ${ch.quest} — ${prog}/${goal}</div>
         <div class="mini-bar-wrap"><div class="mini-bar" style="width:${pct}%"></div></div>
       </div>`;
+    }
     card.onclick=()=>pickChar(ch.type,false);
     list.appendChild(card);
 
@@ -1671,7 +2024,7 @@ function openPicker(target){
       mcard.innerHTML=`
         <div class="char-icon" style="background:${ch.color};outline:3px solid #ffd700"></div>
         <div class="char-info">
-          <div class="char-name" style="color:#ffd700">⭐ ${ch.type} Mastered${curType===ch.type&&curMastered?" ✓":""}</div>
+          <div class="char-name" style="color:#ffd700">⭐ ${ch.name||ch.type} Mastered${curType===ch.type&&curMastered?" ✓":""}</div>
           <div class="char-desc">${ch.desc}</div>
           <div class="char-mastery-desc">✨ ${ch.masteryDesc}</div>
         </div>`;
@@ -1704,7 +2057,7 @@ function updateInfo(){
 function openMastery(){
   let list=document.getElementById("mastery-list");
   list.innerHTML="";
-  CHARS.filter(ch=>!ch.shopSection||shopOwned[ch.type]).forEach(ch=>{
+  CHARS.filter(ch=>(!ch.shopSection||shopOwned[ch.type])&&!ch.isSkin).forEach(ch=>{
     let prog=Math.min(masteryProgress[ch.type],masteryGoals[ch.type]);
     let goal=masteryGoals[ch.type];
     let pct=Math.round((prog/goal)*100);
@@ -1714,7 +2067,7 @@ function openMastery(){
     row.innerHTML=`
       <div class="m-title">
         <div class="m-dot" style="background:${ch.color};${unlocked?"outline:2px solid #ffd700":""}"></div>
-        ${ch.type} ${unlocked?"<span style='color:#ffd700'>⭐ MASTERED</span>":""}
+        ${ch.name||ch.type} ${unlocked?"<span style='color:#ffd700'>⭐ MASTERED</span>":""}
       </div>
       <div class="m-quest">📋 ${ch.quest} — ${prog}/${goal}</div>
       <div class="m-bar-wrap"><div class="m-bar" style="width:${pct}%"></div></div>
@@ -1734,7 +2087,9 @@ function startOrRestart(){
     if(o){o.swapActive=false;o.swapBoostActive=false;o.swapEnemy=null;o.stopActive=false;o.masteryBlockReady=false;o.predMode="scared";o.predTimer=Date.now();}
     if(p){p.rebirthCount=0;p.rebirthFlash=0;}
     if(o){o.rebirthCount=0;o.rebirthFlash=0;}
+    bossMode=false;
     p=null; o=null; clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[];
+    gummyPartner=null; window.bananaPeels=[];
     x.clearRect(0,0,360,360);
     updateInfo();
     document.getElementById("btn-start").innerText="▶ Start Battle";
@@ -1773,6 +2128,7 @@ function switchShopTab(tab){
   _shopTab=tab;
   document.getElementById("tab-normal").className="shop-tab"+(tab==="normal"?" active":"");
   document.getElementById("tab-limited").className="shop-tab"+(tab==="limited"?" active":"");
+  document.getElementById("tab-skins").className="shop-tab"+(tab==="skins"?" active":"");
   updateShopContent();
 }
 function updateShopContent(){
@@ -1792,7 +2148,7 @@ function updateShopContent(){
       let icon=shopIcons[ch.type]||"\u{1F4E6}";
       card.innerHTML="<div class='shop-icon' style='background:"+ch.color+"'>"+icon+"</div>"
         +"<div class='shop-info'>"
-        +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+ch.type+"</div>"
+        +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+(ch.name||ch.type)+"</div>"
         +"<div class='shop-desc'>"+ch.desc+"</div>"
         +"<div class='shop-cost'>"+costTxt+"</div>"
         +"</div>";
@@ -1817,19 +2173,56 @@ function updateShopContent(){
     });
     return;
   }
+  if(_shopTab==="skins"){
+    let skinChars=CHARS.filter(function(cc){return cc.isSkin===true&&cc.shopSection!=="limited";});
+    if(!skinChars.length){cont.innerHTML="<p style='color:#666;font-size:13px;text-align:center;padding:20px'>No skins available yet.</p>";return;}
+    skinChars.forEach(function(ch){
+      let owned=shopOwned[ch.type]||false;
+      let canBuy=!owned&&coins>=ch.shopCost;
+      let card=document.createElement("div");
+      card.className="shop-card "+(owned?"owned":canBuy?"buyable":"");
+      let costTxt=owned?"\u2705 Owned!":"\u{1FA99} "+ch.shopCost+" Coins"+(!canBuy&&!owned?" (need more)":"");
+      let nameCol=owned?"#4caf50":ch.color;
+      card.innerHTML="<div class='shop-icon' style='background:"+ch.color+"'>\u{1F3A8}</div>"
+        +"<div class='shop-info'>"
+        +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+(ch.name||ch.type)+" <span style='font-size:10px;color:#aaa'>(Skin)</span></div>"
+        +"<div class='shop-desc'>\u{1F3AF} Skin of: "+ch.baseCube+"<br>"+ch.desc+"</div>"
+        +"<div class='shop-cost'>"+costTxt+"</div>"
+        +"</div>";
+      if(!owned){
+        (function(chRef){
+          card.onclick=function(){
+            if(coins>=chRef.shopCost){
+              coins-=chRef.shopCost;
+              shopOwned[chRef.type]=true;
+              SFX.buy();
+              saveProgress();
+              updateEggDisplay();
+              updateShopContent();
+              alert(chRef.type+" skin unlocked! Find it in the character picker.");
+            } else {
+              alert("Need "+chRef.shopCost+" coins! You have "+coins+".");
+            }
+          };
+        })(ch);
+      }
+      cont.appendChild(card);
+    });
+    return;
+  }
   let limitedChars=CHARS.filter(function(cc){return cc.shopSection==="limited";});
-  let shopIcons={EasterBunny:"\u{1F430}",EggHunter:"\u{1F95A}\u{1F3F9}"};
+  let shopIcons={EasterBunny:"\u{1F430}",EggHunter:"\u{1F95A}\u{1F3F9}",Gummy:"\u{1F36C}",CubeCubePrank:"\u{1F389}"};
   limitedChars.forEach(function(ch){
     let owned=shopOwned[ch.type]||false;
     let canBuy=!owned&&easterEggs>=ch.shopCost;
     let card=document.createElement("div");
     card.className="shop-card "+(owned?"owned":canBuy?"buyable":"");
-    let costTxt=owned?"\u2705 Owned!":"\u{1F95A} "+ch.shopCost+" Easter Eggs"+(!canBuy&&!owned?" (need more)":"");
+    let costTxt=owned?"\u2705 Owned!":(ch.shopCost===0?"\u{1F389} FREE!":"\u{1F95A} "+ch.shopCost+" Easter Eggs"+(!canBuy&&!owned?" (need more)":""));
     let nameCol=owned?"#4caf50":ch.color;
     let icon=shopIcons[ch.type]||"\u{1F381}";
     card.innerHTML="<div class='shop-icon' style='background:"+ch.color+"'>"+icon+"</div>"
       +"<div class='shop-info'>"
-      +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+ch.type+"</div>"
+      +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+(ch.name||ch.type)+"</div>"
       +"<div class='shop-desc'>"+ch.desc+"</div>"
       +"<div class='shop-cost'>"+costTxt+"</div>"
       +"</div>";
@@ -1837,7 +2230,7 @@ function updateShopContent(){
       (function(chRef){
         card.onclick=function(){
           if(easterEggs>=chRef.shopCost){
-            easterEggs-=chRef.shopCost;
+            if(chRef.shopCost>0) easterEggs-=chRef.shopCost;
             shopOwned[chRef.type]=true;
             SFX.buy();
             saveProgress();
@@ -1854,6 +2247,263 @@ function updateShopContent(){
   });
 }
 
+
+// ===== CUBE CUBE ABILITIES =====
+function updateCubeCubeAbilities(cube,enemies,canv,now){
+  if(!masteryUnlocked.CubeCube) return;
+  if(!cube.ccPeelTimer) cube.ccPeelTimer=now+6000+Math.random()*9000;
+  if(!cube.ccDashTimer)  cube.ccDashTimer=now+4000+Math.random()*6000;
+  if(cube.ccDashing===undefined) cube.ccDashing=false;
+  // Banana peel throw
+  if(now>=cube.ccPeelTimer){
+    cube.ccPeelTimer=now+6000+Math.random()*9000;
+    if(!window.bananaPeels) window.bananaPeels=[];
+    let count=1+(Math.random()<0.4?1:0);
+    for(let i=0;i<count;i++){
+      window.bananaPeels.push({x:40+Math.random()*(canv.width-80),y:40+Math.random()*(canv.height-80),born:now,life:10000});
+    }
+  }
+  // Prank dash
+  if(!cube.ccDashing&&now>=cube.ccDashTimer){
+    cube.ccDashTimer=now+4000+Math.random()*6000;
+    cube.ccDashing=true;
+    cube.ccDashEnd=now+600;
+    let spd=cube.s*5;
+    let ang=Math.random()*Math.PI*2;
+    cube.ccDashVx=Math.cos(ang)*spd;
+    cube.ccDashVy=Math.sin(ang)*spd;
+    cube.ccLabel="🎡 PRANK DASH!";
+    cube.ccLabelEnd=now+900;
+  }
+  if(cube.ccDashing){
+    if(now>=cube.ccDashEnd){cube.ccDashing=false;}
+    else{cube.vx=cube.ccDashVx;cube.vy=cube.ccDashVy;}
+  }
+}
+function applyBananaPeels(cube,now){
+  if(!window.bananaPeels) return;
+  window.bananaPeels=window.bananaPeels.filter(function(p){return now-p.born<p.life;});
+  for(let p of window.bananaPeels){
+    let dx=cube.x-p.x,dy=cube.y-p.y;
+    if(Math.sqrt(dx*dx+dy*dy)<cube.s+12){
+      if(p.stun){
+        // Prank peel: 0.5s stun + mild fling
+        cube.stunUntil=now+500;
+        let a=Math.random()*Math.PI*2;
+        cube.vx=Math.cos(a)*cube.s*1.5;
+        cube.vy=Math.sin(a)*cube.s*1.5;
+      } else {
+        // Normal CubeCube peel: fling
+        let a=Math.random()*Math.PI*2;
+        cube.vx=Math.cos(a)*cube.s*3;
+        cube.vy=Math.sin(a)*cube.s*3;
+      }
+      p.life=0;
+    }
+  }
+}
+function drawBananaPeels(ctx,now){
+  if(!window.bananaPeels) return;
+  ctx.font="18px serif";
+  for(let p of window.bananaPeels){
+    if(now-p.born<p.life) ctx.fillText("🍌",p.x-9,p.y+7);
+  }
+}
+// ===== CUBE CUBE (PRANK) ABILITY =====
+function updateCubeCubePrankAbility(cube,enemies,canv,now){
+  if(!cube.ccpLastPeel) cube.ccpLastPeel=now-15000; // fire first burst early
+  if(now-cube.ccpLastPeel>=20000){
+    cube.ccpLastPeel=now;
+    if(!window.bananaPeels) window.bananaPeels=[];
+    // Spinning 8-directional peels from cube's current position
+    let angles=[0,Math.PI/4,Math.PI/2,3*Math.PI/4,Math.PI,5*Math.PI/4,3*Math.PI/2,7*Math.PI/4];
+    let radius=65;
+    for(let a of angles){
+      let px=Math.max(20,Math.min(340,cube.x+Math.cos(a)*radius));
+      let py=Math.max(20,Math.min(340,cube.y+Math.sin(a)*radius));
+      window.bananaPeels.push({x:px,y:py,born:now,life:10000,stun:true});
+    }
+    cube.ccLabel="🎉 PRANK SPIN!";
+    cube.ccLabelEnd=now+1200;
+  }
+}
+
+// ===== GUMMY CUBE ABILITY =====
+function updateGummyCubeAbility(cube,enemy,now){
+  if(cube.gummyState!=="whole"||!cube.gummyCanSplit) return;
+  if(now-cube.gummySplitTimer<10000) return;
+  // --- SPLIT ---
+  cube.hp=Math.min(cube.hp,8); cube.s=26; cube.gummyState="half";
+  // Track mastery
+  if(!bossMode){masteryProgress.Gummy=Math.min(masteryGoals.Gummy,(masteryProgress.Gummy||0)+1);checkMasteries();}
+  // Spawn partner on opposite side of cube
+  let _ang=Math.atan2(cube.vy,cube.vx)+Math.PI;
+  let _px=Math.max(28,Math.min(332,cube.x+Math.cos(_ang)*40));
+  let _py=Math.max(28,Math.min(332,cube.y+Math.sin(_ang)*40));
+  gummyPartner={
+    x:_px, y:_py, vx:-cube.vx, vy:-cube.vy,
+    hp:8, s:26, c:cube.c,
+    stunUntil:0, gummyShields:0, gummyIsHalf:true,
+    angle:Math.random()*Math.PI*2,
+    lastHit:0,
+    hits:function(o){return Math.abs(this.x-o.x)<(this.s+o.s)/2&&Math.abs(this.y-o.y)<(this.s+o.s)/2;},
+    draw:function(){
+      let _gs=this.s,_glx=this.x-_gs/2,_gly=this.y-_gs/2,_gr=_gs*0.28;
+      x.save();
+      x.fillStyle=this.c; x.shadowColor=this.c; x.shadowBlur=8;
+      x.beginPath();
+      x.moveTo(_glx+_gr,_gly); x.lineTo(_glx+_gs-_gr,_gly);
+      x.arcTo(_glx+_gs,_gly,_glx+_gs,_gly+_gr,_gr);
+      x.lineTo(_glx+_gs,_gly+_gs-_gr);
+      x.arcTo(_glx+_gs,_gly+_gs,_glx+_gs-_gr,_gly+_gs,_gr);
+      x.lineTo(_glx+_gr,_gly+_gs);
+      x.arcTo(_glx,_gly+_gs,_glx,_gly+_gs-_gr,_gr);
+      x.lineTo(_glx,_gly+_gr);
+      x.arcTo(_glx,_gly,_glx+_gr,_gly,_gr);
+      x.closePath(); x.fill();
+      x.globalAlpha=0.38; x.fillStyle="#fff";
+      x.beginPath(); x.ellipse(_glx+_gs*0.28,_gly+_gs*0.22,_gs*0.16,_gs*0.1,-0.4,0,Math.PI*2); x.fill();
+      x.globalAlpha=1;
+      // Shield ring
+      if(this.gummyShields>0){
+        let _p=0.6+0.4*Math.sin(Date.now()/80);
+        x.strokeStyle="rgba(100,220,100,"+_p+")"; x.lineWidth=3;
+        x.shadowColor="#4caf50"; x.shadowBlur=14;
+        x.beginPath(); x.arc(this.x,this.y,this.s/2+11,0,Math.PI*2); x.stroke();
+      }
+      // Stun ring
+      if(this.stunUntil&&Date.now()<this.stunUntil){
+        let _sz=0.65+0.35*Math.sin(Date.now()/40);
+        x.strokeStyle="rgba(255,255,0,"+_sz+")"; x.lineWidth=3;
+        x.shadowColor="#ffff00"; x.shadowBlur=14;
+        x.beginPath(); x.arc(this.x,this.y,this.s/2+9,0,Math.PI*2); x.stroke();
+      }
+      x.fillStyle="#aaffaa"; x.font="bold 9px Arial"; x.textAlign="center";
+      x.fillText("🍬 Half "+this.hp,this.x,this.y-this.s/2-6);
+      x.textAlign="left";
+      x.restore();
+    },
+    move:function(enemy){
+      if(this.stunUntil&&Date.now()<this.stunUntil) return;
+      // Gentle homing toward enemy
+      if(enemy&&enemy.hp>0){
+        let _dx=enemy.x-this.x,_dy=enemy.y-this.y,_dd=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+        this.vx+=(_dx/_dd)*0.12; this.vy+=(_dy/_dd)*0.12;
+        let _spd=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+        if(_spd>3.5){this.vx=(this.vx/_spd)*3.5;this.vy=(this.vy/_spd)*3.5;}
+      }
+      this.x+=this.vx; this.y+=this.vy;
+      let _h=this.s/2;
+      if(this.x<=_h){this.x=_h;this.vx=Math.abs(this.vx);}
+      if(this.x>=360-_h){this.x=360-_h;this.vx=-Math.abs(this.vx);}
+      if(this.y<=_h){this.y=_h;this.vy=Math.abs(this.vy);}
+      if(this.y>=360-_h){this.y=360-_h;this.vy=-Math.abs(this.vy);}
+    }
+  };
+  SFX.hit(); // pop sound on split
+}
+
+// Process gummy partner: move, collide with enemy, apply banana peels, check death
+function processGummyPartner(enemy,now){
+  if(!gummyPartner||gummyPartner.hp<=0) return;
+  // Apply banana peels to partner
+  if(window.bananaPeels){
+    for(let _bp of window.bananaPeels){
+      if(_bp.life<=0) continue;
+      let _dx=gummyPartner.x-_bp.x,_dy=gummyPartner.y-_bp.y;
+      if(Math.sqrt(_dx*_dx+_dy*_dy)<gummyPartner.s+12){
+        if(_bp.stun){gummyPartner.stunUntil=now+500;}
+        let _a=Math.random()*Math.PI*2;
+        gummyPartner.vx=Math.cos(_a)*gummyPartner.s*(_bp.stun?1.5:3);
+        gummyPartner.vy=Math.sin(_a)*gummyPartner.s*(_bp.stun?1.5:3);
+        _bp.life=0;
+      }
+    }
+  }
+  gummyPartner.move(enemy);
+  // Collision with enemy
+  if(enemy&&enemy.hp>0&&gummyPartner.hits(enemy)&&now-gummyPartner.lastHit>500){
+    enemy.hp=Math.max(0,enemy.hp-1);
+    gummyPartner.lastHit=now;
+    SFX.hit();
+    // Rebound
+    let _a=Math.atan2(gummyPartner.y-enemy.y,gummyPartner.x-enemy.x);
+    let _spd=Math.sqrt(gummyPartner.vx**2+gummyPartner.vy**2)||2.5;
+    gummyPartner.vx=Math.cos(_a)*_spd; gummyPartner.vy=Math.sin(_a)*_spd;
+  }
+  gummyPartner.draw();
+}
+
+// Gummy shield check (called from applyDamage for Gummy cubes)
+function checkGummyShield(victim,now){
+  if(victim.gummyShields&&victim.gummyShields>0){
+    victim.gummyShields--;
+    SFX.hit();
+    // Trigger mastery re-split after shield breaks
+    if(victim.gummyState==="survivor"||victim.gummyState==="half"){
+      // Re-split into 5 HP supersurvivor halves
+      victim.hp=Math.min(victim.hp,5); victim.s=Math.max(18,victim.s-6); victim.gummyState="supersurvivor";
+      victim.gummyCanSplit=false;
+      if(!bossMode){masteryProgress.Gummy=Math.min(masteryGoals.Gummy,(masteryProgress.Gummy||0)+1);checkMasteries();}
+      // New partner at 5HP
+      if(gummyPartner===null||gummyPartner.hp<=0){
+        let _ang2=Math.random()*Math.PI*2;
+        gummyPartner={
+          x:Math.max(20,Math.min(340,victim.x+Math.cos(_ang2)*35)),
+          y:Math.max(20,Math.min(340,victim.y+Math.sin(_ang2)*35)),
+          vx:Math.cos(_ang2+Math.PI)*2.5, vy:Math.sin(_ang2+Math.PI)*2.5,
+          hp:5, s:18, c:victim.c,
+          stunUntil:0, gummyShields:0, gummyIsHalf:true,
+          angle:0, lastHit:0,
+          hits:function(o){return Math.abs(this.x-o.x)<(this.s+o.s)/2&&Math.abs(this.y-o.y)<(this.s+o.s)/2;},
+          draw:function(){
+            let _gs=this.s,_glx=this.x-_gs/2,_gly=this.y-_gs/2,_gr=_gs*0.28;
+            x.save(); x.fillStyle=this.c; x.shadowColor=this.c; x.shadowBlur=7;
+            x.beginPath();
+            x.moveTo(_glx+_gr,_gly); x.lineTo(_glx+_gs-_gr,_gly);
+            x.arcTo(_glx+_gs,_gly,_glx+_gs,_gly+_gr,_gr);
+            x.lineTo(_glx+_gs,_gly+_gs-_gr);
+            x.arcTo(_glx+_gs,_gly+_gs,_glx+_gs-_gr,_gly+_gs,_gr);
+            x.lineTo(_glx+_gr,_gly+_gs);
+            x.arcTo(_glx,_gly+_gs,_glx,_gly+_gs-_gr,_gr);
+            x.lineTo(_glx,_gly+_gr);
+            x.arcTo(_glx,_gly,_glx+_gr,_gly,_gr);
+            x.closePath(); x.fill();
+            x.globalAlpha=0.38; x.fillStyle="#fff";
+            x.beginPath(); x.ellipse(_glx+_gs*0.28,_gly+_gs*0.22,_gs*0.16,_gs*0.1,-0.4,0,Math.PI*2); x.fill();
+            x.globalAlpha=1;
+            if(this.gummyShields>0){
+              let _p2=0.6+0.4*Math.sin(Date.now()/80);
+              x.strokeStyle="rgba(100,220,100,"+_p2+")"; x.lineWidth=2.5;
+              x.beginPath(); x.arc(this.x,this.y,this.s/2+9,0,Math.PI*2); x.stroke();
+            }
+            x.fillStyle="#ffaaff"; x.font="bold 8px Arial"; x.textAlign="center";
+            x.fillText("💀 "+this.hp,this.x,this.y-this.s/2-5);
+            x.textAlign="left"; x.restore();
+          },
+          move:function(enemy){
+            if(this.stunUntil&&Date.now()<this.stunUntil) return;
+            if(enemy&&enemy.hp>0){
+              let _dx=enemy.x-this.x,_dy=enemy.y-this.y,_dd=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+              this.vx+=(_dx/_dd)*0.1; this.vy+=(_dy/_dd)*0.1;
+              let _spd=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+              if(_spd>3){this.vx=(this.vx/_spd)*3;this.vy=(this.vy/_spd)*3;}
+            }
+            this.x+=this.vx; this.y+=this.vy;
+            let _h=this.s/2;
+            if(this.x<=_h){this.x=_h;this.vx=Math.abs(this.vx);}
+            if(this.x>=360-_h){this.x=360-_h;this.vx=-Math.abs(this.vx);}
+            if(this.y<=_h){this.y=_h;this.vy=Math.abs(this.vy);}
+            if(this.y>=360-_h){this.y=360-_h;this.vy=-Math.abs(this.vy);}
+          }
+        };
+      }
+    }
+    return true; // shield blocked
+  }
+  return false;
+}
+
 // ===== AUTOPLAY =====
 function toggleAutoplay(){
   autoPlay=!autoPlay;
@@ -1866,6 +2516,133 @@ function toggleAutoplay(){
 }
 
 // ===== PROGRESS PERSISTENCE =====
+// ===== BOSS FIGHT FUNCTIONS =====
+function openQuests(){
+  let list=document.getElementById("quest-list");
+  list.innerHTML="";
+  BOSSES.forEach(function(b){
+    let bp=bossProgress[b.type]||{wins:0,owned:false};
+    let pct=Math.min(100,Math.round((bp.wins/3)*100));
+    let row=document.createElement("div");
+    row.className="bq-row"+(bp.owned?" owned":"");
+    row.innerHTML="<div class='bq-name' style='color:"+b.color+"'>"+b.label+"</div>"
+      +"<div class='bq-sub'>"+b.desc+"</div>"
+      +"<div class='bq-sub' style='color:#ccc'>Wins: "+bp.wins+"/3"+(!bp.owned?" — beat it "+(3-bp.wins)+" more time"+(3-bp.wins===1?"":"s")+"!":"")+"</div>"
+      +(bp.owned?"<div class='bq-owned'>👑 BOSS OWNED!</div>":"")
+      +"<div class='bq-bar-wrap'><div class='bq-bar' style='width:"+pct+"%'></div></div>";
+    list.appendChild(row);
+  });
+  document.getElementById("quest-panel").classList.add("open");
+}
+function closeQuests(){document.getElementById("quest-panel").classList.remove("open");}
+
+function openBossPanel(){
+  let list=document.getElementById("boss-list");
+  list.innerHTML="";
+  BOSSES.forEach(function(b){
+    let bp=bossProgress[b.type]||{wins:0,owned:false};
+    let card=document.createElement("div");
+    card.className="bcard";
+    card.innerHTML="<div class='bcard-name' style='color:"+b.color+"'>"+b.label+"</div>"
+      +"<div class='bcard-desc'>"+b.desc+"</div>"
+      +"<div class='bcard-wins'>Wins: "+bp.wins+"/3 "+(bp.owned?"👑 OWNED":"")+"</div>";
+    (function(bRef){card.onclick=function(){closeBossPanel();openPartyPanel(bRef.type);};})(b);
+    list.appendChild(card);
+  });
+  document.getElementById("boss-panel").classList.add("open");
+}
+function closeBossPanel(){document.getElementById("boss-panel").classList.remove("open");}
+
+function openPartyPanel(bossType){
+  currentBossType=bossType;
+  _bossPartyPicked=[];
+  let bData=BOSSES.find(b=>b.type===bossType)||{label:"Boss"};
+  document.getElementById("party-title").innerText="⚔️ Fight: "+bData.label+" — Pick 3 Cubes";
+  _renderPartySlots();
+  _renderPartyCubes();
+  document.getElementById("party-panel").classList.add("open");
+}
+function closePartyPanel(){document.getElementById("party-panel").classList.remove("open"); currentBossType=null;}
+
+function _renderPartySlots(){
+  for(let i=0;i<3;i++){
+    let slot=document.getElementById("pslot-"+i);
+    if(i<_bossPartyPicked.length){
+      let ch=CHARS.find(c=>c.type===_bossPartyPicked[i]);
+      let col=ch?ch.color:"#888";
+      slot.className="pslot filled";
+      slot.style.background=col;
+      slot.style.borderColor=col;
+      slot.innerHTML="<span style='color:#fff;font-weight:bold;font-size:11px'>"+_bossPartyPicked[i]+"</span>";
+    } else {
+      slot.className="pslot";
+      slot.style.background="#222";
+      slot.style.borderColor="#555";
+      slot.innerHTML="Empty";
+    }
+  }
+  let btn=document.getElementById("party-fight-btn");
+  if(_bossPartyPicked.length===3){
+    btn.className="ready";
+    btn.textContent="⚔️ Fight!";
+  } else {
+    btn.className="";
+    btn.textContent="Fight! (pick "+(3-_bossPartyPicked.length)+" more)";
+  }
+}
+
+function _renderPartyCubes(){
+  let clist=document.getElementById("party-cube-list");
+  clist.innerHTML="";
+  let available=CHARS.filter(function(ch){return !ch.shopSection||shopOwned[ch.type];});
+  available.forEach(function(ch){
+    let sel=_bossPartyPicked.indexOf(ch.type)!==-1;
+    let mastered=masteryUnlocked[ch.type];
+    let card=document.createElement("div");
+    card.className="pccard"+(sel?" psel":"");
+    card.innerHTML="<div class='pcicon' style='background:"+ch.color+(mastered?";outline:2px solid #ffd700":"")+"'></div>"
+      +"<div><div class='pcname'>"+(mastered?"⭐ ":"")+(ch.name||ch.type)+(sel?" ✓":"")+"</div>"
+      +"<div class='pcsub'>"+ch.desc.substring(0,50)+(ch.desc.length>50?"...":"")+"</div></div>";
+    (function(chRef){
+      card.onclick=function(){
+        let idx=_bossPartyPicked.indexOf(chRef.type);
+        if(idx!==-1){_bossPartyPicked.splice(idx,1);}
+        else if(_bossPartyPicked.length<3){_bossPartyPicked.push(chRef.type);}
+        _renderPartySlots();
+        _renderPartyCubes();
+      };
+    })(ch);
+    clist.appendChild(card);
+  });
+}
+
+function confirmPartyFight(){
+  if(_bossPartyPicked.length!==3)return;
+  let _savedBossType=currentBossType;
+  closePartyPanel();
+  currentBossType=_savedBossType;
+  // Build party with mastery info
+  bossParty=_bossPartyPicked.map(function(t){return{type:t,mastered:!!masteryUnlocked[t]};});
+  bossPartyIdx=0;
+  // Start boss fight
+  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];gummyPartner=null;window.bananaPeels=[];}
+  _lastLoopTs=0;
+  bossMode=true;
+  let bData=BOSSES.find(b=>b.type===currentBossType)||{color:"#f44336",label:"Boss"};
+  p=new Cube(bossParty[0].type,80,180,bossParty[0].mastered);
+  // Create boss as a Normal cube, then override stats
+  o=new Cube("Normal",280,180,false);
+  o.hp=35; o.s=58; o.c=bData.color;
+  // Boost boss speed ~1.5x
+  let _bs=Math.sqrt(o.vx*o.vx+o.vy*o.vy);
+  o.vx=(o.vx/_bs)*3.8; o.vy=(o.vy/_bs)*3.8;
+  o._isBoss=true;
+  run=true;
+  SFX.battleStart();
+  document.getElementById("btn-start").innerText="⏹ Stop";
+  requestAnimationFrame(loop);
+}
+
 function saveProgress(){
   try{
     localStorage.setItem("cubeBattle_progress", JSON.stringify({
@@ -1874,7 +2651,8 @@ function saveProgress(){
       easterEggs: easterEggs,
       coins: coins,
       shopOwned: shopOwned,
-      dataVersion: 3
+      bossProgress: bossProgress,
+      dataVersion: 6
     }));
   }catch(e){}
 }
@@ -1889,8 +2667,11 @@ function loadProgress(){
     if(typeof d.easterEggs==="number") easterEggs=d.easterEggs;
     if(typeof d.coins==="number") coins=d.coins;
     if(d.shopOwned) Object.assign(shopOwned, d.shopOwned);
+    if(d.bossProgress){for(let _bk in d.bossProgress){if(bossProgress[_bk])Object.assign(bossProgress[_bk],d.bossProgress[_bk]);}}
     if((d.dataVersion||0)<2){ shopOwned.Phantom=false; }
     if((d.dataVersion||0)<3){ shopOwned.Dragon=false; }
+    if((d.dataVersion||0)<5){ shopOwned.FocusedNinja=false; }
+    if((d.dataVersion||0)<6){ shopOwned.Gummy=false; shopOwned.CubeCubePrank=false; }
     updateEggDisplay();
   } catch(e){ console.warn("Failed to load progress", e); }
 }
@@ -1915,6 +2696,7 @@ function deleteProgress(){
     Object.keys(masteryProgress).forEach(k=>masteryProgress[k]=0);
     Object.keys(masteryUnlocked).forEach(k=>masteryUnlocked[k]=false);
     Object.keys(shopOwned).forEach(k=>shopOwned[k]=false);
+    Object.keys(bossProgress).forEach(k=>{bossProgress[k].wins=0;bossProgress[k].owned=false;});
     easterEggs=0; coins=0; updateEggDisplay();
     if(btn){btn.innerText="\u2705 Progress Deleted!"; btn.style.background="#2a7a2a";}
     setTimeout(()=>{if(btn){btn.innerText="\U0001f5d1 Delete Progress"; btn.style.background="#6b2b2b";}},2000);
