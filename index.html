@@ -460,6 +460,12 @@ const CHARS=[
   {type:"CubeCubePrank", name:"CubeCube (Prank)", color:"#FF9800",
    desc:"A chaotic CubeCube variant! Every 20s it spins and fires banana peels in all 8 directions. Enemies hit by a peel are stunned for 0.5s!",
    isSkin:true, baseCube:"CubeCube", shopSection:"limited", shopCost:40},
+  {type:"CubeKing", name:"\u{1F451} Cube King", color:"#ffd700",
+   desc:"The dethroned ruler. Hits for 2 damage every contact. Every 8s: unleashes a Royal Charge at 4\xd7 speed for 0.5s!",
+   bossUnlock:true, noMastery:true},
+  {type:"ShadowCube", name:"\u{1F319} Shadow Cube", color:"#9c27b0",
+   desc:"A dark phantom. Every 6s: Shadow Blink — teleports to a random spot on the arena and flashes invisible for 0.4s!",
+   bossUnlock:true, noMastery:true},
 ];
 
 function checkMasteries(){
@@ -474,6 +480,8 @@ class Cube{
 constructor(type,X,Y,mastered){
   this.t=type; this.n=(CHARS.find(function(ch){return ch.type===type;})||{}).name||type;
   this.mastered=!!mastered;
+  if(type==="CubeKing"){this._ckLastCharge=0;this._ckChargeActive=false;this._ckChargeTill=0;}
+  if(type==="ShadowCube"){this._scLastBlink=0;this._scInvisUntil=0;}
   this.hp=10;
   this.s=40;
   this.x=X; this.y=Y;
@@ -1682,6 +1690,7 @@ function handleCombat(a,b){
 
   if(aTo&&!aNearBStick&&now-b.lastHit>400){
     let dmg=1;
+    if(a.t==="CubeKing") dmg=2;
     if(a.t==="Predictor"&&a.mastered&&a.predMode==="predicting") dmg=2;
     if(a.t==="Evolver") dmg=a.evolveStage>=5?3:a.evolveStage>=3?2:1;
     if(a.t==="EggHunter"){let sc=a.ehBuffs.filter(b=>now<b.expires&&b.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
@@ -1691,6 +1700,7 @@ function handleCombat(a,b){
   }
   if(bTo&&!bNearAStick&&now-a.lastHit>400){
     let dmg=1;
+    if(b.t==="CubeKing") dmg=2;
     if(b.t==="Predictor"&&b.mastered&&b.predMode==="predicting") dmg=2;
     if(b.t==="Evolver") dmg=b.evolveStage>=5?3:b.evolveStage>=3?2:1;
     if(b.t==="EggHunter"){let sc=b.ehBuffs.filter(b2=>now<b2.expires&&b2.type==="strength").length;if(sc>0)dmg=Math.max(1,Math.round(dmg*Math.pow(2,sc)));}
@@ -1885,6 +1895,48 @@ function loop(ts){
   }
   processGhostEchoes();
   processDragonFire();
+  // ===== CUBEKING ROYAL CHARGE =====
+  [p,o].forEach(function(_ck){
+    if(!_ck||_ck.t!=="CubeKing")return;
+    let _now=Date.now();
+    if(_ck._ckChargeActive&&_now>=_ck._ckChargeTill){
+      _ck._ckChargeActive=false;
+      let _spd=Math.sqrt(_ck.vx*_ck.vx+_ck.vy*_ck.vy)||2.5;
+      _ck.vx*=(2.5/_spd); _ck.vy*=(2.5/_spd); // reset to normal speed
+    }
+    if(!_ck._ckChargeActive&&_now-_ck._ckLastCharge>8000){
+      _ck._ckLastCharge=_now; _ck._ckChargeActive=true;
+      _ck._ckChargeTill=_now+500;
+      let _target=(_ck===p)?o:p;
+      if(_target){
+        let _dx=_target.x-_ck.x,_dy=_target.y-_ck.y,_d=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+        _ck.vx=(_dx/_d)*12; _ck.vy=(_dy/_d)*12;
+      }
+    }
+    // Visual: gold glow during charge
+    if(_ck._ckChargeActive){
+      x.save();x.strokeStyle="#ffd700";x.lineWidth=3;x.shadowColor="#ffd700";x.shadowBlur=16;
+      x.strokeRect(_ck.x-_ck.s/2-3,_ck.y-_ck.s/2-3,_ck.s+6,_ck.s+6);x.restore();
+    }
+  });
+  // ===== SHADOWCUBE BLINK =====
+  [p,o].forEach(function(_sc){
+    if(!_sc||_sc.t!=="ShadowCube")return;
+    let _now=Date.now();
+    if(_now-_sc._scLastBlink>6000){
+      _sc._scLastBlink=_now; _sc._scInvisUntil=_now+400;
+      let _hw=_sc.s/2+4;
+      _sc.x=_hw+Math.random()*(360-_hw*2);
+      _sc.y=_hw+Math.random()*(360-_hw*2);
+    }
+    // Invisible flash during blink
+    if(_now<_sc._scInvisUntil){
+      x.save();x.globalAlpha=0.25;
+      x.fillStyle=_sc.c;x.fillRect(_sc.x-_sc.s/2,_sc.y-_sc.s/2,_sc.s,_sc.s);
+      x.globalAlpha=1;x.strokeStyle="#9c27b0";x.lineWidth=2;x.shadowColor="#9c27b0";x.shadowBlur=14;
+      x.strokeRect(_sc.x-_sc.s/2,_sc.y-_sc.s/2,_sc.s,_sc.s);x.restore();
+    }
+  });
   drawBananaPeels(x,Date.now());
   for(let _cb of [p,o]){
     if(_cb.ccLabel&&Date.now()<_cb.ccLabelEnd){
@@ -1998,7 +2050,7 @@ function openPicker(target){
   document.getElementById("modal-title").innerText=target==="player"?"Choose Your Fighter":"Choose Your Enemy";
   let list=document.getElementById("char-list");
   list.innerHTML="";
-  CHARS.filter(ch=>!ch.shopSection||shopOwned[ch.type]).forEach(ch=>{
+  CHARS.filter(ch=>(!ch.shopSection||shopOwned[ch.type])||(ch.bossUnlock&&bossProgress[ch.type]&&bossProgress[ch.type].owned)).forEach(ch=>{
     let unlocked=masteryUnlocked[ch.type];
     let curType=target==="player"?selectedPlayer:selectedEnemy;
     let curMastered=target==="player"?playerMastered:enemyMastered;
@@ -2008,6 +2060,18 @@ function openPicker(target){
 
     let card=document.createElement("div");
     card.className="char-card";
+    if(ch.bossUnlock){
+      card.innerHTML=`
+      <div class="char-icon" style="background:${ch.color};outline:3px solid ${ch.color};box-shadow:0 0 12px ${ch.color}88"></div>
+      <div class="char-info">
+        <div class="char-name" style="color:${ch.color}">${ch.name||ch.type}${curType===ch.type?" ✓":""} <span style="font-size:10px;color:#ffd700;background:#333;padding:1px 4px;border-radius:4px">👑 Boss Reward</span></div>
+        <div class="char-desc">${ch.desc}</div>
+        <div class="char-quest" style="color:#aaa">🏆 Unlocked by defeating this boss 3 times</div>
+      </div>`;
+      card.onclick=()=>pickChar(ch.type,false);
+      list.appendChild(card);
+      return;
+    }
     if(ch.isSkin){
       card.innerHTML=`
       <div class="char-icon" style="background:${ch.color}"></div>
@@ -2068,7 +2132,7 @@ function updateInfo(){
 function openMastery(){
   let list=document.getElementById("mastery-list");
   list.innerHTML="";
-  CHARS.filter(ch=>(!ch.shopSection||shopOwned[ch.type])&&!ch.isSkin).forEach(ch=>{
+  CHARS.filter(ch=>(!ch.shopSection||shopOwned[ch.type])&&!ch.isSkin&&!ch.bossUnlock).forEach(ch=>{
     let prog=Math.min(masteryProgress[ch.type],masteryGoals[ch.type]);
     let goal=masteryGoals[ch.type];
     let pct=Math.round((prog/goal)*100);
