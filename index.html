@@ -1923,6 +1923,7 @@ function loop(ts){
           bossProgress[_bt]={wins:1,owned:false};
           saveProgress();
         }
+        saveProgress(); // extra save to be safe
         activeBossType=null;
         SFX.win();
         let _bdat2=BOSSES.find(function(b){return b.type===_bt;})||{label:"Boss",color:"#ffd700"};
@@ -2435,24 +2436,11 @@ function processGummyPartner(enemy,now){
     let _spd=Math.sqrt(gummyPartner.vx**2+gummyPartner.vy**2)||2.5;
     gummyPartner.vx=Math.cos(_a)*_spd; gummyPartner.vy=Math.sin(_a)*_spd;
   }
-  // Enemy damages the partner (partner can be hurt too)
-  if(enemy&&enemy.hp>0&&gummyPartner.hits(enemy)&&now-(gummyPartner.lastDmgTaken||0)>500){
-    let _eto=movingTowards(enemy,{x:gummyPartner.x,y:gummyPartner.y});
-    if(_eto){
-      gummyPartner.hp=Math.max(0,gummyPartner.hp-1);
-      gummyPartner.lastDmgTaken=now;
-      SFX.hit();
-      // Knock partner away from enemy
-      let _da=Math.atan2(gummyPartner.y-enemy.y,gummyPartner.x-enemy.x);
-      let _dspd=Math.sqrt(gummyPartner.vx**2+gummyPartner.vy**2)||2.5;
-      gummyPartner.vx=Math.cos(_da)*_dspd*1.2; gummyPartner.vy=Math.sin(_da)*_dspd*1.2;
-    }
-  }
-  // In boss mode, boss always moves toward partner - deal damage without direction check
-  if(enemy&&enemy.hp>0&&enemy._isBoss&&gummyPartner.hits(enemy)&&now-(gummyPartner.lastDmgTaken||0)>500){
-    gummyPartner.hp=Math.max(0,gummyPartner.hp-2); // boss hits harder
-    gummyPartner.lastDmgTaken=now;
-    SFX.hit();
+  // Partner takes 1 damage per second (tick-based)
+  if(now-(gummyPartner.lastTickDmg||0)>=1000){
+    gummyPartner.hp=Math.max(0,gummyPartner.hp-1);
+    gummyPartner.lastTickDmg=now;
+    if(gummyPartner.hp>0) SFX.hit();
   }
   gummyPartner.draw();
 }
@@ -2578,6 +2566,7 @@ function closeBossPanel(){document.getElementById("boss-panel").classList.remove
 
 function openPartyPanel(bossType){
   currentBossType=bossType;
+  activeBossType=bossType; // lock in immediately so wins are never lost
   _bossPartyPicked=[];
   let bData=BOSSES.find(b=>b.type===bossType)||{label:"Boss"};
   document.getElementById("party-title").innerText="⚔️ Fight: "+bData.label+" — Pick 3 Cubes";
