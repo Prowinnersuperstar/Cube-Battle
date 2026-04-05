@@ -356,7 +356,7 @@ let coins=0;
 let _ghostEchoes=[];
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false};
+const shopOwned={EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false};
 let _shopTab="normal";
 let gummyPartner=null; // active partner half when Gummy has split
 let pandaLeaves=[];
@@ -384,9 +384,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Husky:0};
-const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Husky:25};
-const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false};
+const masteryProgress={Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Husky:0,ChaosCube:0};
+const masteryGoals={Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Husky:25,ChaosCube:15};
+const masteryUnlocked={Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -478,6 +478,11 @@ const CHARS=[
    desc:"A fierce tiger cube! Every 10s it goes transparent and surges at 1.5× speed for 5s — and dashes twice at random moments during the surge.",
    quest:"Activate 15 Tiger abilities",
    masteryDesc:"Speed surge increases to 2× and dashes become more powerful (4× speed)"},
+  {type:"ChaosCube", name:"🎲 Chaos Cube", color:"#ff5722",
+   shopSection:"limited", shopCurrency:"egg", cost:35,
+   desc:"Wildly unpredictable! Every 7–10s it borrows a random ability from another cube.",
+   quest:"Activate 15 chaos abilities",
+   masteryDesc:"Copies enhanced versions: bigger fire, longer phase, extra speed!"},
   {type:"Husky", color:"#607d8b",
    desc:"A husky-themed cube! Every 10s a 🦴 bone treat spawns — Husky locks on and chases it. Collect it to return to normal movement.",
    quest:"Collect 25 bones",
@@ -560,7 +565,8 @@ constructor(type,X,Y,mastered){
   this.masteryShield=0; this.lastMasteryShield=Date.now();
   // 🐯 Tiger
   this.tigerAbilityActive=false; this.tigerBaseSpd=null; this.tigerBreathActive=false;
-  this.huskyBoneTimer=Date.now()-9500; this.huskyAuraActive=false;
+  this.huskyBoneTimer=Date.now()-9500; this.huskyAuraActive=false; this.huskyShield=false;
+  this.chaosTimer=Date.now()+7000+Math.random()*3000; this.chaosPhase=false; this.chaosLabel=null; this.chaosLabelEnd=0;
 }
 
 draw(){
@@ -568,6 +574,7 @@ draw(){
   if(this.t==="Phantom"&&this.phantomActive){ x.save(); x.globalAlpha=0.13; }
   // 🐯 Tiger: go semi-transparent during ability
   if(this.t==="Tiger"&&this.tigerAbilityActive){ x.save(); x.globalAlpha=0.28; }
+  if(this.t==="ChaosCube"&&this.chaosPhase){ x.save(); x.globalAlpha=0.30; }
   // Mastery glow
   if(this.t!=="Panda"&&this.t!=="Tiger"&&this.t!=="Husky"){
     if(this.mastered){
@@ -593,6 +600,7 @@ draw(){
   }
   if(this.t==="Phantom"&&this.phantomActive){ x.restore(); }
   if(this.t==="Tiger"&&this.tigerAbilityActive){ x.restore(); }
+  if(this.t==="ChaosCube"&&this.chaosPhase){ x.restore(); }
 
   // Normal mastery shield bubble
   if(this.t=="Normal"&&this.mastered&&this.masteryShield>0){
@@ -1164,6 +1172,8 @@ move(){
   // 🐉 Dragon fire breath
   if(this.t==="Dragon"){
     let _dFNow=Date.now();
+    let _drStopE=(this===p)?o:p;
+    if(_drStopE&&(_drStopE.stopActive||(_drStopE.mastered&&_drStopE.masteryBlockReady))){this.dragonFireTimer=_dFNow;}
     if(_dFNow-this.dragonFireTimer>=this.dragonNextFire){
       this.dragonFireTimer=_dFNow;
       SFX.dragonFire();
@@ -1185,6 +1195,18 @@ move(){
 
   // 💫 Stun: freeze position but still bounce walls on stun-end
   if(this.stunUntil && Date.now()<this.stunUntil){ return; }
+  // 🎲 Chaos Cube ability
+  if(this.t==="ChaosCube"){
+    let _chNow=Date.now();
+    if(_chNow>=this.chaosTimer){
+      this.chaosTimer=_chNow+7000+Math.random()*3000;
+      let _chE=(this===p)?o:p;
+      if(!(_chE&&(_chE.stopActive||(_chE.mastered&&_chE.masteryBlockReady)))){
+        activateChaosAbility(this,_chE);
+      }
+    }
+  }
+
   // 🐶 Husky bone-chasing
   if(this.t==="Husky"){
     let _hNow=Date.now();
@@ -1199,7 +1221,7 @@ move(){
         return(!best||d<Math.hypot(best.x-this.x,best.y-this.y))?b:best;
       }.bind(this),null);
       if(_hTarget){
-        let _hSpd=this.mastered?3.5:3.0;
+        let _hSpd=this.mastered?5.5:4.5;
         let _hdx=_hTarget.x-this.x,_hdy=_hTarget.y-this.y;
         let _hdd=Math.sqrt(_hdx*_hdx+_hdy*_hdy)||1;
         this.vx=(_hdx/_hdd)*_hSpd; this.vy=(_hdy/_hdd)*_hSpd;
@@ -1489,6 +1511,83 @@ class HuskyBone{
   hits(cube){return Math.abs(this.x-cube.x)<(this.s/2+cube.s/2)&&Math.abs(this.y-cube.y)<(this.s/2+cube.s/2);}
 }
 
+// ===== CHAOS CUBE ABILITY =====
+function activateChaosAbility(cube,enemy){
+  if(!bossMode){
+    masteryProgress.ChaosCube=Math.min(masteryGoals.ChaosCube,(masteryProgress.ChaosCube||0)+1);
+    checkMasteries();
+  }
+  let M=cube.mastered;
+  let pool=["dash","breath","phase","surge","peel","blink","stop"];
+  let pick=pool[Math.floor(Math.random()*pool.length)];
+  cube.chaosLabelEnd=Date.now()+1400;
+
+  switch(pick){
+    case "dash":{
+      cube.chaosLabel="⚡ Ninja Dash!";
+      let _cs=Math.sqrt(cube.vx**2+cube.vy**2)||3;
+      let _ca=Math.atan2(cube.vy,cube.vx);
+      let _cm=M?4.5:3;
+      cube.vx=Math.cos(_ca)*_cs*_cm; cube.vy=Math.sin(_ca)*_cs*_cm;
+      setTimeout(()=>{let s=Math.sqrt(cube.vx**2+cube.vy**2)||1;let a=Math.atan2(cube.vy,cube.vx);cube.vx=Math.cos(a)*(s/_cm);cube.vy=Math.sin(a)*(s/_cm);},M?450:300);
+      break;
+    }
+    case "breath":{
+      cube.chaosLabel="🔥 Dragon Breath!";
+      let _ca2=Math.atan2(cube.vy,cube.vx)+(Math.random()-0.5)*Math.PI*(M?0.5:1.5);
+      if(enemy&&enemy.hp>0) _ca2=Math.atan2(enemy.y-cube.y,enemy.x-cube.x)+(Math.random()-0.5)*(M?0.4:1.2);
+      let _now2=Date.now();
+      for(let i=0;i<(M?12:8);i++){
+        let _da=_ca2+(Math.random()-0.5)*(M?0.55:1.4);
+        let _ds=2.5+Math.random()*2;
+        dragonParticles.push({x:cube.x,y:cube.y,vx:Math.cos(_da)*_ds,vy:Math.sin(_da)*_ds,born:_now2,owner:cube,r:5+Math.random()*3});
+      }
+      break;
+    }
+    case "phase":{
+      cube.chaosLabel="👻 Phase!";
+      cube.chaosPhase=true;
+      setTimeout(()=>{cube.chaosPhase=false;},M?3000:2000);
+      break;
+    }
+    case "surge":{
+      cube.chaosLabel="⚡ Speed Surge!";
+      let _sm=M?2.0:1.5;
+      let _css=Math.sqrt(cube.vx**2+cube.vy**2)||1;
+      let _csa=Math.atan2(cube.vy,cube.vx);
+      cube.vx=Math.cos(_csa)*_css*_sm; cube.vy=Math.sin(_csa)*_css*_sm;
+      setTimeout(()=>{
+        let _cs3=Math.sqrt(cube.vx**2+cube.vy**2)||1;
+        let _ca3=Math.atan2(cube.vy,cube.vx);
+        cube.vx=Math.cos(_ca3)*(_cs3/_sm);
+        cube.vy=Math.sin(_ca3)*(_cs3/_sm);
+      },M?4000:3000);
+      break;
+    }
+    case "peel":{
+      cube.chaosLabel="🍌 Banana Peel!";
+      if(!window.bananaPeels) window.bananaPeels=[];
+      let _cnt=M?3:2;
+      for(let i=0;i<_cnt;i++){
+        window.bananaPeels.push({x:40+Math.random()*280,y:40+Math.random()*280,born:Date.now(),life:10000});
+      }
+      break;
+    }
+    case "blink":{
+      cube.chaosLabel="✨ Blink!";
+      cube.x=30+Math.random()*300; cube.y=30+Math.random()*300;
+      if(M){ setTimeout(()=>{cube.x=30+Math.random()*300;cube.y=30+Math.random()*300;},400); }
+      break;
+    }
+    case "stop":{
+      cube.chaosLabel="🛑 Stop Field!";
+      cube.stopActive=true;
+      setTimeout(()=>{cube.stopActive=false;},M?1500:800);
+      break;
+    }
+  }
+}
+
 function processHuskyBones(){
   if(!run)return;
   let now=Date.now(), surviving=[];
@@ -1506,6 +1605,7 @@ function processHuskyBones(){
         bone.alive=false;
         h.huskyAuraActive=false;
         h.huskyBoneTimer=Date.now();
+        h.huskyShield=true;
         collected=true;
         let side=(h===p)?selectedPlayer:selectedEnemy;
         if(side==="Husky"&&!bossMode){
@@ -1604,6 +1704,8 @@ function processTigerAbility(){
   }
 
   // Activate ability every 10s
+  let _tigStopE=(tiger===p)?o:p;
+  if(!_tigerAbilityActive&&_tigStopE&&(_tigStopE.stopActive||(_tigStopE.mastered&&_tigStopE.masteryBlockReady))){_tigerAbilityTimer=now;}
   if(!_tigerAbilityActive && now-_tigerAbilityTimer>10000){
     _tigerAbilityTimer=now;
     _tigerAbilityActive=true;
@@ -1880,6 +1982,7 @@ function evolverHit(ev){
 
 function applyDamage(victim,attacker,amount){
   if(victim.t=="Ninja"&&victim.mastered&&victim.dashActive) return false;
+  if(victim.huskyShield){victim.huskyShield=false;return false;}
   if(victim.t=="Normal"&&victim.mastered&&victim.masteryShield>0){
     victim.masteryShield--;
     return false;
@@ -2274,6 +2377,12 @@ function loop(ts){
   });
   drawBananaPeels(x,Date.now());
   for(let _cb of [p,o]){
+    if(_cb.chaosLabel&&Date.now()<_cb.chaosLabelEnd){
+      x.save();x.font="bold 11px Arial";x.textAlign="center";
+      x.fillStyle="#ff5722";x.shadowColor="#ff5722";x.shadowBlur=10;
+      x.fillText(_cb.chaosLabel,_cb.x,_cb.y-_cb.s/2-24);
+      x.textAlign="left";x.restore();
+    }
     if(_cb.ccLabel&&Date.now()<_cb.ccLabelEnd){
       let _lc=_cb.t==="CubeCubePrank"?"#FF9800":"#E040FB";
       x.save();x.font="bold 13px sans-serif";x.fillStyle=_lc;x.textAlign="center";
@@ -2447,14 +2556,14 @@ function openPicker(target){
 
 function closePicker(){ document.getElementById("modal").classList.remove("open"); }
 function charIconHTML(ch,extraStyle){
-  let imgObj=(ch.type==="Panda")?pandaImg:(ch.type==="Tiger")?tigerImg:null;
+  let imgObj=(ch.type==="Panda")?pandaImg:(ch.type==="Tiger")?tigerImg:(ch.type==="Husky")?huskyImg:null;
   let bg=imgObj?"transparent":ch.color;
   let styleStr="background:"+bg+(extraStyle?";"+extraStyle:"");
   let inner=imgObj?"<img src='"+imgObj.src+"' style='width:100%;height:100%;object-fit:contain;border-radius:4px'>":"";
   return "<div class=\"char-icon\" style=\""+styleStr+"\">"+inner+"</div>";
 }
 function pcIconHTML(ch,extraStyle){
-  let imgObj=(ch.type==="Panda")?pandaImg:(ch.type==="Tiger")?tigerImg:null;
+  let imgObj=(ch.type==="Panda")?pandaImg:(ch.type==="Tiger")?tigerImg:(ch.type==="Husky")?huskyImg:null;
   let bg=imgObj?"transparent":ch.color;
   let styleStr="background:"+bg+(extraStyle?";"+extraStyle:"");
   let inner=imgObj?"<img src='"+imgObj.src+"' style='width:100%;height:100%;object-fit:contain;border-radius:6px'>":"";
@@ -2676,6 +2785,10 @@ function updateShopContent(){
 // ===== CUBE CUBE ABILITIES =====
 function updateCubeCubeAbilities(cube,enemies,canv,now){
   if(!masteryUnlocked.CubeCube) return;
+  let _ccStopE=(cube===p)?o:p;
+  if(_ccStopE&&(_ccStopE.stopActive||(_ccStopE.mastered&&_ccStopE.masteryBlockReady))){
+    cube.ccPeelTimer=now+500; cube.ccDashTimer=now+500; return;
+  }
   if(!cube.ccPeelTimer) cube.ccPeelTimer=now+6000+Math.random()*9000;
   if(!cube.ccDashTimer)  cube.ccDashTimer=now+4000+Math.random()*6000;
   if(cube.ccDashing===undefined) cube.ccDashing=false;
@@ -2736,6 +2849,8 @@ function drawBananaPeels(ctx,now){
 }
 // ===== CUBE CUBE (PRANK) ABILITY =====
 function updateCubeCubePrankAbility(cube,enemies,canv,now){
+  let _ccpStopE=(cube===p)?o:p;
+  if(_ccpStopE&&(_ccpStopE.stopActive||(_ccpStopE.mastered&&_ccpStopE.masteryBlockReady))){cube.ccpLastPeel=now;return;}
   if(!cube.ccpLastPeel) cube.ccpLastPeel=now-15000; // fire first burst early
   if(now-cube.ccpLastPeel>=20000){
     cube.ccpLastPeel=now;
@@ -2757,6 +2872,8 @@ function updateCubeCubePrankAbility(cube,enemies,canv,now){
 function updateGummyCubeAbility(cube,enemy,now){
   if(cube.gummyState!=="whole"||!cube.gummyCanSplit) return;
   if(now-cube.gummySplitTimer<10000) return;
+  let _gStopE=(cube===p)?o:p;
+  if(_gStopE&&(_gStopE.stopActive||(_gStopE.mastered&&_gStopE.masteryBlockReady))){cube.gummySplitTimer=now;return;}
   // --- SPLIT ---
   cube.hp=Math.min(cube.hp,8); cube.s=26; cube.gummyState="half";
   // Track mastery
