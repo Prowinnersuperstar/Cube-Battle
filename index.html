@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,6 +11,27 @@
 *{box-sizing:border-box}
 body{margin:0;background:#222;color:#fff;text-align:center;font-family:Arial}
 canvas{background:#333;margin:10px auto;display:block}
+
+/* Settings panel */
+#settings-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;justify-content:center;align-items:center}
+#settings-overlay.open{display:flex}
+#settings-box{background:#1e1e2e;color:#fff;border-radius:14px;padding:28px 32px;min-width:300px;max-width:380px;width:90%;box-shadow:0 8px 32px #000a;font-family:Arial}
+#settings-box h3{margin:0 0 20px;font-size:20px;text-align:center;letter-spacing:1px}
+.srow{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:10px}
+.srow label{font-size:15px;font-weight:bold;flex-shrink:0}
+.sbtn-group{display:flex;gap:6px}
+.sbtn{background:#333;color:#aaa;border:2px solid #444;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:bold;transition:all .15s}
+.sbtn.active{background:#4a9eff;color:#fff;border-color:#4a9eff}
+#settings-accent-wrap{display:flex;align-items:center;gap:10px}
+#settings-accent{width:44px;height:32px;border:none;border-radius:7px;cursor:pointer;padding:0;background:none}
+#settings-accent-preview{font-size:12px;color:#aaa}
+#settings-close{display:block;margin:6px auto 0;background:#555;color:#fff;border:none;border-radius:8px;padding:9px 30px;cursor:pointer;font-size:14px;font-weight:bold}
+#settings-close:hover{background:#777}
+/* accent border around canvas */
+#game-wrap canvas{border:4px solid #4a9eff;box-sizing:border-box}
+/* dark mode overrides */
+body.dark-bg{background:#000!important}
+body.dark-bg canvas{background:#111!important}
 
 #topbar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:10px}
 #topbar button{padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold}
@@ -203,9 +225,46 @@ canvas{touch-action:none}
   <button id="btn-shop" style="background:#ff69b4;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold" onclick="openShop()">🛒 Shop</button>
   <button id="btn-quests" onclick="openQuests()" style="background:#b8860b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">📋 Quests</button>
   <button id="btn-boss" onclick="openBossPanel()" style="background:#c0392b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">⚔️ Boss Fight</button>
+  <button onclick="openSettings()" style="background:#4a4a6a;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">⚙️ Settings</button>
 </div>
 <div style="font-size:13px;margin:2px 0 4px"><span id="egg-display" style="color:#ffe082;font-size:14px;font-weight:bold"></span>
-  <button onclick="_sfxMuted=!_sfxMuted;this.textContent=_sfxMuted?'🔇 Muted':'🔊 Sound'" style="background:#335;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🔊 Sound</button><button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🗑 Delete Progress</button></div>
+  <button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:8px">🗑 Delete Progress</button></div>
+
+<!-- Settings Panel -->
+<div id="settings-overlay">
+  <div id="settings-box">
+    <h3>⚙️ Settings</h3>
+    <div class="srow">
+      <label>🎨 Background</label>
+      <div class="sbtn-group">
+        <button class="sbtn active" id="sbtn-normal" onclick="setTheme('normal')">Normal</button>
+        <button class="sbtn" id="sbtn-dark" onclick="setTheme('dark')">Black</button>
+      </div>
+    </div>
+    <div class="srow">
+      <label>✏️ Accent colour</label>
+      <div id="settings-accent-wrap">
+        <input type="color" id="settings-accent" value="#4a9eff" oninput="setAccentColor(this.value)">
+        <span id="settings-accent-preview">#4a9eff</span>
+      </div>
+    </div>
+    <div class="srow">
+      <label>🔲 Border</label>
+      <div class="sbtn-group">
+        <button class="sbtn active" id="sbtn-border-on" onclick="setBorderPref(false)">On</button>
+        <button class="sbtn" id="sbtn-border-off" onclick="setBorderPref(true)">Off</button>
+      </div>
+    </div>
+    <div class="srow">
+      <label>🔊 Sound</label>
+      <div class="sbtn-group">
+        <button class="sbtn active" id="sbtn-sound-on" onclick="setSoundPref(true)">On</button>
+        <button class="sbtn" id="sbtn-sound-off" onclick="setSoundPref(false)">Off</button>
+      </div>
+    </div>
+    <button id="settings-close" onclick="closeSettings()">Done</button>
+  </div>
+</div>
 
 <!-- Quest Panel -->
 <div id="quest-panel">
@@ -3408,6 +3467,7 @@ function renderReplayList(){
       <div class="rcard-meta">${dateStr} &middot; ${r.dur}s &middot; ${r.frames.length} frames</div>
       <div class="rcard-btns">
         <button class="rbtn-watch" onclick="watchReplay(${r.id})">▶ Watch</button>
+        <button onclick="downloadReplayById(${r.id})" style="background:#27ae60;color:#fff;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:bold;">⬇️ Download</button>
         <button class="${isFav?'rbtn-unfav':'rbtn-fav'}" onclick="toggleFavorite(${r.id})">${isFav?'★ Unfavorite':'☆ Favorite'}</button>
       </div>
     `;
@@ -3415,6 +3475,21 @@ function renderReplayList(){
   });
 }
 
+function downloadReplayById(id){
+  let allReplays=[...loadReplayList(),...loadFavorites()];
+  let seen=new Set(),deduped=[];
+  for(let r of allReplays){if(!seen.has(r.id)){seen.add(r.id);deduped.push(r);}}
+  let replay=deduped.find(r=>r.id===id);
+  if(!replay){alert('Replay not found!');return;}
+  let h=buildReplayHTML(replay);
+  let blob=new Blob([h],{type:'text/html'});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='cube-battle-'+replay.player+'-vs-'+replay.enemy+'.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 function watchReplay(id){
   let allReplays=[...loadReplayList(),...loadFavorites()];
   let seen=new Set(),deduped=[];
@@ -3492,18 +3567,31 @@ input[type=range]{width:260px;cursor:pointer;accent-color:#4a9eff}
   <button class="sp on" id="sp2" onclick="setSpeed(1)">1×</button>
   <button class="sp" id="sp4" onclick="setSpeed(2)">2×</button>
   <button id="btn-restart" onclick="restartReplay()" style="padding:5px 11px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:bold;background:#333;color:#aaa;border:1px solid #444">⏮ Restart</button>
+  <button id="btn-mute" onclick="toggleMute()" style="padding:5px 11px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:bold;background:#2a3a4a;color:#aaa;border:1px solid #3a4a5a">🔊 Sound</button>
+  <button onclick="downloadThisReplay()" style="padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:bold;background:#27ae60;color:#fff">⬇️ Download</button>
 </div>
 <div id="meta">${dateStr} &middot; ${replay.dur}s battle</div>
 <script>
+let _sfxCtx=null,_sfxMuted=false;
+function _sfxInit(){if(!_sfxCtx)try{_sfxCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function _sfxPlay(fn){if(_sfxMuted)return;_sfxInit();if(!_sfxCtx)return;if(_sfxCtx.state==='suspended')_sfxCtx.resume();try{fn(_sfxCtx);}catch(e){}}
+function _sfxBeep(type,freq,dur,vol,rampDown,delay){rampDown=rampDown!==false;delay=delay||0;_sfxPlay(ctx=>{let o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,ctx.currentTime+delay);if(rampDown)g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime+delay);o.stop(ctx.currentTime+delay+dur+0.05);});}
+function _sfxNoise(dur,vol){_sfxPlay(ctx=>{let buf=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*dur),ctx.sampleRate);let d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);let src=ctx.createBufferSource(),g=ctx.createGain();g.gain.setValueAtTime(vol,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);src.buffer=buf;src.connect(g);g.connect(ctx.destination);src.start();src.stop(ctx.currentTime+dur+0.05);});}
+const SFX={
+  hit:()=>{_sfxBeep('square',200,0.07,0.15);_sfxNoise(0.05,0.04);},
+  death:()=>{[440,330,220,110].forEach((f,i)=>_sfxBeep('sawtooth',f,0.12,0.2,true,i*0.09));},
+  win:()=>{[523,659,784,1047].forEach((f,i)=>_sfxBeep('sine',f,0.15,0.22,true,i*0.1));},
+};
+function toggleMute(){
+  _sfxMuted=!_sfxMuted;
+  let btn=document.getElementById('btn-mute');
+  if(btn)btn.textContent=_sfxMuted?'🔇 Muted':'🔊 Sound';
+}
 const frames=${frameJson};
 const canv=document.getElementById('c');
 const ctx=canv.getContext('2d');
 let curFrame=0,playing=true,speed=1;
-let lastTs=0;
-
-// FIX 2: frameDur corrected to match actual recording interval.
-// Game records every 3rd frame at ~60fps => 3 * (1000/60) ≈ 50ms per frame.
-// Old value was 100ms which made replay play at half real speed.
+let lastTs=0,accumulator=0;
 const frameDur=50;
 
 const scrub=document.getElementById('scrub');
@@ -3536,19 +3624,29 @@ function scrubTo(v){
   document.getElementById('frame-info').innerText=(curFrame+1)+' / '+frames.length;
 }
 
+function detectSounds(prev,next){
+  if(next.p&&prev.p&&next.p.hp<prev.p.hp) SFX.hit();
+  if(next.o&&prev.o&&next.o.hp<prev.o.hp) SFX.hit();
+  if(next.p&&prev.p&&next.p.hp<=0&&prev.p.hp>0) SFX.death();
+  if(next.o&&prev.o&&next.o.hp<=0&&prev.o.hp>0) SFX.death();
+}
 function tick(ts){
   if(!playing) return;
-  // FIX 2: correct speed multiplier — advance a frame when enough time has passed
-  // at 1x speed: advance every 50ms; at 2x: every 25ms; at 0.5x: every 100ms
-  let elapsed = lastTs ? (ts - lastTs) : 0;
+  let elapsed = lastTs ? Math.min(ts - lastTs, 200) : 0;
   lastTs = ts;
-  let framesToAdvance = elapsed > 0 ? Math.floor(elapsed / (frameDur / speed)) : 1;
-  // clamp so we don't skip too many frames at once
-  framesToAdvance = Math.max(1, Math.min(framesToAdvance, Math.ceil(speed) + 1));
-
-  curFrame += framesToAdvance;
-  if(curFrame >= frames.length){
-    curFrame = frames.length - 1;
+  accumulator += elapsed * speed;
+  if(accumulator < frameDur){
+    requestAnimationFrame(tick);
+    return;
+  }
+  let prev = frames[curFrame];
+  while(accumulator >= frameDur && curFrame < frames.length - 1){
+    accumulator -= frameDur;
+    curFrame++;
+  }
+  if(prev && frames[curFrame]) detectSounds(prev, frames[curFrame]);
+  if(curFrame >= frames.length - 1 && accumulator >= frameDur){
+    accumulator = 0;
     if(frames[curFrame]) drawFrame(frames[curFrame]);
     scrub.value = curFrame;
     document.getElementById('frame-info').innerText = (curFrame+1)+' / '+frames.length;
@@ -3752,6 +3850,16 @@ requestAnimationFrame(tick);
   doScale();
   window.addEventListener('resize',doScale);
 })();
+function downloadThisReplay(){
+  let h=document.documentElement.outerHTML;
+  let blob=new Blob([h],{type:'text/html'});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='cube-battle-replay.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 <\/script>
 </body>
 </html>`;
@@ -3779,6 +3887,76 @@ function scaleGame(){
 window.addEventListener('resize',scaleGame);
 document.addEventListener('DOMContentLoaded',scaleGame);
 
+
+// ── Settings panel ──────────────────────────────────────────────────────────
+let _settingsTheme = 'normal';
+let _settingsAccent = '#4a9eff';
+let _settingsBorderOff = false;
+
+function openSettings(){
+  // sync sound buttons
+  document.getElementById('sbtn-sound-on').classList.toggle('active', !_sfxMuted);
+  document.getElementById('sbtn-sound-off').classList.toggle('active', _sfxMuted);
+  document.getElementById('sbtn-border-on').classList.toggle('active', !_settingsBorderOff);
+  document.getElementById('sbtn-border-off').classList.toggle('active', _settingsBorderOff);
+  document.getElementById('settings-overlay').classList.add('open');
+}
+function closeSettings(){
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+function setTheme(mode){
+  _settingsTheme = mode;
+  if(mode === 'dark'){
+    document.body.classList.add('dark-bg');
+    document.getElementById('sbtn-dark').classList.add('active');
+    document.getElementById('sbtn-normal').classList.remove('active');
+  } else {
+    document.body.classList.remove('dark-bg');
+    document.getElementById('sbtn-normal').classList.add('active');
+    document.getElementById('sbtn-dark').classList.remove('active');
+  }
+  localStorage.setItem('cubeBattle_settingsTheme', mode);
+}
+function setAccentColor(val){
+  _settingsAccent = val;
+  document.getElementById('settings-accent-preview').textContent = val;
+  if(!_settingsBorderOff){
+    document.querySelectorAll('#game-wrap canvas, canvas').forEach(c => {
+      c.style.border = '4px solid ' + val;
+    });
+  }
+  localStorage.setItem('cubeBattle_settingsAccent', val);
+}
+function setBorderPref(off){
+  _settingsBorderOff = off;
+  document.getElementById('sbtn-border-on').classList.toggle('active', !off);
+  document.getElementById('sbtn-border-off').classList.toggle('active', off);
+  document.querySelectorAll('#game-wrap canvas, canvas').forEach(c => {
+    c.style.border = off ? 'none' : '4px solid ' + _settingsAccent;
+  });
+  localStorage.setItem('cubeBattle_settingsBorderOff', off ? '1' : '0');
+}
+function setSoundPref(on){
+  _sfxMuted = !on;
+  document.getElementById('sbtn-sound-on').classList.toggle('active', on);
+  document.getElementById('sbtn-sound-off').classList.toggle('active', !on);
+}
+function loadSettings(){
+  const theme = localStorage.getItem('cubeBattle_settingsTheme') || 'normal';
+  const accent = localStorage.getItem('cubeBattle_settingsAccent') || '#4a9eff';
+  const borderOff = localStorage.getItem('cubeBattle_settingsBorderOff') === '1';
+  setTheme(theme);
+  setAccentColor(accent);
+  document.getElementById('settings-accent').value = accent;
+  setBorderPref(borderOff);
+}
+// close overlay on backdrop click
+document.addEventListener('DOMContentLoaded', function(){
+  loadSettings();
+  document.getElementById('settings-overlay').addEventListener('click', function(e){
+    if(e.target === this) closeSettings();
+  });
+});
 </script>
 </body>
 </html>
