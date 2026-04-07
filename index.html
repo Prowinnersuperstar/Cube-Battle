@@ -909,7 +909,7 @@ draw(){
       x.globalAlpha=0.35;
       x.filter="blur(3px)";
       if(vergasImg&&vergasImg.complete&&vergasImg.naturalWidth>0)
-        (function(){let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
+        (()=>{let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
       x.restore();
       // White mist ring
       x.save();
@@ -928,7 +928,7 @@ draw(){
       x.save();
       x.globalAlpha=0.6;
       if(vergasImg&&vergasImg.complete&&vergasImg.naturalWidth>0)
-        (function(){let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
+        (()=>{let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
       x.restore();
       // Animated water ripple
       x.save();
@@ -949,7 +949,7 @@ draw(){
       // Normal: draw the image
       x.save();
       if(vergasImg&&vergasImg.complete&&vergasImg.naturalWidth>0)
-        (function(){let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
+        (()=>{let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
       x.restore();
     }
   }
