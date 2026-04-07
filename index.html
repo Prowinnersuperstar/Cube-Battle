@@ -549,7 +549,7 @@ const CHARS=[
    quest:"Activate 15 Tiger abilities",
    masteryDesc:"Speed surge increases to 2× and dashes become more powerful (4× speed)"},
   {type:"ChaosCube", name:"🎲 Chaos Cube", color:"#ff5722",
-   shopSection:"limited", shopCurrency:"egg", cost:100,
+   shopSection:"limited", shopCurrency:"egg", shopCost:100,
    desc:"Wildly unpredictable! Every 7–10s it borrows a random ability from another cube.",
    quest:"Activate 15 chaos abilities",
    masteryDesc:"Copies enhanced versions: bigger fire, longer phase, extra speed!"},
@@ -909,7 +909,7 @@ draw(){
       x.globalAlpha=0.35;
       x.filter="blur(3px)";
       if(vergasImg&&vergasImg.complete&&vergasImg.naturalWidth>0)
-        x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vs/2,this.y-_vs/2,_vs,_vs);
+        (function(){let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
       x.restore();
       // White mist ring
       x.save();
@@ -928,7 +928,7 @@ draw(){
       x.save();
       x.globalAlpha=0.6;
       if(vergasImg&&vergasImg.complete&&vergasImg.naturalWidth>0)
-        x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vs/2,this.y-_vs/2,_vs,_vs);
+        (function(){let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
       x.restore();
       // Animated water ripple
       x.save();
@@ -949,7 +949,7 @@ draw(){
       // Normal: draw the image
       x.save();
       if(vergasImg&&vergasImg.complete&&vergasImg.naturalWidth>0)
-        x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vs/2,this.y-_vs/2,_vs,_vs);
+        (function(){let _ar=vergasImg.naturalWidth/vergasImg.naturalHeight;let _vw=_vs,_vh=_vs;if(_ar>1){_vh=_vs/_ar;}else{_vw=_vs*_ar;}x.drawImage(vergasImg,0,0,vergasImg.naturalWidth,vergasImg.naturalHeight,this.x-_vw/2,this.y-_vh/2,_vw,_vh);})();
       x.restore();
     }
   }
