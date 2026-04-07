@@ -2105,16 +2105,16 @@ function processVergasAbilities(){
       let prevStacks=vergasChilledStacks[hitKey]||0;
       vergasChilledStacks[hitKey]=Math.min(3,(prevStacks||0)+1);
       vergasChilledDecay[hitKey]=now+4000;
+      // Mastery: every icicle hit counts
+      let _vp=ic.ownerSide==="p"?p:o;
+      if(_vp&&_vp.t==="Vergas"&&!bossMode){
+        masteryProgress.Vergas=Math.min(masteryGoals.Vergas,(masteryProgress.Vergas||0)+1);
+        checkMasteries();
+      }
       if(vergasChilledStacks[hitKey]>=3&&(!vergasFreezeEnd[hitKey]||now>vergasFreezeEnd[hitKey])){
         // FREEZE!
         vergasFreezeEnd[hitKey]=now+2000;
         vergasChilledStacks[hitKey]=0;
-        // Mastery progress
-        let _vp=ic.ownerSide==="p"?p:o;
-        if(_vp&&_vp.t==="Vergas"&&!bossMode){
-          masteryProgress.Vergas=Math.min(masteryGoals.Vergas,(masteryProgress.Vergas||0)+1);
-          checkMasteries();
-        }
       }
       vergasIcicles.splice(i,1);
       continue;
