@@ -1815,7 +1815,7 @@ move(){
           if(_wd<_wEn.s/2+22){
             const _wdmg=this.mastered?2:1;
             applyDamage(_wEn,this,_wdmg);
-            _wEn.vx=this._wFacing*4; _wEn.vy=-3;
+            // no knockback on sword hit
             this._wHasHit=true;
             if(!bossMode&&this===p){
               masteryProgress.Warrior=(masteryProgress.Warrior||0)+1;
