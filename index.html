@@ -535,11 +535,25 @@ const pirateImg=(()=>{let i=new Image();i.src="data:image/png;base64,iVBORw0KGgo
 // ⚔️ Warrior keyboard state
 const _wKeys={};
 let _wMobileJoy=0, _wMobileJumpPressed=false, _wMobileAttackPressed=false, _wJumpHeld=false;
+var _wOrbs=[];
+var _wSlashes=[];
 document.addEventListener('keydown',function(e){
   _wKeys[e.code]=true;
   if(e.code==='KeyE'&&typeof run!=='undefined'&&run&&typeof p!=='undefined'&&p&&p.t==='Warrior'){
     if(!p._wSwingActive&&!(Date.now()<(p._wCooldownEnd||0))){
       p._wSwingActive=true; p._wSwingTimer=18; p._wHasHit=false;
+    }
+  }
+  if(e.code==='KeyQ'&&typeof run!=='undefined'&&run&&typeof p!=='undefined'&&p&&p.t==='Warrior'){
+    if(!(Date.now()<(p._wQCooldownEnd||0))){
+      var _wTarget=(typeof o!=='undefined'&&o)?o:null;
+      if(_wTarget){
+        var _wdx=_wTarget.x-p.x,_wdy=_wTarget.y-p.y;
+        var _wdist=Math.sqrt(_wdx*_wdx+_wdy*_wdy)||1;
+        var _wspd=5.5;
+        _wOrbs.push({x:p.x,y:p.y,vx:(_wdx/_wdist)*_wspd,vy:(_wdy/_wdist)*_wspd,life:90,owner:p,hit:false});
+        p._wQCooldownEnd=Date.now()+3000;
+      }
     }
   }
 });
@@ -703,7 +717,7 @@ const CHARS=[
    masteryDesc:"CaLAMity: charges up every 10s; 3 charges → barrage of 5 clams raining on the enemy",
    shopSection:"normal", shopCost:65},
   {type:"Warrior", color:"#cc2200",
-   desc:"Blocky blade warrior! Move: A/D or ← → | Jump: Space | Sword swing: E (1s cooldown). On mobile: joystick to move, JUMP and ⚔️ buttons on the right.",
+   desc:"Blocky blade warrior! Move: A/D or ← → | Jump: Space | Sword: E (1s cd) | Electric Orb: Q (3s cd). Mobile: joystick, JUMP and ⚔️ buttons.",
    quest:"Hit the enemy with your sword 15 times",
    masteryDesc:"Sword deals 2 damage per hit instead of 1",
    shopSection:"normal", shopCost:45},
@@ -1091,7 +1105,83 @@ draw(){
       x.shadowBlur=0;
       x.restore();
     }    x.restore();
-    // ─ HP bar + cooldown drawn ABOVE the cube ─
+
+    /* ── contact electric ── */
+    if((this._wContactElec||0)>0){
+      var _wCEA=this._wContactElec/18;
+      for(var _wbi=0;_wbi<6;_wbi++){
+        var _wBAng=(_wbi/6)*Math.PI*2+(Date.now()*0.04);
+        var _wBLen=_ws*0.55+Math.random()*_ws*0.25;
+        var _wBx1=_wcx+Math.cos(_wBAng)*_ws*0.45;
+        var _wBy1=_wcy+Math.sin(_wBAng)*_ws*0.45;
+        var _wBx2=_wcx+Math.cos(_wBAng)*_wBLen;
+        var _wBy2=_wcy+Math.sin(_wBAng)*_wBLen;
+        var _wBmx=(_wBx1+_wBx2)/2+(Math.random()-0.5)*10;
+        var _wBmy=(_wBy1+_wBy2)/2+(Math.random()-0.5)*10;
+        x.save();
+        x.globalAlpha=_wCEA*(0.6+Math.random()*0.4);
+        x.strokeStyle='#ff2200'; x.shadowColor='#ff4400'; x.shadowBlur=8; x.lineWidth=1.5;
+        x.beginPath(); x.moveTo(_wBx1,_wBy1); x.lineTo(_wBmx,_wBmy); x.lineTo(_wBx2,_wBy2); x.stroke();
+        x.restore();
+      }
+    }
+
+    /* ── slash effects + orbs (once per frame from player draw) ── */
+    if(this===p){
+      for(var _wsi=_wSlashes.length-1;_wsi>=0;_wsi--){
+        var _wsl=_wSlashes[_wsi];
+        _wsl.timer--;
+        if(_wsl.timer<=0){_wSlashes.splice(_wsi,1);continue;}
+        var _wsa=_wsl.timer/22;
+        var _wsLen=22+(_wsl.timer<10?(_wsl.timer/10)*8:8);
+        x.save();
+        x.globalAlpha=_wsa;
+        x.strokeStyle='#ff1111'; x.shadowColor='#ff4400'; x.shadowBlur=10; x.lineWidth=3;
+        x.beginPath();
+        x.moveTo(_wsl.x-_wsLen*_wsl.facing,_wsl.y-_wsLen*0.7);
+        x.lineTo(_wsl.x+_wsLen*_wsl.facing*0.3,_wsl.y+_wsLen*0.7);
+        x.stroke();
+        x.beginPath();
+        x.moveTo(_wsl.x-_wsLen*_wsl.facing*0.5,_wsl.y-_wsLen*0.5);
+        x.lineTo(_wsl.x+_wsLen*_wsl.facing*0.6,_wsl.y+_wsLen*0.5);
+        x.stroke();
+        x.strokeStyle='rgba(255,200,200,0.6)'; x.lineWidth=1; x.shadowBlur=0;
+        x.beginPath();
+        x.moveTo(_wsl.x-_wsLen*_wsl.facing*0.9,_wsl.y-_wsLen*0.6);
+        x.lineTo(_wsl.x+_wsLen*_wsl.facing*0.2,_wsl.y+_wsLen*0.6);
+        x.stroke();
+        x.restore();
+      }
+      for(var _woi=0;_woi<_wOrbs.length;_woi++){
+        var _worb2=_wOrbs[_woi];
+        var _woAlpha=_worb2.hit?Math.max(0,_worb2.life/8):1;
+        var _woR=_worb2.hit?(4+_worb2.life*1.2):7;
+        x.save();
+        x.globalAlpha=_woAlpha;
+        x.shadowColor='#ff2200'; x.shadowBlur=18;
+        x.fillStyle='#ff3300';
+        x.beginPath(); x.arc(_worb2.x,_worb2.y,_woR,0,Math.PI*2); x.fill();
+        x.shadowBlur=0; x.fillStyle='#ffaaaa';
+        x.beginPath(); x.arc(_worb2.x,_worb2.y,_woR*0.45,0,Math.PI*2); x.fill();
+        if(!_worb2.hit){
+          x.strokeStyle='#ff5500'; x.lineWidth=1.2; x.shadowColor='#ff2200'; x.shadowBlur=6;
+          for(var _wea=0;_wea<4;_wea++){
+            var _weang=(_wea/4)*Math.PI*2+(Date.now()*0.007+_woi);
+            var _wer1=_woR+2,_wer2=_woR+6+Math.random()*5;
+            var _wemx=_worb2.x+Math.cos(_weang+0.4)*(_wer1+_wer2)/2+(Math.random()-0.5)*4;
+            var _wemy=_worb2.y+Math.sin(_weang+0.4)*(_wer1+_wer2)/2+(Math.random()-0.5)*4;
+            x.beginPath();
+            x.moveTo(_worb2.x+Math.cos(_weang)*_wer1,_worb2.y+Math.sin(_weang)*_wer1);
+            x.lineTo(_wemx,_wemy);
+            x.lineTo(_worb2.x+Math.cos(_weang)*_wer2,_worb2.y+Math.sin(_weang)*_wer2);
+            x.stroke();
+          }
+        }
+        x.restore();
+      }
+    }
+
+    // \u2500 HP bar + cooldown drawn ABOVE the cube \u2500
     {
       const _wbw=44;
       // Above the helmet (helmet+crest extends ~0.42*s above cube top)
@@ -1114,6 +1204,21 @@ draw(){
       if(this===p){
         const _wnow=Date.now();
         const _wcd=this._wCooldownEnd||0;
+        /* Q orb cooldown */
+        {
+          var _wqnow2=Date.now(),_wqcd2=this._wQCooldownEnd||0;
+          var _wqY=_wcdY-14;
+          if(_wqnow2<_wqcd2){
+            var _wqprog=1-(_wqcd2-_wqnow2)/3000;
+            x.fillStyle='rgba(50,50,50,0.5)'; x.fillRect(this.x-_wbw/2,_wqY,_wbw,3);
+            x.fillStyle='rgba(255,50,0,0.85)'; x.fillRect(this.x-_wbw/2,_wqY,_wbw*_wqprog,3);
+            x.fillStyle='rgba(255,140,80,0.75)'; x.font='6px Arial'; x.textAlign='center';
+            x.fillText('[Q] orb',this.x,_wqY-1);
+          } else {
+            x.fillStyle='rgba(255,80,0,0.75)'; x.font='6px Arial'; x.textAlign='center';
+            x.fillText('[Q] READY',this.x,_wqY+3);
+          }
+        }
         if(this._wSwingActive){
           x.fillStyle='rgba(255,210,0,0.9)';
           x.fillRect(this.x-_wbw/2,_wcdY,_wbw,4);
@@ -1815,6 +1920,7 @@ move(){
           if(_wd<_wEn.s/2+22){
             const _wdmg=this.mastered?2:1;
             applyDamage(_wEn,this,_wdmg);
+            _wSlashes.push({x:_wEn.x,y:_wEn.y,timer:22,facing:this._wFacing});
             // no knockback on sword hit
             this._wHasHit=true;
             if(!bossMode&&this===p){
@@ -1825,6 +1931,44 @@ move(){
         }
       }
     }
+    // Q orb update (owner only)
+    if(this===p){
+      for(var _wi=_wOrbs.length-1;_wi>=0;_wi--){
+        var _worb=_wOrbs[_wi];
+        _worb.x+=_worb.vx; _worb.y+=_worb.vy; _worb.life--;
+        var _wEn2=o;
+        if(_wEn2&&!_worb.hit&&_worb.life>10){
+          var _whdx=_wEn2.x-_worb.x,_whdy=_wEn2.y-_worb.y;
+          var _whd=Math.sqrt(_whdx*_whdx+_whdy*_whdy)||1;
+          _worb.vx+=(_whdx/_whd)*0.18; _worb.vy+=(_whdy/_whd)*0.18;
+          var _wospd=Math.sqrt(_worb.vx*_worb.vx+_worb.vy*_worb.vy);
+          if(_wospd>6){_worb.vx=(_worb.vx/_wospd)*6;_worb.vy=(_worb.vy/_wospd)*6;}
+        }
+        if(!_worb.hit&&_wEn2){
+          var _wodd=Math.sqrt((_worb.x-_wEn2.x)*(_worb.x-_wEn2.x)+(_worb.y-_wEn2.y)*(_worb.y-_wEn2.y));
+          if(_wodd<_wEn2.s/2+9){
+            applyDamage(_wEn2,_worb.owner,1);
+            _worb.hit=true; _worb.life=Math.min(_worb.life,8);
+          }
+        }
+        if(_worb.life<=0) _wOrbs.splice(_wi,1);
+      }
+    }
+    // Contact electric
+    if(!this._wSwingActive){
+      var _wCEn=(this===p)?o:p;
+      if(_wCEn){
+        var _wced2=Math.sqrt((this.x-_wCEn.x)*(this.x-_wCEn.x)+(this.y-_wCEn.y)*(this.y-_wCEn.y));
+        if(_wced2<this.s/2+_wCEn.s/2+2){
+          if((this._wContactElecCooldown||0)<=0){
+            this._wContactElec=18;
+            this._wContactElecCooldown=30;
+          }
+        }
+      }
+    }
+    if((this._wContactElec||0)>0) this._wContactElec--;
+    if((this._wContactElecCooldown||0)>0) this._wContactElecCooldown--;
     // Apply velocity
     this.x+=this.vx; this.y+=this.vy;
     // Bounds
