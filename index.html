@@ -378,6 +378,7 @@ canvas{touch-action:none}
     <div id="wm-jbase"><div id="wm-jthumb"></div></div>
   </div>
   <div id="wm-btns">
+    <div id="wm-hp-row" style="font-size:11px;font-weight:bold;color:#88ffaa;text-align:center;letter-spacing:1px;padding-bottom:2px;">❤️ <span id="wm-hp-val">10</span>/10</div>
     <div style="position:relative;">
       <canvas id="wm-cd-canvas" width="76" height="76"></canvas>
       <div class="wm-btn" id="wm-attack">⚔️</div>
@@ -440,6 +441,9 @@ canvas{touch-action:none}
         cx.beginPath();cx.arc(38,38,35,-Math.PI/2,-Math.PI/2+Math.PI*2*prog);
         cx.strokeStyle='rgba(255,160,0,0.85)';cx.lineWidth=4;cx.stroke();
       }
+      // Update HP display
+      var hpEl=document.getElementById('wm-hp-val');
+      if(hpEl) hpEl.textContent=Math.max(0,Math.ceil(p.hp||0));
     }
     requestAnimationFrame(drawCDRing);
   }
@@ -1087,24 +1091,42 @@ draw(){
       x.shadowBlur=0;
       x.restore();
     }    x.restore();
-    // Cooldown bar / ready label (only for player)
-    if(this===p){
-      const _wnow=Date.now();
-      const _wcd=this._wCooldownEnd||0;
+    // ─ HP bar + cooldown drawn ABOVE the cube ─
+    {
       const _wbw=44;
-      const _wby=this.y+this.s/2+3;
-      if(this._wSwingActive){
-        x.fillStyle='rgba(255,210,0,0.85)';
-        x.fillRect(this.x-_wbw/2,_wby,_wbw,4);
-        x.fillStyle='rgba(255,230,100,0.7)';x.font='7px Arial';x.textAlign='center';
-        x.fillText('SWING!',this.x,_wby+13);
-      } else if(_wnow<_wcd){
-        const _wprg=1-(_wcd-_wnow)/1000;
-        x.fillStyle='rgba(40,40,40,0.7)';x.fillRect(this.x-_wbw/2,_wby,_wbw,4);
-        x.fillStyle='rgba(255,170,0,0.9)';x.fillRect(this.x-_wbw/2,_wby,_wbw*_wprg,4);
-      } else {
-        x.fillStyle='rgba(255,230,80,0.75)';x.font='7px Arial';x.textAlign='center';
-        x.fillText('[E] READY',this.x,_wby+8);
+      // Above the helmet (helmet+crest extends ~0.42*s above cube top)
+      const _whpY=this.y-this.s/2-this.s*0.52-4;  // HP bar top edge
+      const _wcdY=_whpY-14;                          // cooldown area above HP
+
+      // HP bar (always visible for Warrior, both player & enemy)
+      const _whpFrac=Math.max(0,Math.min(1,this.hp/10));
+      x.fillStyle='rgba(0,0,0,0.55)';
+      x.fillRect(this.x-_wbw/2,_whpY,_wbw,5);
+      x.fillStyle=_whpFrac>0.5?'#44ee44':_whpFrac>0.25?'#ffcc00':'#ff3333';
+      x.fillRect(this.x-_wbw/2,_whpY,_wbw*_whpFrac,5);
+      x.strokeStyle='rgba(255,255,255,0.3)'; x.lineWidth=0.5;
+      x.strokeRect(this.x-_wbw/2,_whpY,_wbw,5);
+      // HP number
+      x.fillStyle='rgba(255,255,255,0.85)'; x.font='bold 7px Arial'; x.textAlign='center';
+      x.fillText(Math.ceil(this.hp)+'/10',this.x,_whpY-2);
+
+      // Cooldown bar/label (only for the player warrior)
+      if(this===p){
+        const _wnow=Date.now();
+        const _wcd=this._wCooldownEnd||0;
+        if(this._wSwingActive){
+          x.fillStyle='rgba(255,210,0,0.9)';
+          x.fillRect(this.x-_wbw/2,_wcdY,_wbw,4);
+          x.fillStyle='rgba(255,240,120,0.8)'; x.font='7px Arial'; x.textAlign='center';
+          x.fillText('SWING!',this.x,_wcdY-3);
+        } else if(_wnow<_wcd){
+          const _wprg=1-(_wcd-_wnow)/1000;
+          x.fillStyle='rgba(40,40,40,0.7)'; x.fillRect(this.x-_wbw/2,_wcdY,_wbw,4);
+          x.fillStyle='rgba(255,170,0,0.9)'; x.fillRect(this.x-_wbw/2,_wcdY,_wbw*_wprg,4);
+        } else {
+          x.fillStyle='rgba(255,240,80,0.8)'; x.font='7px Arial'; x.textAlign='center';
+          x.fillText('[E] READY',this.x,_wcdY-3);
+        }
       }
     }
     return;
