@@ -730,8 +730,8 @@ const CHARS=[
    quest:"Hit the enemy with your sword 15 times",
    masteryDesc:"Sword deals 2 damage per hit instead of 1",
    shopSection:"normal", shopCost:45},
-  {type:"BombCube", color:"#1a1a2e",
-   desc:"Lobs a sizzling bomb every 7 seconds that explodes on a short fuse for 2 damage! On death: dramatic delayed explosion before vanishing. 💣",
+  {type:"BombCube", color:"#000000",
+   desc:"Lobs a sizzling bomb every 7 seconds that explodes on a short fuse for 2 damage! On death: dramatic delayed explosion before vanishing.",
    quest:"Hit the enemy with a bomb 15 times",
    masteryDesc:"After the first bomb explodes, 2 smaller bombs split off dealing 1 damage each!",
    shopSection:"normal", shopCost:50},
@@ -1258,12 +1258,9 @@ draw(){
     // Shadow glow
     x.shadowColor='#ff3300'; x.shadowBlur=this.mastered?20:10;
     // Main bomb body (dark circle, slightly larger than cube)
-    x.fillStyle='#1a1a2e';
-    x.beginPath(); x.arc(_bcx,_bcy,_bs*0.48,0,Math.PI*2); x.fill();
-    // Shiny highlight
+    x.fillStyle='#000000';
     x.shadowBlur=0;
-    x.fillStyle='rgba(80,80,120,0.5)';
-    x.beginPath(); x.arc(_bcx-_bs*0.13,_bcy-_bs*0.15,_bs*0.18,0,Math.PI*2); x.fill();
+    x.beginPath(); x.arc(_bcx,_bcy,_bs*0.48,0,Math.PI*2); x.fill();
     // Fuse (wiggly line up from top)
     var _bfw=Math.sin(Date.now()*0.015)*4;
     x.strokeStyle='#aa7700'; x.lineWidth=2.5; x.lineJoin='round';
