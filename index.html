@@ -760,7 +760,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   // Stun (used by CubeCubePrank banana peels)
