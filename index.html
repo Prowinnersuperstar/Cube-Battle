@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -498,6 +501,13 @@ const SFX={
   battleStart:()=>{ [330,440,550,660].forEach((f,i)=>_sfxBeep('square',f,0.09,0.18,true,i*0.06)); },
   ninjaDash:()=>{ _sfxBeep('square',500,0.04,0.18); _sfxBeep('square',700,0.03,0.15,true,0.04); _sfxNoise(0.06,0.07); },
   eggHatch:()=>{ _sfxBeep('sine',660,0.08,0.2); _sfxBeep('sine',880,0.08,0.22,true,0.07); _sfxBeep('sine',1100,0.12,0.25,true,0.14); _sfxNoise(0.08,0.06); },
+  bombExplode:()=>{
+    _sfxNoise(0.28,0.55);
+    _sfxBeep('sawtooth',160,0.3,0.12,true,0);
+    _sfxBeep('sawtooth',80,0.22,0.18,true,0.06);
+    _sfxBeep('sine',60,0.18,0.25,true,0.1);
+  },
+  bombFuse:()=>{ _sfxBeep('square',800,0.04,0.06); _sfxBeep('square',900,0.03,0.04,true,0.04); },
 };
 // ===== END SFX ENGINE =====
 
@@ -516,7 +526,7 @@ let coins=0;
 let _ghostEchoes=[];
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false};
+const shopOwned={BombCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false};
 let _shopTab="normal";
 let gummyPartner=null; // active partner half when Gummy has split
 let pandaLeaves=[];
@@ -533,6 +543,8 @@ const pirateImg=(()=>{let i=new Image();i.src="data:image/png;base64,iVBORw0KGgo
 const _wKeys={};
 let _wMobileJoy=0, _wMobileJumpPressed=false, _wMobileAttackPressed=false, _wJumpHeld=false;
 var _wOrbs=[];
+var bombCubeBombs=[];
+var bombCubeParticles2=[];
 var _wSlashes=[];
 document.addEventListener('keydown',function(e){
   _wKeys[e.code]=true;
@@ -589,9 +601,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0};
-const masteryGoals={Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15};
-const masteryUnlocked={Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false};
+const masteryProgress={BombCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0};
+const masteryGoals={BombCube:15,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15};
+const masteryUnlocked={BombCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -718,6 +730,11 @@ const CHARS=[
    quest:"Hit the enemy with your sword 15 times",
    masteryDesc:"Sword deals 2 damage per hit instead of 1",
    shopSection:"normal", shopCost:45},
+  {type:"BombCube", color:"#1a1a2e",
+   desc:"Lobs a sizzling bomb every 7 seconds that explodes on a short fuse for 2 damage! On death: dramatic delayed explosion before vanishing. 💣",
+   quest:"Hit the enemy with a bomb 15 times",
+   masteryDesc:"After the first bomb explodes, 2 smaller bombs split off dealing 1 damage each!",
+   shopSection:"normal", shopCost:50},
 ];
 
 function checkMasteries(){
@@ -1234,6 +1251,38 @@ draw(){
     return;
   }
 
+  // 💣 BOMB CUBE: procedural bomb appearance
+  if(this.t==="BombCube"&&!this._bombDeathPending){
+    var _bcx=this.x,_bcy=this.y,_bs=this.s;
+    x.save();
+    // Shadow glow
+    x.shadowColor='#ff3300'; x.shadowBlur=this.mastered?20:10;
+    // Main bomb body (dark circle, slightly larger than cube)
+    x.fillStyle='#1a1a2e';
+    x.beginPath(); x.arc(_bcx,_bcy,_bs*0.48,0,Math.PI*2); x.fill();
+    // Shiny highlight
+    x.shadowBlur=0;
+    x.fillStyle='rgba(80,80,120,0.5)';
+    x.beginPath(); x.arc(_bcx-_bs*0.13,_bcy-_bs*0.15,_bs*0.18,0,Math.PI*2); x.fill();
+    // Fuse (wiggly line up from top)
+    var _bfw=Math.sin(Date.now()*0.015)*4;
+    x.strokeStyle='#aa7700'; x.lineWidth=2.5; x.lineJoin='round';
+    x.beginPath(); x.moveTo(_bcx+_bfw*0.2,_bcy-_bs*0.45); x.lineTo(_bcx+_bfw,_bcy-_bs*0.45-10); x.stroke();
+    // Spark at fuse tip (blinks)
+    var _bst=0.6+Math.sin(Date.now()*0.02)*0.4;
+    x.globalAlpha=_bst;
+    x.fillStyle='#ffee22'; x.shadowColor='#ffaa00'; x.shadowBlur=10;
+    x.beginPath(); x.arc(_bcx+_bfw,_bcy-_bs*0.45-10,3,0,Math.PI*2); x.fill();
+    x.restore();
+    // Mastery: extra crackling red glow ring
+    if(this.mastered){
+      x.save();
+      x.globalAlpha=0.6+Math.sin(Date.now()*0.009)*0.4;
+      x.strokeStyle='#ff3300'; x.lineWidth=2; x.shadowColor='#ff3300'; x.shadowBlur=12;
+      x.beginPath(); x.arc(_bcx,_bcy,_bs*0.54,0,Math.PI*2); x.stroke();
+      x.restore();
+    }
+  }
   // 🐼 PANDA: draw just the head (top 65% of image, centred)
   if(this.t==="Panda"){
     x.save();
@@ -3347,6 +3396,8 @@ function evolverHit(ev){
 }
 
 function applyDamage(victim,attacker,amount){
+  // BombCube death-explosion in progress — no more damage
+  if(victim&&victim.t==='BombCube'&&victim._bombDeathPending) return false;
   // Vergas: Water Form = full immunity
   if(victim.t==="Vergas"&&victim.waterFormActive) return false;
   // Vergas: Snow Mist = 40% dodge
@@ -3615,6 +3666,174 @@ function processDragonFire(){
 let _lastLoopTs = 0;
 const _FRAME_TARGET = 1000 / 60; // ~16.67ms
 
+// ===== 💣 BOMB CUBE SYSTEM =====
+function processBombCubeAbilities(){
+  if(!run) return;
+  var now=Date.now();
+  // ── Update state for BombCube cubes ──
+  var _bArr=[];
+  if(p&&p.t==='BombCube'&&p.hp>0.0001) _bArr.push({cube:p,enemy:o});
+  if(o&&o.t==='BombCube'&&o.hp>0.0001) _bArr.push({cube:o,enemy:p});
+  for(var _bi=0;_bi<_bArr.length;_bi++){
+    var _bc=_bArr[_bi].cube, _be=_bArr[_bi].enemy;
+    if(!_bc||_bc.hp<=0) continue;
+    if(_bc._bombDeathPending){
+      _bc._bombDeathTimer--;
+      if(_bc._bombDeathTimer<=0){ _bc._bombDeathPending=false; _bc.hp=0; }
+      continue;
+    }
+    // Throw bomb every 7s
+    if(now-(_bc._bombThrowTimer||0)>=7000){
+      _bc._bombThrowTimer=now;
+      SFX.bombFuse();
+      if(_be&&_be.hp>0){
+        var _dx=_be.x-_bc.x,_dy=_be.y-_bc.y,_dd=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+        var _sp=3.4;
+        bombCubeBombs.push({
+          x:_bc.x,y:_bc.y,
+          vx:(_dx/_dd)*_sp+(Math.random()-0.5)*1.2,
+          vy:-5.5+(_dy/_dd)*1.2,
+          owner:_bc,enemy:_be,
+          fuseFrames:75,exploded:false,isMiniBomb:false,
+          explodeX:0,explodeY:0,explodeTimer:0
+        });
+      }
+    }
+  }
+  // ── Update bomb projectiles ──
+  var _g=0.19;
+  for(var _bi2=bombCubeBombs.length-1;_bi2>=0;_bi2--){
+    var _b=bombCubeBombs[_bi2];
+    if(!_b.exploded){
+      _b.x+=_b.vx; _b.y+=_b.vy; _b.vy+=_g;
+      if(_b.x<6){_b.x=6;_b.vx=Math.abs(_b.vx);}
+      if(_b.x>354){_b.x=354;_b.vx=-Math.abs(_b.vx);}
+      if(_b.y>354){_b.y=354;_b.vy=-Math.abs(_b.vy)*0.45;}
+      _b.fuseFrames--;
+      if(_b.fuseFrames<=0){
+        _b.exploded=true; _b.explodeX=_b.x; _b.explodeY=_b.y; _b.explodeTimer=28;
+        SFX.bombExplode();
+        // Particles
+        for(var _pi=0;_pi<20;_pi++){
+          var _pa=Math.random()*Math.PI*2,_ps=2+Math.random()*4;
+          bombCubeParticles2.push({x:_b.x,y:_b.y,vx:Math.cos(_pa)*_ps,vy:Math.sin(_pa)*_ps-1.2,
+            life:1,color:Math.random()<0.55?'#ff4400':'#ffaa00',size:4+Math.random()*7});
+        }
+        // Damage if in range
+        var _tgt=_b.enemy;
+        if(_tgt&&_tgt.hp>0&&Math.hypot(_tgt.x-_b.x,_tgt.y-_b.y)<52){
+          var _dmg=_b.isMiniBomb?1:2;
+          applyDamage(_tgt,_b.owner,_dmg);
+          if(!_b.isMiniBomb&&!bossMode){
+            masteryProgress.BombCube=(masteryProgress.BombCube||0)+1;
+            checkMasteries();
+          }
+        }
+        // Mastery split: 2 mini-bombs
+        if(!_b.isMiniBomb&&_b.owner&&_b.owner.mastered&&_b.enemy&&_b.enemy.hp>0){
+          var _ex=_b.x,_ey=_b.y,_en=_b.enemy,_ow=_b.owner;
+          for(var _mi=0;_mi<2;_mi++){
+            var _ma=Math.atan2(_en.y-_ey,_en.x-_ex)+(_mi===0?-0.45:0.45);
+            bombCubeBombs.push({x:_ex,y:_ey,vx:Math.cos(_ma)*5,vy:Math.sin(_ma)*5-2.5,
+              owner:_ow,enemy:_en,fuseFrames:32,exploded:false,isMiniBomb:true,
+              explodeX:0,explodeY:0,explodeTimer:0});
+          }
+        }
+      }
+    } else {
+      _b.explodeTimer--;
+      if(_b.explodeTimer<=0) bombCubeBombs.splice(_bi2,1);
+    }
+  }
+  // ── Update particles ──
+  for(var _pi2=bombCubeParticles2.length-1;_pi2>=0;_pi2--){
+    var _pt=bombCubeParticles2[_pi2];
+    _pt.x+=_pt.vx; _pt.y+=_pt.vy; _pt.vy+=0.14;
+    _pt.life-=0.038; _pt.size*=0.94;
+    if(_pt.life<=0||_pt.size<0.4) bombCubeParticles2.splice(_pi2,1);
+  }
+  // ── Detect fresh BombCube death → delay ──
+  ['p','o'].forEach(function(_side){
+    var _cb=_side==='p'?p:o;
+    if(_cb&&_cb.t==='BombCube'&&_cb.hp<=0&&!_cb._bombDeathPending&&!_cb._bombDeathDone){
+      _cb._bombDeathPending=true; _cb._bombDeathTimer=58; _cb._bombDeathDone=true;
+      _cb.hp=0.001;
+      SFX.bombExplode();
+      for(var _di=0;_di<32;_di++){
+        var _da=Math.random()*Math.PI*2,_ds=3+Math.random()*6;
+        bombCubeParticles2.push({x:_cb.x,y:_cb.y,
+          vx:Math.cos(_da)*_ds,vy:Math.sin(_da)*_ds-2.5,
+          life:1.3,color:Math.random()<0.4?'#ff2200':Math.random()<0.55?'#ffaa00':'#ffff44',
+          size:7+Math.random()*11});
+      }
+    }
+  });
+  // ── Draw: bombs ──
+  for(var _di2=0;_di2<bombCubeBombs.length;_di2++){
+    var _db=bombCubeBombs[_di2];
+    if(!_db.exploded){
+      var _br=_db.isMiniBomb?5:9;
+      x.save();
+      x.shadowColor=_db.isMiniBomb?'#ff8800':'#ff3300'; x.shadowBlur=_db.isMiniBomb?10:16;
+      x.fillStyle='#1a1a2e'; x.beginPath(); x.arc(_db.x,_db.y,_br,0,Math.PI*2); x.fill();
+      x.fillStyle='#333355'; x.beginPath(); x.arc(_db.x-_br*0.25,_db.y-_br*0.25,_br*0.4,0,Math.PI*2); x.fill();
+      // Fuse
+      var _ft=_db.isMiniBomb?32:75;
+      var _fw=Math.sin(_db.fuseFrames*0.55)*4;
+      x.strokeStyle='#cc9900'; x.lineWidth=1.8;
+      x.beginPath(); x.moveTo(_db.x+_fw*0.3,_db.y-_br); x.lineTo(_db.x+_fw,_db.y-_br-9); x.stroke();
+      var _fAlpha=0.7+Math.sin(_db.fuseFrames*0.5)*0.3;
+      x.globalAlpha=_fAlpha;
+      x.fillStyle='#ffee22'; x.shadowColor='#ffaa00'; x.shadowBlur=8;
+      x.beginPath(); x.arc(_db.x+_fw,_db.y-_br-9,2.5,0,Math.PI*2); x.fill();
+      x.restore();
+    } else if(_db.explodeTimer>0){
+      var _ep=1-(_db.explodeTimer/28);
+      var _er=(_db.isMiniBomb?26:55)*_ep;
+      var _ea=(1-_ep)*0.88;
+      x.save();
+      x.globalAlpha=_ea;
+      x.strokeStyle=_db.isMiniBomb?'#ffaa00':'#ff4400';
+      x.lineWidth=_db.isMiniBomb?3:5; x.shadowColor='#ff2200'; x.shadowBlur=20;
+      x.beginPath(); x.arc(_db.explodeX,_db.explodeY,_er,0,Math.PI*2); x.stroke();
+      x.globalAlpha=_ea*0.45;
+      x.fillStyle=_db.isMiniBomb?'#ffcc00':'#ff6600';
+      x.beginPath(); x.arc(_db.explodeX,_db.explodeY,_er*0.55,0,Math.PI*2); x.fill();
+      // Inner flash
+      x.globalAlpha=_ea*0.3;
+      x.fillStyle='#ffffff';
+      x.beginPath(); x.arc(_db.explodeX,_db.explodeY,_er*0.25,0,Math.PI*2); x.fill();
+      x.restore();
+    }
+  }
+  // ── Draw: particles ──
+  for(var _dpi=0;_dpi<bombCubeParticles2.length;_dpi++){
+    var _dpt=bombCubeParticles2[_dpi];
+    x.save();
+    x.globalAlpha=Math.max(0,Math.min(1,_dpt.life));
+    x.fillStyle=_dpt.color; x.shadowColor=_dpt.color; x.shadowBlur=10;
+    x.beginPath(); x.arc(_dpt.x,_dpt.y,Math.max(0.4,_dpt.size/2),0,Math.PI*2); x.fill();
+    x.restore();
+  }
+  // ── Draw: death explosion overlay on dying BombCube ──
+  ['p','o'].forEach(function(_side){
+    var _cb=_side==='p'?p:o;
+    if(_cb&&_cb.t==='BombCube'&&_cb._bombDeathPending){
+      var _prog=1-(_cb._bombDeathTimer/58);
+      var _bigR=55+_prog*50;
+      var _ba=(1-_prog)*0.65;
+      x.save();
+      x.globalAlpha=_ba;
+      x.fillStyle='#ff4400'; x.shadowColor='#ff6600'; x.shadowBlur=40;
+      x.beginPath(); x.arc(_cb.x,_cb.y,_bigR,0,Math.PI*2); x.fill();
+      x.globalAlpha=_ba*0.6;
+      x.fillStyle='#ffff00';
+      x.beginPath(); x.arc(_cb.x,_cb.y,_bigR*0.55,0,Math.PI*2); x.fill();
+      x.restore();
+    }
+  });
+}
+
 function loop(ts){
   if(!run) return;
   // Skip if called too soon (high refresh rate display)
@@ -3668,6 +3887,7 @@ function loop(ts){
   processPirateAbilities();
   processHatchlings();
   p.draw(); o.draw();
+  processBombCubeAbilities();
   // Boss HUD overlay
   if(bossMode&&o&&p){
     let _bdat=BOSSES.find(function(b){return b.type===currentBossType;})||{label:"Boss",color:"#f44336"};
