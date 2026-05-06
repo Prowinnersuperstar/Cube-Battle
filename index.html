@@ -532,6 +532,7 @@ let easterEggs=0;
 let coins=0;
 let _ghostEchoes=[];
 let mirrorGhostClones=[]; // MirrorCube phantom clones
+let mirrorAbilityCopyFX=[]; // Mirror Cube ability copy visual effects
 let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
@@ -3450,14 +3451,12 @@ function applyDamage(victim,attacker,amount){
   // MirrorCube: Reflect - block incoming hit and return 1 damage to attacker
   if(victim&&victim.t==="MirrorCube"&&victim._mirrorReflectActive){
     victim._mirrorReflectActive=false;
-    // Reflect 1 damage back (weaker)
-    if(attacker&&attacker.hp>0&&attacker.hp>0.001){
-      attacker.hp=Math.max(0,attacker.hp-1);
-      // Mastery: count reflected abilities
-      let _mSide=(victim===p)?selectedPlayer:selectedEnemy;
-      if(!bossMode&&_mSide==="MirrorCube")masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
-      checkMasteries();
-    }
+    // Copy enemy's ability visually (no damage — just a surprise!)
+    spawnMirrorCopyFX(victim.x,victim.y,victim.s,getMirrorAbilityLabel(attacker.t),getMirrorAbilityColor(attacker.t));
+    // Mastery: count reflected abilities
+    let _mSide=(victim===p)?selectedPlayer:selectedEnemy;
+    if(!bossMode&&_mSide==="MirrorCube")masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
+    checkMasteries();
     return false; // block the damage
   }
   // Vergas: Water Form = full immunity
@@ -3830,6 +3829,35 @@ function processBombCubeAbilities(){
       }
     }
   });
+  // ── MirrorCube helpers ──
+  function getMirrorAbilityLabel(t){
+    const m={Ninja:'⚡ Dash',Dragon:'🔥 Dragon Breath',CubeCube:'🍌 Banana Peel',
+      Samurai:'⚔️ Katana',Pirate:'💣 Cannon',Tiger:'🐯 Tiger Surge',
+      BombCube:'💥 Bomb',Warrior:'⚔️ Sword',KingCube:'👑 Royal Charge',
+      ShadowCube:'🌙 Blink',Stopper:'⏸ Stop Field',Vergas:'❄️ Icicle',
+      ChaosCube:'🎲 Chaos',Husky:'🦴 Bone',Panda:'🍃 Leaf',
+      EasterBunny:'🥚 Egg Toss',Gummy:'🍬 Split',FocusedNinja:'⚡ Phase Dash',
+      MirrorCube:'🪞 Echo',Zigzag:'⚡ Zigzag',Phantom:'👻 Phase',
+      CubeCubePrank:'🍌 Peel Storm',EggHunter:'🥚 Egg Burst'};
+    return m[t]||'✨ Ability';
+  }
+  function getMirrorAbilityColor(t){
+    const m={Ninja:'#00e5ff',Dragon:'#ff6b00',CubeCube:'#ffe066',Samurai:'#c0c0c0',
+      Pirate:'#8B4513',Tiger:'#ff8c00',BombCube:'#ff4444',Warrior:'#ff2222',
+      KingCube:'#ffd700',ShadowCube:'#9b59b6',Stopper:'#aaaaaa',Vergas:'#add8e6',
+      ChaosCube:'#ff00ff',Husky:'#4fc3f7',Panda:'#88cc44',EasterBunny:'#ffccff',
+      Gummy:'#ff88cc',FocusedNinja:'#00e5ff',MirrorCube:'#b0c4de',
+      Zigzag:'#ffff00',Phantom:'#88aaff'};
+    return m[t]||'#ffffff';
+  }
+  function spawnMirrorCopyFX(cx,cy,cs,label,color){
+    let pts=[];
+    for(let i=0;i<14;i++){
+      let ang=(i/14)*Math.PI*2;
+      pts.push({x:cx,y:cy,vx:Math.cos(ang)*(2+Math.random()*3.5),vy:Math.sin(ang)*(2+Math.random()*3.5),r:3+Math.random()*3});
+    }
+    mirrorAbilityCopyFX.push({x:cx,y:cy,s:cs,label,color,timer:90,pts});
+  }
   // ── MirrorCube: ability timers & position history ──
   [{cube:p,enemy:o,side:selectedPlayer},{cube:o,enemy:p,side:selectedEnemy}].forEach(({cube:_mc,enemy:_me,side:_mSide})=>{
     if(!_mc||_mc.t!=="MirrorCube"||_mc.hp<=0) return;
@@ -3849,7 +3877,10 @@ function processBombCubeAbilities(){
           color:_mc.c,
           damaging:_mc.mastered,
           owner:_mc,
-          enemy:_me
+          enemy:_me,
+          copiedAbility:getMirrorAbilityLabel(_me.t),
+          copiedColor:getMirrorAbilityColor(_me.t),
+          fxFired:false
         });
       }
     }
@@ -3884,7 +3915,7 @@ function processBombCubeAbilities(){
   for(let _gci=mirrorGhostClones.length-1;_gci>=0;_gci--){
     let _gc=mirrorGhostClones[_gci];
     _gc.frame++;
-    if(_gc.frame>=_gc.maxFrame){ mirrorGhostClones.splice(_gci,1); continue; }
+    if(_gc.frame>=_gc.maxFrame){ if(!_gc.fxFired){_gc.fxFired=true;let _gLast=_gc.posHist[0]||{x:_gc.posHist[0]?_gc.posHist[0].x:0,y:0};spawnMirrorCopyFX(_gLast.x,_gLast.y,_gc.s,_gc.copiedAbility,_gc.copiedColor);}mirrorGhostClones.splice(_gci,1); continue; }
     let _gPos=_gc.posHist[_gc.maxFrame-1-_gc.frame]||_gc.posHist[0];
     let _gAlpha=0.55*(1-_gc.frame/_gc.maxFrame);
     x.save();
@@ -3905,6 +3936,31 @@ function processBombCubeAbilities(){
           applyDamage(_gc.enemy,_gc.owner,1);
         }
       }
+    }
+  }
+  // Draw Mirror ability copy FX (visual-only, no damage)
+  for(let _fi=mirrorAbilityCopyFX.length-1;_fi>=0;_fi--){
+    let _fx=mirrorAbilityCopyFX[_fi];
+    _fx.timer--;
+    if(_fx.timer<=0){mirrorAbilityCopyFX.splice(_fi,1);continue;}
+    let _prog=1-_fx.timer/90;
+    _fx.pts.forEach(_p=>{
+      _p.x+=_p.vx;_p.y+=_p.vy;_p.vx*=0.91;_p.vy*=0.91;
+      let _pa=Math.max(0,1-_prog*1.8);
+      x.save();x.globalAlpha=_pa;
+      x.fillStyle=_fx.color;x.shadowColor=_fx.color;x.shadowBlur=10;
+      x.beginPath();x.arc(_p.x,_p.y,_p.r,0,Math.PI*2);x.fill();
+      x.restore();
+    });
+    if(_fx.timer>18){
+      let _ta=Math.min(1,(_fx.timer/90)*2)*Math.min(1,(90-_fx.timer)/12);
+      x.save();x.globalAlpha=_ta;
+      x.shadowColor=_fx.color;x.shadowBlur=14;
+      x.fillStyle=_fx.color;x.font='bold 10px Arial';x.textAlign='center';
+      x.fillText('������ COPIED!',_fx.x,_fx.y-_fx.s*0.7-10);
+      x.fillStyle='#fff';x.font='bold 9px Arial';
+      x.fillText(_fx.label,_fx.x,_fx.y-_fx.s*0.7-22);
+      x.restore();
     }
   }
   // Update & draw echo rings
@@ -4221,7 +4277,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorEchoRings=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[];
     let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
     if(pWins)SFX.win(); else SFX.death();
     if(pWins&&selectedPlayer=="Zigzag"){if(!bossMode)masteryProgress.Zigzag=1;checkMasteries();}
