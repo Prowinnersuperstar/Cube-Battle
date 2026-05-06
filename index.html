@@ -767,6 +767,7 @@ constructor(type,X,Y,mastered){
   this.mastered=!!mastered;
   if(type==="CubeKing"){this._ckLastCharge=0;this._ckChargeActive=false;this._ckChargeTill=0;}
   if(type==="ShadowCube"){this._scLastBlink=0;this._scInvisUntil=0;}
+  if(type==="MirrorCube"){let _mn=Date.now();this._mirrorCloneTimer=_mn;this._mirrorReflectTimer=_mn;this._mirrorEchoTimer=_mn;this._mirrorPosHist=[];this._mirrorReflectActive=false;}
   this.hp=10;
   this.s=40;
   this.x=X; this.y=Y;
@@ -3452,7 +3453,8 @@ function applyDamage(victim,attacker,amount){
   if(victim&&victim.t==="MirrorCube"&&victim._mirrorReflectActive){
     victim._mirrorReflectActive=false;
     // Copy enemy's ability visually (no damage — just a surprise!)
-    spawnMirrorCopyFX(victim.x,victim.y,victim.s,getMirrorAbilityLabel(attacker.t),getMirrorAbilityColor(attacker.t));
+    let _mAtkType=attacker?attacker.t:null;
+    spawnMirrorCopyFX(victim.x,victim.y,victim.s,getMirrorAbilityLabel(_mAtkType),getMirrorAbilityColor(_mAtkType));
     // Mastery: count reflected abilities
     let _mSide=(victim===p)?selectedPlayer:selectedEnemy;
     if(!bossMode&&_mSide==="MirrorCube")masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
