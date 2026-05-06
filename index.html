@@ -274,6 +274,13 @@ canvas{touch-action:none}
         <button class="sbtn active" id="sbtn-auto-off" onclick="setAutoPlayPref(false)">Off</button>
       </div>
     </div>
+    <div class="srow">
+      <label>🏆 Winner grows larger</label>
+      <div class="sbtn-group">
+        <button class="sbtn" id="sbtn-winnergrow-on" onclick="setWinnerGrowPref(true)">On</button>
+        <button class="sbtn active" id="sbtn-winnergrow-off" onclick="setWinnerGrowPref(false)">Off</button>
+      </div>
+    </div>
     <div class="srow" style="justify-content:center">
       <button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:bold;">🗑 Delete Progress</button>
     </div>
@@ -524,9 +531,12 @@ let hatchlings=[];
 let easterEggs=0;
 let coins=0;
 let _ghostEchoes=[];
+let mirrorGhostClones=[]; // MirrorCube phantom clones
+let mirrorEchoRings=[]; // MirrorCube echo ring particles
+let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={BombCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false};
+const shopOwned={BombCube:false,MirrorCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false};
 let _shopTab="normal";
 let gummyPartner=null; // active partner half when Gummy has split
 let pandaLeaves=[];
@@ -601,9 +611,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0};
-const masteryGoals={BombCube:15,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15};
-const masteryUnlocked={BombCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false};
+const masteryProgress={BombCube:0,MirrorCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0};
+const masteryGoals={BombCube:15,MirrorCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15};
+const masteryUnlocked={BombCube:false,MirrorCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -735,6 +745,11 @@ const CHARS=[
    quest:"Hit the enemy with a bomb 15 times",
    masteryDesc:"After the first bomb explodes, 2 smaller bombs split off dealing 1 damage each!",
    shopSection:"normal", shopCost:50},
+  {type:"MirrorCube", name:"Mirror Cube", color:"#b0c4de",
+   desc:"A mindgame illusion cube. Every 6s a phantom clone replays your last moves (deals no damage). Every 13s: Reflect - next enemy hit is sent back for 1 damage. Every 19s: Echo - triggers reflect again or spawns a mesmerizing echo wave!",
+   quest:"Reflect 10 enemy abilities",
+   masteryDesc:"Phantom clones now deal 1 damage on contact! Echo always triggers both reflect and a visual chain.",
+   shopSection:"normal", shopCost:60},
 ];
 
 function checkMasteries(){
@@ -1280,6 +1295,43 @@ draw(){
       x.restore();
     }
   }
+  // 🪞 MIRROR CUBE: reflective silver/blue with shine
+  if(this.t==="MirrorCube"){
+    var _mx=this.x,_my=this.y,_ms=this.s;
+    x.save();
+    // Main body - silver gradient with blue tint
+    let _mGrad=x.createLinearGradient(_mx-_ms/2,_my-_ms/2,_mx+_ms/2,_my+_ms/2);
+    _mGrad.addColorStop(0,'#e8f4fd');
+    _mGrad.addColorStop(0.35,'#b0c4de');
+    _mGrad.addColorStop(0.65,'#7aadcc');
+    _mGrad.addColorStop(1,'#4a8fab');
+    x.shadowColor='#90caf9'; x.shadowBlur=this._mirrorReflectActive?22:10;
+    x.fillStyle=_mGrad;
+    x.fillRect(_mx-_ms/2,_my-_ms/2,_ms,_ms);
+    // Shine highlight (top-left corner)
+    let _mSh=x.createLinearGradient(_mx-_ms/2,_my-_ms/2,_mx,_my);
+    _mSh.addColorStop(0,'rgba(255,255,255,0.55)');
+    _mSh.addColorStop(1,'rgba(255,255,255,0)');
+    x.fillStyle=_mSh;
+    x.fillRect(_mx-_ms/2,_my-_ms/2,_ms*0.6,_ms*0.6);
+    // Mirror line (diagonal reflection)
+    x.strokeStyle='rgba(255,255,255,0.7)'; x.lineWidth=1.5;
+    x.beginPath(); x.moveTo(_mx-_ms/2+4,_my+_ms/2-4); x.lineTo(_mx+_ms/2-4,_my-_ms/2+4); x.stroke();
+    // Reflect shield bubble when active
+    if(this._mirrorReflectActive){
+      x.strokeStyle='rgba(144,202,249,0.9)'; x.lineWidth=3;
+      x.shadowColor='#90caf9'; x.shadowBlur=25;
+      x.beginPath(); x.arc(_mx,_my,_ms*0.75,0,Math.PI*2); x.stroke();
+      x.strokeStyle='rgba(255,255,255,0.5)'; x.lineWidth=1;
+      x.beginPath(); x.arc(_mx,_my,_ms*0.9,0,Math.PI*2); x.stroke();
+    }
+    // Label above
+    x.fillStyle='rgba(255,255,255,0.85)'; x.font='bold 8px Arial'; x.textAlign='center';
+    if(this._mirrorReflectActive) x.fillText('REFLECT',_mx,_my-_ms/2-8);
+    else if(this._mirrorEchoLabel&&Date.now()<this._mirrorEchoLabelEnd) x.fillText('ECHO',_mx,_my-_ms/2-8);
+    x.restore();
+  }
+
   // 🐼 PANDA: draw just the head (top 65% of image, centred)
   if(this.t==="Panda"){
     x.save();
@@ -3395,6 +3447,19 @@ function evolverHit(ev){
 function applyDamage(victim,attacker,amount){
   // BombCube death-explosion in progress — no more damage
   if(victim&&victim.t==='BombCube'&&victim._bombDeathPending) return false;
+  // MirrorCube: Reflect - block incoming hit and return 1 damage to attacker
+  if(victim&&victim.t==="MirrorCube"&&victim._mirrorReflectActive){
+    victim._mirrorReflectActive=false;
+    // Reflect 1 damage back (weaker)
+    if(attacker&&attacker.hp>0&&attacker.hp>0.001){
+      attacker.hp=Math.max(0,attacker.hp-1);
+      // Mastery: count reflected abilities
+      let _mSide=(victim===p)?selectedPlayer:selectedEnemy;
+      if(!bossMode&&_mSide==="MirrorCube")masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
+      checkMasteries();
+    }
+    return false; // block the damage
+  }
   // Vergas: Water Form = full immunity
   if(victim.t==="Vergas"&&victim.waterFormActive) return false;
   // Vergas: Snow Mist = 40% dodge
@@ -3765,6 +3830,97 @@ function processBombCubeAbilities(){
       }
     }
   });
+  // ── MirrorCube: ability timers & position history ──
+  [{cube:p,enemy:o,side:selectedPlayer},{cube:o,enemy:p,side:selectedEnemy}].forEach(({cube:_mc,enemy:_me,side:_mSide})=>{
+    if(!_mc||_mc.t!=="MirrorCube"||_mc.hp<=0) return;
+    // Track position history (last 40 frames)
+    if(!_mc._mirrorPosHist) _mc._mirrorPosHist=[];
+    _mc._mirrorPosHist.push({x:_mc.x,y:_mc.y});
+    if(_mc._mirrorPosHist.length>40) _mc._mirrorPosHist.shift();
+    // PHANTOM CLONE every 6s
+    if(now-(_mc._mirrorCloneTimer||0)>=6000){
+      _mc._mirrorCloneTimer=now;
+      if(_mc._mirrorPosHist.length>=5){
+        mirrorGhostClones.push({
+          posHist:[..._mc._mirrorPosHist],
+          frame:0,
+          maxFrame:_mc._mirrorPosHist.length,
+          s:_mc.s,
+          color:_mc.c,
+          damaging:_mc.mastered,
+          owner:_mc,
+          enemy:_me
+        });
+      }
+    }
+    // REFLECT every 13s
+    if(now-(_mc._mirrorReflectTimer||0)>=13000){
+      _mc._mirrorReflectTimer=now;
+      _mc._mirrorReflectActive=true;
+      // Auto-expire after 5s if not triggered
+      setTimeout(()=>{ if(_mc) _mc._mirrorReflectActive=false; },5000);
+    }
+    // ECHO every 19s
+    if(now-(_mc._mirrorEchoTimer||0)>=19000){
+      _mc._mirrorEchoTimer=now;
+      _mc._mirrorEchoLabel=true;
+      _mc._mirrorEchoLabelEnd=now+1500;
+      if(Math.random()<0.5||_mc.mastered){
+        // Echo triggers Reflect again
+        _mc._mirrorReflectActive=true;
+        setTimeout(()=>{ if(_mc) _mc._mirrorReflectActive=false; },5000);
+      }
+      if(Math.random()<0.5||_mc.mastered){
+        // Echo spawns ring waves
+        for(let _eri=0;_eri<3;_eri++){
+          setTimeout(()=>{
+            mirrorEchoRings.push({x:_mc.x,y:_mc.y,r:_mc.s*0.3,maxR:_mc.s*2.5+_eri*20,alpha:0.8,speed:2.5+_eri*0.8});
+          },_eri*200);
+        }
+      }
+    }
+  });
+  // Update & draw ghost clones
+  for(let _gci=mirrorGhostClones.length-1;_gci>=0;_gci--){
+    let _gc=mirrorGhostClones[_gci];
+    _gc.frame++;
+    if(_gc.frame>=_gc.maxFrame){ mirrorGhostClones.splice(_gci,1); continue; }
+    let _gPos=_gc.posHist[_gc.maxFrame-1-_gc.frame]||_gc.posHist[0];
+    let _gAlpha=0.55*(1-_gc.frame/_gc.maxFrame);
+    x.save();
+    x.globalAlpha=_gAlpha;
+    x.shadowColor='#b0c4de'; x.shadowBlur=18;
+    // Mirror-like gradient for ghost
+    let _ggGrad=x.createLinearGradient(_gPos.x-_gc.s/2,_gPos.y-_gc.s/2,_gPos.x+_gc.s/2,_gPos.y+_gc.s/2);
+    _ggGrad.addColorStop(0,'#e8f4fd'); _ggGrad.addColorStop(1,'#7aadcc');
+    x.fillStyle=_ggGrad;
+    x.fillRect(_gPos.x-_gc.s/2,_gPos.y-_gc.s/2,_gc.s,_gc.s);
+    x.restore();
+    // Mastered: damaging clone
+    if(_gc.damaging&&_gc.enemy&&_gc.enemy.hp>0){
+      let _gdx=_gc.enemy.x-_gPos.x,_gdy=_gc.enemy.y-_gPos.y;
+      if(Math.sqrt(_gdx*_gdx+_gdy*_gdy)<_gc.s){
+        if(now-(_gc.lastHit||0)>600){
+          _gc.lastHit=now;
+          applyDamage(_gc.enemy,_gc.owner,1);
+        }
+      }
+    }
+  }
+  // Update & draw echo rings
+  for(let _eri2=mirrorEchoRings.length-1;_eri2>=0;_eri2--){
+    let _er=mirrorEchoRings[_eri2];
+    _er.r+=_er.speed;
+    _er.alpha-=0.025;
+    if(_er.r>_er.maxR||_er.alpha<=0){ mirrorEchoRings.splice(_eri2,1); continue; }
+    x.save();
+    x.globalAlpha=_er.alpha;
+    x.strokeStyle='#90caf9'; x.lineWidth=2;
+    x.shadowColor='#b0c4de'; x.shadowBlur=12;
+    x.beginPath(); x.arc(_er.x,_er.y,_er.r,0,Math.PI*2); x.stroke();
+    x.restore();
+  }
+
   // ── Draw: bombs ──
   for(var _di2=0;_di2<bombCubeBombs.length;_di2++){
     var _db=bombCubeBombs[_di2];
@@ -4065,7 +4221,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0;
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorEchoRings=[];
     let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
     if(pWins)SFX.win(); else SFX.death();
     if(pWins&&selectedPlayer=="Zigzag"){if(!bossMode)masteryProgress.Zigzag=1;checkMasteries();}
@@ -4077,9 +4233,16 @@ function loop(ts){
     if(oWins&&o.swapActive&&selectedEnemy=="Swapper"){if(!bossMode)masteryProgress.Swapper=Math.min(masteryGoals.Swapper,(masteryProgress.Swapper||0)+1);checkMasteries();}
     if(pWins&&selectedPlayer=="Predictor"){if(!bossMode)masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
     if(oWins&&selectedEnemy=="Predictor"){if(!bossMode)masteryProgress.Predictor=Math.min(masteryGoals.Predictor,(masteryProgress.Predictor||0)+1);checkMasteries();}
+    // Winner grows larger setting
+    if(winnerGrowsLarger){
+      if(pWins){ let _ws=p.s; p.s=Math.round(_ws*1.75); p.draw(); p.s=_ws; }
+      else if(oWins){ let _ws=o.s; o.s=Math.round(_ws*1.75); o.draw(); o.s=_ws; }
+    }
     x.fillStyle="rgba(0,0,0,0.6)"; x.fillRect(0,140,360,80);
     x.fillStyle="#fff"; x.font="bold 28px Arial"; x.textAlign="center";
-    x.fillText(p.hp<=0&&o.hp<=0?"It's a Tie!":p.hp>0?"Player Wins! 🏆":"Enemy Wins! 🏆",180,190);
+    // Show winner cube name in text
+    let _wName=p.hp<=0&&o.hp<=0?null:p.hp>0?(CHARS.find(c=>c.type===p.t)||{}).name||(p.t.replace(/([A-Z])/g,' $1').trim()):((CHARS.find(c=>c.type===o.t)||{}).name||(o.t.replace(/([A-Z])/g,' $1').trim()));
+    x.fillText(p.hp<=0&&o.hp<=0?"It's a Tie!":(_wName+" Wins! 🏆"),180,190);
     easterEggs++;
     coins++;
     updateEggDisplay();
@@ -5461,6 +5624,12 @@ function setHideMenuPref(val){
   document.getElementById('sbtn-hidemenu-on').classList.toggle('active', val);
   document.getElementById('sbtn-hidemenu-off').classList.toggle('active', !val);
 }
+function setWinnerGrowPref(val){
+  winnerGrowsLarger=val;
+  localStorage.setItem('cubeBattle_settingsWinnerGrow',val?'1':'0');
+  document.getElementById('sbtn-winnergrow-on').classList.toggle('active',val);
+  document.getElementById('sbtn-winnergrow-off').classList.toggle('active',!val);
+}
 function setAutoPlayPref(val){
   autoPlay=val;
   document.getElementById('sbtn-auto-on').classList.toggle('active', val);
@@ -5514,6 +5683,9 @@ function loadSettings(){
   hideMenuOnStart = localStorage.getItem('cubeBattle_settingsHideMenu') === '1';
   // Note: autoPlay state is ephemeral (not saved across sessions)
 }
+// Load winner grow pref
+  const winnerGrow=localStorage.getItem('cubeBattle_settingsWinnerGrow')==='1';
+  setWinnerGrowPref(winnerGrow);
 // close overlay on backdrop click
 document.addEventListener('DOMContentLoaded', function(){
   loadSettings();
