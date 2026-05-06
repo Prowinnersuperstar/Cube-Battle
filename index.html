@@ -1707,7 +1707,7 @@ move(){
   if(this.t=="Ninja"&&!this.dashActive&&Date.now()-this.lastDash>3000){
     let ninjaEnemy=(this===p)?o:(this===o)?p:null;
     if(ninjaEnemy&&checkStopField(ninjaEnemy)){ this.lastDash=Date.now(); return; }
-    this.dashActive=true; this.lastDash=Date.now(); SFX.ninjaDash();
+    this.dashActive=true; this.lastDash=Date.now(); this._mAbilityLabel='Ninja Dash'; this._mAbilityTime=Date.now(); SFX.ninjaDash();
     this.vx*=3; this.vy*=3;
     if(!bossMode)masteryProgress.Ninja=Math.min(masteryGoals.Ninja,(masteryProgress.Ninja||0)+1);
     checkMasteries();
@@ -1754,7 +1754,7 @@ move(){
 
   // 🛑 Stopper: activate stop field every 10s for 1s
   if(this.t=="Stopper"&&!this.stopActive&&Date.now()-this.lastStop>=10000){
-    this.stopActive=true; this.lastStop=Date.now();
+    this.stopActive=true; this.lastStop=Date.now(); this._mAbilityLabel='Stop Field'; this._mAbilityTime=Date.now();
     setTimeout(()=>{ this.stopActive=false; },1000);
   }
   // Stopper mastery: store a block token every 15s
@@ -1885,7 +1885,7 @@ move(){
     let _pDur=this.mastered?5000:3000;
     let _pNow=Date.now();
     if(!this.phantomActive&&_pNow-this.phantomTimer>=_pCd){
-      this.phantomActive=true; this.phantomTimer=_pNow; SFX.phantomIn();
+      this.phantomActive=true; this.phantomTimer=_pNow; this._mAbilityLabel='Phantom Blink'; this._mAbilityTime=_pNow; SFX.phantomIn();
       this.vx*=1.5; this.vy*=1.5;
       let _pSelf=this;
       setTimeout(function(){
@@ -1905,7 +1905,7 @@ move(){
     let _drStopE=(this===p)?o:p;
     if(_drStopE&&(_drStopE.stopActive||(_drStopE.mastered&&_drStopE.masteryBlockReady))){this.dragonFireTimer=_dFNow;}
     if(_dFNow-this.dragonFireTimer>=this.dragonNextFire){
-      this.dragonFireTimer=_dFNow;
+      this.dragonFireTimer=_dFNow; this._mAbilityLabel='Dragon Fire'; this._mAbilityTime=_dFNow;
       SFX.dragonFire();
       this.dragonNextFire=1000+Math.random()*2000;
       let _dEnemy=(this===p)?o:p;
@@ -1932,6 +1932,7 @@ move(){
       this.chaosTimer=_chNow+7000+Math.random()*3000;
       let _chE=(this===p)?o:p;
       if(!(_chE&&(_chE.stopActive||(_chE.mastered&&_chE.masteryBlockReady)))){
+        this._mAbilityLabel='Chaos Copy'; this._mAbilityTime=_chNow;
         activateChaosAbility(this,_chE);
       }
     }
@@ -1943,7 +1944,7 @@ move(){
     if(!this.huskyAuraActive&&_hNow-this.huskyBoneTimer>=10000){
       this.huskyBoneTimer=_hNow;
       this.huskyAuraActive=true;
-      huskyBones.push(new HuskyBone(Math.random()*300+30,Math.random()*300+30));
+      huskyBones.push(new HuskyBone(Math.random()*300+30,Math.random()*300+30)); this._mAbilityLabel='Husky Aura'; this._mAbilityTime=_hNow;
     }
     if(this.huskyAuraActive&&huskyBones.length>0){
       let _hTarget=huskyBones.reduce(function(best,b){
@@ -1965,7 +1966,7 @@ move(){
     let _activeSwords=samuraiSwords.filter(sw=>sw.owner===this&&sw.alive);
     if(_activeSwords.length===0&&_ssNow-this.samuraiSwordTimer>=10000){
       if(_enemy&&_enemy.hp>0){
-        this.samuraiSwordTimer=_ssNow;
+        this.samuraiSwordTimer=_ssNow; this._mAbilityLabel='Katana Throw'; this._mAbilityTime=_ssNow;
         samuraiSwords.push(new SamuraiSword(this,_enemy));
       }
     }
@@ -2655,7 +2656,7 @@ function processPirateAbilities(){
 
     // ── Ability 1: Cannon Burst (every 18s) ──
     if(!_stopped&&now-cube.pirateCannonTimer>=18000){
-      cube.pirateCannonTimer=now;
+      cube.pirateCannonTimer=now; cube._mAbilityLabel='Cannon Burst'; cube._mAbilityTime=now;
       if(enemy&&enemy.hp>0){
         let dist=Math.hypot(enemy.x-cube.x,enemy.y-cube.y);
         let dmg=dist<65?3:dist<140?2:1;
@@ -2676,13 +2677,13 @@ function processPirateAbilities(){
       cube.pirateShipTimer=now;
       if(enemy&&enemy.hp>0){
         pirateShips.push(new PirateShip(cube,enemy));
-        cube.pirateShipActive=true;
+        cube.pirateShipActive=true; cube._mAbilityLabel='Ship Ride'; cube._mAbilityTime=now;
       }
     }
 
     // ── Ability 3: Wind Slowdown (every 20s) ──
     if(!_stopped&&now-cube.pirateWindTimer>=20000){
-      cube.pirateWindTimer=now;
+      cube.pirateWindTimer=now; cube._mAbilityLabel='Wind Gust'; cube._mAbilityTime=now;
       let _ek=side==='p'?'o':'p';
       pirateWindEnd[_ek]=now+3000;
     }
@@ -2948,7 +2949,7 @@ function processVergasAbilities(){
       if(!_vergasWaterActive&&now-_vergasWaterTimer>30000&&!_stopped){
         _vergasWaterTimer=now;
         _vergasWaterActive=true;
-        cube.waterFormActive=true;
+        cube.waterFormActive=true; cube._mAbilityLabel='Water Form'; cube._mAbilityTime=now;
         _vergasWaterEnd=now+(M?5000:3000);
       }
     }
@@ -2964,7 +2965,7 @@ function processVergasAbilities(){
     if(!_vergasMistActive&&now-_vergasMistTimer>15000&&!_stopped){
       _vergasMistTimer=now;
       _vergasMistActive=true;
-      cube.snowMistActive=true;
+      cube.snowMistActive=true; cube._mAbilityLabel='Snow Mist'; cube._mAbilityTime=now;
       _vergasMistEnd=now+5000;
       // Spawn burst of mist particles
       for(let i=0;i<8;i++){
@@ -2982,7 +2983,7 @@ function processVergasAbilities(){
 
     // ── Icicle Spear (every 20s) ──
     if(!_stopped&&enemy&&enemy.hp>0&&now-_vergasIcicleTimer>20000){
-      _vergasIcicleTimer=now;
+      _vergasIcicleTimer=now; cube._mAbilityLabel='Icicle Spear'; cube._mAbilityTime=now;
       let _ang=Math.atan2(enemy.y-cube.y,enemy.x-cube.x);
       let spd=7;
       let count=M?2:1;
@@ -3176,7 +3177,7 @@ function processTigerAbility(){
     _tigerAbilityTimer=now;
     _tigerAbilityActive=true;
     _tigerAbilityEnd=now+5000;
-    tiger.tigerAbilityActive=true;
+    tiger.tigerAbilityActive=true; tiger._mAbilityLabel='Tiger Surge'; tiger._mAbilityTime=now;
     // Speed boost
     let mult=tiger.mastered?2:1.5;
     let spd=Math.sqrt(tiger.vx**2+tiger.vy**2)||1;
@@ -3503,6 +3504,15 @@ function processMirrorCubeAbilities(){
         });
       }
     }
+    // Reflect watch: copy enemy's NEXT ability use
+    if(_mc._mirrorReflectActive&&_me._mAbilityTime&&_me._mAbilityTime>(_mc._mirrorReflectTimer||0)){
+      _mc._mirrorReflectActive=false;
+      let _mPollLabel=_me._mAbilityLabel||getMirrorAbilityLabel(_me.t);
+      spawnMirrorCopyFX(_mc.x,_mc.y,_mc.s,_mPollLabel,getMirrorAbilityColor(_me.t));
+      let _mPollSide=(_mc===p)?selectedPlayer:selectedEnemy;
+      if(!bossMode&&_mPollSide==='MirrorCube')masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
+      checkMasteries();
+    }
     // REFLECT every 13s
     if(now-(_mc._mirrorReflectTimer||0)>=13000){
       _mc._mirrorReflectTimer=now;
@@ -3515,7 +3525,7 @@ function processMirrorCubeAbilities(){
       _mc._mirrorEchoTimer=now;
       _mc._mirrorEchoLabel=true;
       _mc._mirrorEchoLabelEnd=now+1500;
-      if(Math.random()<0.5||_mc.mastered){
+      if((Math.random()<0.5||_mc.mastered)&&!_mc._mirrorReflectActive){
         // Echo triggers Reflect again
         _mc._mirrorReflectActive=true;
         setTimeout(()=>{ if(_mc) _mc._mirrorReflectActive=false; },5000);
@@ -3606,7 +3616,8 @@ function applyDamage(victim,attacker,amount){
     victim._mirrorReflectActive=false;
     // Copy enemy's ability visually (no damage — just a surprise!)
     let _mAtkType=attacker?attacker.t:null;
-    spawnMirrorCopyFX(victim.x,victim.y,victim.s,getMirrorAbilityLabel(_mAtkType),getMirrorAbilityColor(_mAtkType));
+    let _mAbl=(attacker&&attacker._mAbilityLabel)?attacker._mAbilityLabel:getMirrorAbilityLabel(_mAtkType);
+    spawnMirrorCopyFX(victim.x,victim.y,victim.s,_mAbl,getMirrorAbilityColor(_mAtkType));
     // Mastery: count reflected abilities
     let _mSide=(victim===p)?selectedPlayer:selectedEnemy;
     if(!bossMode&&_mSide==="MirrorCube")masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
@@ -3899,7 +3910,7 @@ function processBombCubeAbilities(){
     }
     // Throw bomb every 7s
     if(now-(_bc._bombThrowTimer||0)>=7000){
-      _bc._bombThrowTimer=now;
+      _bc._bombThrowTimer=now; _bc._mAbilityLabel='Bomb Throw'; _bc._mAbilityTime=now;
       SFX.bombFuse();
       if(_be&&_be.hp>0){
         var _dx=_be.x-_bc.x,_dy=_be.y-_bc.y,_dd=Math.sqrt(_dx*_dx+_dy*_dy)||1;
@@ -4167,7 +4178,7 @@ function loop(ts){
       _ck.vx*=(2.5/_spd); _ck.vy*=(2.5/_spd); // reset to normal speed
     }
     if(!_ck._ckChargeActive&&_now-_ck._ckLastCharge>8000){
-      _ck._ckLastCharge=_now; _ck._ckChargeActive=true;
+      _ck._ckLastCharge=_now; _ck._ckChargeActive=true; _ck._mAbilityLabel='Royal Charge'; _ck._mAbilityTime=_now;
       _ck._ckChargeTill=_now+500;
       let _target=(_ck===p)?o:p;
       if(_target){
@@ -4186,7 +4197,7 @@ function loop(ts){
     if(!_sc||_sc.t!=="ShadowCube")return;
     let _now=Date.now();
     if(_now-_sc._scLastBlink>6000){
-      _sc._scLastBlink=_now; _sc._scInvisUntil=_now+400;
+      _sc._scLastBlink=_now; _sc._scInvisUntil=_now+400; _sc._mAbilityLabel='Shadow Blink'; _sc._mAbilityTime=_now;
       let _hw=_sc.s/2+4;
       _sc.x=_hw+Math.random()*(360-_hw*2);
       _sc.y=_hw+Math.random()*(360-_hw*2);
@@ -4644,7 +4655,7 @@ function updateCubeCubeAbilities(cube,enemies,canv,now){
   if(cube.ccDashing===undefined) cube.ccDashing=false;
   // Banana peel throw
   if(now>=cube.ccPeelTimer){
-    cube.ccPeelTimer=now+6000+Math.random()*9000;
+    cube.ccPeelTimer=now+6000+Math.random()*9000; cube._mAbilityLabel='Banana Peel'; cube._mAbilityTime=now;
     if(!window.bananaPeels) window.bananaPeels=[];
     let count=1+(Math.random()<0.4?1:0);
     for(let i=0;i<count;i++){
@@ -4653,7 +4664,7 @@ function updateCubeCubeAbilities(cube,enemies,canv,now){
   }
   // Prank dash
   if(!cube.ccDashing&&now>=cube.ccDashTimer){
-    cube.ccDashTimer=now+4000+Math.random()*6000;
+    cube.ccDashTimer=now+4000+Math.random()*6000; cube._mAbilityLabel='Prank Dash'; cube._mAbilityTime=now;
     cube.ccDashing=true;
     cube.ccDashEnd=now+600;
     let spd=cube.s*5;
