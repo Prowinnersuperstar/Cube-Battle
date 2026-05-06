@@ -3446,6 +3446,158 @@ function evolverHit(ev){
   }
 }
 
+  function getMirrorAbilityLabel(t){
+    const m={Ninja:'⚡ Dash',Dragon:'🔥 Dragon Breath',CubeCube:'🍌 Banana Peel',
+      Samurai:'⚔️ Katana',Pirate:'💣 Cannon',Tiger:'🐯 Tiger Surge',
+      BombCube:'💥 Bomb',Warrior:'⚔️ Sword',KingCube:'👑 Royal Charge',
+      ShadowCube:'🌙 Blink',Stopper:'⏸ Stop Field',Vergas:'❄️ Icicle',
+      ChaosCube:'🎲 Chaos',Husky:'🦴 Bone',Panda:'🍃 Leaf',
+      EasterBunny:'🥚 Egg Toss',Gummy:'🍬 Split',FocusedNinja:'⚡ Phase Dash',
+      MirrorCube:'🪞 Echo',Zigzag:'⚡ Zigzag',Phantom:'👻 Phase',
+      CubeCubePrank:'🍌 Peel Storm',EggHunter:'🥚 Egg Burst'};
+    return m[t]||'✨ Ability';
+  }
+  function getMirrorAbilityColor(t){
+    const m={Ninja:'#00e5ff',Dragon:'#ff6b00',CubeCube:'#ffe066',Samurai:'#c0c0c0',
+      Pirate:'#8B4513',Tiger:'#ff8c00',BombCube:'#ff4444',Warrior:'#ff2222',
+      KingCube:'#ffd700',ShadowCube:'#9b59b6',Stopper:'#aaaaaa',Vergas:'#add8e6',
+      ChaosCube:'#ff00ff',Husky:'#4fc3f7',Panda:'#88cc44',EasterBunny:'#ffccff',
+      Gummy:'#ff88cc',FocusedNinja:'#00e5ff',MirrorCube:'#b0c4de',
+      Zigzag:'#ffff00',Phantom:'#88aaff'};
+    return m[t]||'#ffffff';
+  }
+  function spawnMirrorCopyFX(cx,cy,cs,label,color){
+    let pts=[];
+    for(let i=0;i<14;i++){
+      let ang=(i/14)*Math.PI*2;
+      pts.push({x:cx,y:cy,vx:Math.cos(ang)*(2+Math.random()*3.5),vy:Math.sin(ang)*(2+Math.random()*3.5),r:3+Math.random()*3});
+    }
+    mirrorAbilityCopyFX.push({x:cx,y:cy,s:cs,label,color,timer:90,pts});
+  }
+function processMirrorCubeAbilities(){
+  if(!run) return;
+  var now=Date.now();
+  // ── MirrorCube: ability timers & position history ──
+  [{cube:p,enemy:o,side:selectedPlayer},{cube:o,enemy:p,side:selectedEnemy}].forEach(({cube:_mc,enemy:_me,side:_mSide})=>{
+    if(!_mc||_mc.t!=="MirrorCube"||_mc.hp<=0) return;
+    // Track position history (last 40 frames)
+    if(!_mc._mirrorPosHist) _mc._mirrorPosHist=[];
+    _mc._mirrorPosHist.push({x:_mc.x,y:_mc.y});
+    if(_mc._mirrorPosHist.length>40) _mc._mirrorPosHist.shift();
+    // PHANTOM CLONE every 6s
+    if(now-(_mc._mirrorCloneTimer||0)>=6000){
+      _mc._mirrorCloneTimer=now;
+      if(_mc._mirrorPosHist.length>=5){
+        mirrorGhostClones.push({
+          posHist:[..._mc._mirrorPosHist],
+          frame:0,
+          maxFrame:_mc._mirrorPosHist.length,
+          s:_mc.s,
+          color:_mc.c,
+          damaging:_mc.mastered,
+          owner:_mc,
+          enemy:_me,
+          copiedAbility:getMirrorAbilityLabel(_me.t),
+          copiedColor:getMirrorAbilityColor(_me.t),
+          fxFired:false
+        });
+      }
+    }
+    // REFLECT every 13s
+    if(now-(_mc._mirrorReflectTimer||0)>=13000){
+      _mc._mirrorReflectTimer=now;
+      _mc._mirrorReflectActive=true;
+      // Auto-expire after 5s if not triggered
+      setTimeout(()=>{ if(_mc) _mc._mirrorReflectActive=false; },5000);
+    }
+    // ECHO every 19s
+    if(now-(_mc._mirrorEchoTimer||0)>=19000){
+      _mc._mirrorEchoTimer=now;
+      _mc._mirrorEchoLabel=true;
+      _mc._mirrorEchoLabelEnd=now+1500;
+      if(Math.random()<0.5||_mc.mastered){
+        // Echo triggers Reflect again
+        _mc._mirrorReflectActive=true;
+        setTimeout(()=>{ if(_mc) _mc._mirrorReflectActive=false; },5000);
+      }
+      if(Math.random()<0.5||_mc.mastered){
+        // Echo spawns ring waves
+        for(let _eri=0;_eri<3;_eri++){
+          setTimeout(()=>{
+            mirrorEchoRings.push({x:_mc.x,y:_mc.y,r:_mc.s*0.3,maxR:_mc.s*2.5+_eri*20,alpha:0.8,speed:2.5+_eri*0.8});
+          },_eri*200);
+        }
+      }
+    }
+  });
+  // Update & draw ghost clones
+  for(let _gci=mirrorGhostClones.length-1;_gci>=0;_gci--){
+    let _gc=mirrorGhostClones[_gci];
+    _gc.frame++;
+    if(_gc.frame>=_gc.maxFrame){ if(!_gc.fxFired){_gc.fxFired=true;let _gLast=_gc.posHist[0]||{x:_gc.posHist[0]?_gc.posHist[0].x:0,y:0};spawnMirrorCopyFX(_gLast.x,_gLast.y,_gc.s,_gc.copiedAbility,_gc.copiedColor);}mirrorGhostClones.splice(_gci,1); continue; }
+    let _gPos=_gc.posHist[_gc.maxFrame-1-_gc.frame]||_gc.posHist[0];
+    let _gAlpha=0.55*(1-_gc.frame/_gc.maxFrame);
+    x.save();
+    x.globalAlpha=_gAlpha;
+    x.shadowColor='#b0c4de'; x.shadowBlur=18;
+    // Mirror-like gradient for ghost
+    let _ggGrad=x.createLinearGradient(_gPos.x-_gc.s/2,_gPos.y-_gc.s/2,_gPos.x+_gc.s/2,_gPos.y+_gc.s/2);
+    _ggGrad.addColorStop(0,'#e8f4fd'); _ggGrad.addColorStop(1,'#7aadcc');
+    x.fillStyle=_ggGrad;
+    x.fillRect(_gPos.x-_gc.s/2,_gPos.y-_gc.s/2,_gc.s,_gc.s);
+    x.restore();
+    // Mastered: damaging clone
+    if(_gc.damaging&&_gc.enemy&&_gc.enemy.hp>0){
+      let _gdx=_gc.enemy.x-_gPos.x,_gdy=_gc.enemy.y-_gPos.y;
+      if(Math.sqrt(_gdx*_gdx+_gdy*_gdy)<_gc.s){
+        if(now-(_gc.lastHit||0)>600){
+          _gc.lastHit=now;
+          applyDamage(_gc.enemy,_gc.owner,1);
+        }
+      }
+    }
+  }
+  // Draw Mirror ability copy FX (visual-only, no damage)
+  for(let _fi=mirrorAbilityCopyFX.length-1;_fi>=0;_fi--){
+    let _fx=mirrorAbilityCopyFX[_fi];
+    _fx.timer--;
+    if(_fx.timer<=0){mirrorAbilityCopyFX.splice(_fi,1);continue;}
+    let _prog=1-_fx.timer/90;
+    _fx.pts.forEach(_p=>{
+      _p.x+=_p.vx;_p.y+=_p.vy;_p.vx*=0.91;_p.vy*=0.91;
+      let _pa=Math.max(0,1-_prog*1.8);
+      x.save();x.globalAlpha=_pa;
+      x.fillStyle=_fx.color;x.shadowColor=_fx.color;x.shadowBlur=10;
+      x.beginPath();x.arc(_p.x,_p.y,_p.r,0,Math.PI*2);x.fill();
+      x.restore();
+    });
+    if(_fx.timer>18){
+      let _ta=Math.min(1,(_fx.timer/90)*2)*Math.min(1,(90-_fx.timer)/12);
+      x.save();x.globalAlpha=_ta;
+      x.shadowColor=_fx.color;x.shadowBlur=14;
+      x.fillStyle=_fx.color;x.font='bold 10px Arial';x.textAlign='center';
+      x.fillText('������ COPIED!',_fx.x,_fx.y-_fx.s*0.7-10);
+      x.fillStyle='#fff';x.font='bold 9px Arial';
+      x.fillText(_fx.label,_fx.x,_fx.y-_fx.s*0.7-22);
+      x.restore();
+    }
+  }
+  // Update & draw echo rings
+  for(let _eri2=mirrorEchoRings.length-1;_eri2>=0;_eri2--){
+    let _er=mirrorEchoRings[_eri2];
+    _er.r+=_er.speed;
+    _er.alpha-=0.025;
+    if(_er.r>_er.maxR||_er.alpha<=0){ mirrorEchoRings.splice(_eri2,1); continue; }
+    x.save();
+    x.globalAlpha=_er.alpha;
+    x.strokeStyle='#90caf9'; x.lineWidth=2;
+    x.shadowColor='#b0c4de'; x.shadowBlur=12;
+    x.beginPath(); x.arc(_er.x,_er.y,_er.r,0,Math.PI*2); x.stroke();
+    x.restore();
+  }
+}
+
+
 function applyDamage(victim,attacker,amount){
   // BombCube death-explosion in progress — no more damage
   if(victim&&victim.t==='BombCube'&&victim._bombDeathPending) return false;
@@ -3832,153 +3984,6 @@ function processBombCubeAbilities(){
     }
   });
   // ── MirrorCube helpers ──
-  function getMirrorAbilityLabel(t){
-    const m={Ninja:'⚡ Dash',Dragon:'🔥 Dragon Breath',CubeCube:'🍌 Banana Peel',
-      Samurai:'⚔️ Katana',Pirate:'💣 Cannon',Tiger:'🐯 Tiger Surge',
-      BombCube:'💥 Bomb',Warrior:'⚔️ Sword',KingCube:'👑 Royal Charge',
-      ShadowCube:'🌙 Blink',Stopper:'⏸ Stop Field',Vergas:'❄️ Icicle',
-      ChaosCube:'🎲 Chaos',Husky:'🦴 Bone',Panda:'🍃 Leaf',
-      EasterBunny:'🥚 Egg Toss',Gummy:'🍬 Split',FocusedNinja:'⚡ Phase Dash',
-      MirrorCube:'🪞 Echo',Zigzag:'⚡ Zigzag',Phantom:'👻 Phase',
-      CubeCubePrank:'🍌 Peel Storm',EggHunter:'🥚 Egg Burst'};
-    return m[t]||'✨ Ability';
-  }
-  function getMirrorAbilityColor(t){
-    const m={Ninja:'#00e5ff',Dragon:'#ff6b00',CubeCube:'#ffe066',Samurai:'#c0c0c0',
-      Pirate:'#8B4513',Tiger:'#ff8c00',BombCube:'#ff4444',Warrior:'#ff2222',
-      KingCube:'#ffd700',ShadowCube:'#9b59b6',Stopper:'#aaaaaa',Vergas:'#add8e6',
-      ChaosCube:'#ff00ff',Husky:'#4fc3f7',Panda:'#88cc44',EasterBunny:'#ffccff',
-      Gummy:'#ff88cc',FocusedNinja:'#00e5ff',MirrorCube:'#b0c4de',
-      Zigzag:'#ffff00',Phantom:'#88aaff'};
-    return m[t]||'#ffffff';
-  }
-  function spawnMirrorCopyFX(cx,cy,cs,label,color){
-    let pts=[];
-    for(let i=0;i<14;i++){
-      let ang=(i/14)*Math.PI*2;
-      pts.push({x:cx,y:cy,vx:Math.cos(ang)*(2+Math.random()*3.5),vy:Math.sin(ang)*(2+Math.random()*3.5),r:3+Math.random()*3});
-    }
-    mirrorAbilityCopyFX.push({x:cx,y:cy,s:cs,label,color,timer:90,pts});
-  }
-  // ── MirrorCube: ability timers & position history ──
-  [{cube:p,enemy:o,side:selectedPlayer},{cube:o,enemy:p,side:selectedEnemy}].forEach(({cube:_mc,enemy:_me,side:_mSide})=>{
-    if(!_mc||_mc.t!=="MirrorCube"||_mc.hp<=0) return;
-    // Track position history (last 40 frames)
-    if(!_mc._mirrorPosHist) _mc._mirrorPosHist=[];
-    _mc._mirrorPosHist.push({x:_mc.x,y:_mc.y});
-    if(_mc._mirrorPosHist.length>40) _mc._mirrorPosHist.shift();
-    // PHANTOM CLONE every 6s
-    if(now-(_mc._mirrorCloneTimer||0)>=6000){
-      _mc._mirrorCloneTimer=now;
-      if(_mc._mirrorPosHist.length>=5){
-        mirrorGhostClones.push({
-          posHist:[..._mc._mirrorPosHist],
-          frame:0,
-          maxFrame:_mc._mirrorPosHist.length,
-          s:_mc.s,
-          color:_mc.c,
-          damaging:_mc.mastered,
-          owner:_mc,
-          enemy:_me,
-          copiedAbility:getMirrorAbilityLabel(_me.t),
-          copiedColor:getMirrorAbilityColor(_me.t),
-          fxFired:false
-        });
-      }
-    }
-    // REFLECT every 13s
-    if(now-(_mc._mirrorReflectTimer||0)>=13000){
-      _mc._mirrorReflectTimer=now;
-      _mc._mirrorReflectActive=true;
-      // Auto-expire after 5s if not triggered
-      setTimeout(()=>{ if(_mc) _mc._mirrorReflectActive=false; },5000);
-    }
-    // ECHO every 19s
-    if(now-(_mc._mirrorEchoTimer||0)>=19000){
-      _mc._mirrorEchoTimer=now;
-      _mc._mirrorEchoLabel=true;
-      _mc._mirrorEchoLabelEnd=now+1500;
-      if(Math.random()<0.5||_mc.mastered){
-        // Echo triggers Reflect again
-        _mc._mirrorReflectActive=true;
-        setTimeout(()=>{ if(_mc) _mc._mirrorReflectActive=false; },5000);
-      }
-      if(Math.random()<0.5||_mc.mastered){
-        // Echo spawns ring waves
-        for(let _eri=0;_eri<3;_eri++){
-          setTimeout(()=>{
-            mirrorEchoRings.push({x:_mc.x,y:_mc.y,r:_mc.s*0.3,maxR:_mc.s*2.5+_eri*20,alpha:0.8,speed:2.5+_eri*0.8});
-          },_eri*200);
-        }
-      }
-    }
-  });
-  // Update & draw ghost clones
-  for(let _gci=mirrorGhostClones.length-1;_gci>=0;_gci--){
-    let _gc=mirrorGhostClones[_gci];
-    _gc.frame++;
-    if(_gc.frame>=_gc.maxFrame){ if(!_gc.fxFired){_gc.fxFired=true;let _gLast=_gc.posHist[0]||{x:_gc.posHist[0]?_gc.posHist[0].x:0,y:0};spawnMirrorCopyFX(_gLast.x,_gLast.y,_gc.s,_gc.copiedAbility,_gc.copiedColor);}mirrorGhostClones.splice(_gci,1); continue; }
-    let _gPos=_gc.posHist[_gc.maxFrame-1-_gc.frame]||_gc.posHist[0];
-    let _gAlpha=0.55*(1-_gc.frame/_gc.maxFrame);
-    x.save();
-    x.globalAlpha=_gAlpha;
-    x.shadowColor='#b0c4de'; x.shadowBlur=18;
-    // Mirror-like gradient for ghost
-    let _ggGrad=x.createLinearGradient(_gPos.x-_gc.s/2,_gPos.y-_gc.s/2,_gPos.x+_gc.s/2,_gPos.y+_gc.s/2);
-    _ggGrad.addColorStop(0,'#e8f4fd'); _ggGrad.addColorStop(1,'#7aadcc');
-    x.fillStyle=_ggGrad;
-    x.fillRect(_gPos.x-_gc.s/2,_gPos.y-_gc.s/2,_gc.s,_gc.s);
-    x.restore();
-    // Mastered: damaging clone
-    if(_gc.damaging&&_gc.enemy&&_gc.enemy.hp>0){
-      let _gdx=_gc.enemy.x-_gPos.x,_gdy=_gc.enemy.y-_gPos.y;
-      if(Math.sqrt(_gdx*_gdx+_gdy*_gdy)<_gc.s){
-        if(now-(_gc.lastHit||0)>600){
-          _gc.lastHit=now;
-          applyDamage(_gc.enemy,_gc.owner,1);
-        }
-      }
-    }
-  }
-  // Draw Mirror ability copy FX (visual-only, no damage)
-  for(let _fi=mirrorAbilityCopyFX.length-1;_fi>=0;_fi--){
-    let _fx=mirrorAbilityCopyFX[_fi];
-    _fx.timer--;
-    if(_fx.timer<=0){mirrorAbilityCopyFX.splice(_fi,1);continue;}
-    let _prog=1-_fx.timer/90;
-    _fx.pts.forEach(_p=>{
-      _p.x+=_p.vx;_p.y+=_p.vy;_p.vx*=0.91;_p.vy*=0.91;
-      let _pa=Math.max(0,1-_prog*1.8);
-      x.save();x.globalAlpha=_pa;
-      x.fillStyle=_fx.color;x.shadowColor=_fx.color;x.shadowBlur=10;
-      x.beginPath();x.arc(_p.x,_p.y,_p.r,0,Math.PI*2);x.fill();
-      x.restore();
-    });
-    if(_fx.timer>18){
-      let _ta=Math.min(1,(_fx.timer/90)*2)*Math.min(1,(90-_fx.timer)/12);
-      x.save();x.globalAlpha=_ta;
-      x.shadowColor=_fx.color;x.shadowBlur=14;
-      x.fillStyle=_fx.color;x.font='bold 10px Arial';x.textAlign='center';
-      x.fillText('������ COPIED!',_fx.x,_fx.y-_fx.s*0.7-10);
-      x.fillStyle='#fff';x.font='bold 9px Arial';
-      x.fillText(_fx.label,_fx.x,_fx.y-_fx.s*0.7-22);
-      x.restore();
-    }
-  }
-  // Update & draw echo rings
-  for(let _eri2=mirrorEchoRings.length-1;_eri2>=0;_eri2--){
-    let _er=mirrorEchoRings[_eri2];
-    _er.r+=_er.speed;
-    _er.alpha-=0.025;
-    if(_er.r>_er.maxR||_er.alpha<=0){ mirrorEchoRings.splice(_eri2,1); continue; }
-    x.save();
-    x.globalAlpha=_er.alpha;
-    x.strokeStyle='#90caf9'; x.lineWidth=2;
-    x.shadowColor='#b0c4de'; x.shadowBlur=12;
-    x.beginPath(); x.arc(_er.x,_er.y,_er.r,0,Math.PI*2); x.stroke();
-    x.restore();
-  }
-
   // ── Draw: bombs ──
   for(var _di2=0;_di2<bombCubeBombs.length;_di2++){
     var _db=bombCubeBombs[_di2];
@@ -4099,6 +4104,7 @@ function loop(ts){
   processHatchlings();
   p.draw(); o.draw();
   processBombCubeAbilities();
+  processMirrorCubeAbilities();
   // Boss HUD overlay
   if(bossMode&&o&&p){
     let _bdat=BOSSES.find(function(b){return b.type===currentBossType;})||{label:"Boss",color:"#f44336"};
