@@ -537,7 +537,7 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={BombCube:false,MirrorCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false};
+const shopOwned={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false};
 let _shopTab="normal";
 let gummyPartner=null; // active partner half when Gummy has split
 let pandaLeaves=[];
@@ -612,9 +612,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0};
-const masteryGoals={BombCube:15,MirrorCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15};
-const masteryUnlocked={BombCube:false,MirrorCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0};
+const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -751,6 +751,11 @@ const CHARS=[
    quest:"Reflect 10 enemy abilities",
    masteryDesc:"Phantom clones now deal 1 damage on contact! Echo always triggers both reflect and a visual chain.",
    shopSection:"normal", shopCost:60},
+  {type:"InvincibleCube", name:"Invincible Cube", color:"#c0c0c0",
+   desc:"A 100 HP titan! Every 12s heals 5 HP. Every 19s gains a shield blocking the next hit. But every 6s becomes vulnerable for 1s — only 1 HP!",
+   quest:"Block 10 attacks with the shield",
+   masteryDesc:"Heals 8 HP instead of 5. Shield activates every 14s.",
+   shopSection:"normal", shopCost:70},
 ];
 
 function checkMasteries(){
@@ -768,6 +773,18 @@ constructor(type,X,Y,mastered){
   if(type==="CubeKing"){this._ckLastCharge=0;this._ckChargeActive=false;this._ckChargeTill=0;}
   if(type==="ShadowCube"){this._scLastBlink=0;this._scInvisUntil=0;}
   if(type==="MirrorCube"){let _mn=Date.now();this._mirrorCloneTimer=_mn;this._mirrorReflectTimer=_mn;this._mirrorEchoTimer=_mn;this._mirrorPosHist=[];this._mirrorReflectActive=false;}
+  if(type==="InvincibleCube"){
+    this.hp=100;
+    this._invincHealTimer=Date.now()-11000;
+    this._invincVulnTimer=Date.now()-5000;
+    this._invincShieldTimer=Date.now()-18000;
+    this._invincShield=false;
+    this._invincVulnUntil=0;
+    this._invincSavedHp=100;
+    this._invincHealFX=[];
+    this._invincShieldBreakFX=[];
+    this._invincVulnFX=[];
+  }
   this.hp=10;
   this.s=40;
   this.x=X; this.y=Y;
@@ -777,7 +794,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   // Stun (used by CubeCubePrank banana peels)
@@ -3467,7 +3484,18 @@ function evolverHit(ev){
       Zigzag:'#ffff00',Phantom:'#88aaff'};
     return m[t]||'#ffffff';
   }
-  function spawnMirrorCopyFX(cx,cy,cs,label,color){
+  function pickRandomMirrorAbility(){
+    const _pool=[
+      {label:'Ninja Dash',color:'#00ffcc'},
+      {label:'Shadow Blink',color:'#9c27b0'},
+      {label:'Cannon Burst',color:'#ff5722'},
+      {label:'Bomb Throw',color:'#ff1744'},
+      {label:'Dragon Fire',color:'#ff6d00'},
+      {label:'Royal Charge',color:'#ffd700'}
+    ];
+    return _pool[Math.floor(Math.random()*_pool.length)];
+  }
+    function spawnMirrorCopyFX(cx,cy,cs,label,color){
     let pts=[];
     for(let i=0;i<14;i++){
       let ang=(i/14)*Math.PI*2;
@@ -3475,6 +3503,155 @@ function evolverHit(ev){
     }
     mirrorAbilityCopyFX.push({x:cx,y:cy,s:cs,label,color,timer:90,pts});
   }
+function processInvincibleCubeAbilities(){
+  if(!run) return;
+  var now=Date.now();
+  [p,o].forEach(function(cube){
+    if(!cube||cube.t!=='InvincibleCube') return;
+    var healCd=cube.mastered?10000:12000;
+    var shieldCd=cube.mastered?14000:19000;
+
+    // ── Ability 1: Heal every 12s ─────────────────────────────────────
+    if(now-cube._invincHealTimer>=healCd){
+      cube._invincHealTimer=now;
+      var healAmt=cube.mastered?8:5;
+      cube.hp=Math.min(100,cube.hp+healAmt);
+      // Heal FX: 3 expanding green rings
+      cube._invincHealFX=[];
+      for(var r=0;r<3;r++){
+        cube._invincHealFX.push({rad:cube.s*0.5,maxRad:cube.s*2.5+(r*cube.s*0.8),alpha:1,delay:r*8,timer:0});
+      }
+      // Heal sound: rising chord
+      try{
+        _sfxBeep('sine',440,0.12,0.2);
+        _sfxBeep('sine',550,0.10,0.2,true,0.07);
+        _sfxBeep('sine',660,0.10,0.25,true,0.14);
+      }catch(e){}
+      // Green +HP floater
+      dragonParticles.push({x:cube.x,y:cube.y-cube.s,vx:0,vy:-0.8,life:60,maxLife:60,color:'#4caf50',size:12,isText:true,text:'+'+healAmt+' HP'});
+    }
+
+    // ── Ability 2: Vulnerable window every 6s ────────────────────────
+    if(now-cube._invincVulnTimer>=6000&&cube._invincVulnUntil===0){
+      cube._invincVulnTimer=now;
+      cube._invincSavedHp=cube.hp;
+      cube.hp=1;
+      cube._invincVulnUntil=now+1000;
+      cube._invincVulnFX=[];
+      // red pulse ring
+      for(var v=0;v<2;v++){
+        cube._invincVulnFX.push({rad:cube.s*0.4,maxRad:cube.s*2.2,alpha:0.9,delay:v*12,timer:0});
+      }
+      try{_sfxBeep('sawtooth',200,0.18,0.15);}catch(e){}
+    }
+    // End vulnerable window
+    if(cube._invincVulnUntil>0&&now>=cube._invincVulnUntil){
+      if(cube.hp===1) cube.hp=cube._invincSavedHp; // restore if unhurt
+      cube._invincVulnUntil=0;
+    }
+
+    // ── Ability 3: Shield every 19s ───────────────────────────────────
+    if(now-cube._invincShieldTimer>=shieldCd&&!cube._invincShield){
+      cube._invincShieldTimer=now;
+      cube._invincShield=true;
+      try{
+        _sfxBeep('sine',800,0.12,0.15);
+        _sfxBeep('sine',1000,0.10,0.15,true,0.08);
+      }catch(e){}
+    }
+
+    // ── Draw: Heal FX ─────────────────────────────────────────────────
+    if(cube._invincHealFX&&cube._invincHealFX.length){
+      cube._invincHealFX.forEach(function(ring){
+        if(ring.timer<ring.delay){ring.timer++;return;}
+        ctx.save();
+        ctx.strokeStyle='rgba(76,175,80,'+ring.alpha.toFixed(2)+')';
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.arc(cube.x,cube.y,ring.rad,0,Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+        ring.rad+=(ring.maxRad-ring.rad)*0.08+0.5;
+        ring.alpha-=0.022;
+      });
+      cube._invincHealFX=cube._invincHealFX.filter(function(r){return r.alpha>0;});
+    }
+
+    // ── Draw: Vulnerable FX (red pulse + glow) ───────────────────────
+    if(cube._invincVulnUntil>0){
+      var rem=(cube._invincVulnUntil-now)/1000;
+      var pulse=0.4+0.5*Math.abs(Math.sin(now*0.015));
+      ctx.save();
+      ctx.shadowColor='#f44336';
+      ctx.shadowBlur=24;
+      ctx.strokeStyle='rgba(244,67,54,'+pulse.toFixed(2)+')';
+      ctx.lineWidth=4;
+      ctx.strokeRect(cube.x-cube.s/2-4,cube.y-cube.s/2-4,cube.s+8,cube.s+8);
+      ctx.restore();
+      // VULNERABLE label
+      ctx.save();
+      ctx.font='bold 10px monospace';
+      ctx.fillStyle='#f44336';
+      ctx.textAlign='center';
+      ctx.fillText('VULNERABLE!',cube.x,cube.y-cube.s/2-10);
+      ctx.restore();
+      // rings
+      if(cube._invincVulnFX&&cube._invincVulnFX.length){
+        cube._invincVulnFX.forEach(function(ring){
+          if(ring.timer<ring.delay){ring.timer++;return;}
+          ctx.save();
+          ctx.strokeStyle='rgba(244,67,54,'+ring.alpha.toFixed(2)+')';
+          ctx.lineWidth=2;
+          ctx.beginPath();
+          ctx.arc(cube.x,cube.y,ring.rad,0,Math.PI*2);
+          ctx.stroke();
+          ctx.restore();
+          ring.rad+=(ring.maxRad-ring.rad)*0.06+0.4;
+          ring.alpha-=0.025;
+        });
+        cube._invincVulnFX=cube._invincVulnFX.filter(function(r){return r.alpha>0;});
+      }
+    }
+
+    // ── Draw: Shield bubble ───────────────────────────────────────────
+    if(cube._invincShield){
+      var st=(now%1200)/1200;
+      ctx.save();
+      ctx.shadowColor='#4fc3f7';
+      ctx.shadowBlur=18;
+      var grd=ctx.createRadialGradient(cube.x,cube.y,cube.s*0.3,cube.x,cube.y,cube.s*1.0);
+      grd.addColorStop(0,'rgba(79,195,247,0.0)');
+      grd.addColorStop(0.7,'rgba(79,195,247,0.18)');
+      grd.addColorStop(1,'rgba(79,195,247,0.55)');
+      ctx.fillStyle=grd;
+      ctx.beginPath();
+      ctx.arc(cube.x,cube.y,cube.s*(0.85+0.08*Math.sin(now*0.005)),0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle='rgba(79,195,247,0.85)';
+      ctx.lineWidth=2.5;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── Draw: Shield break FX ─────────────────────────────────────────
+    if(cube._invincShieldBreakFX&&cube._invincShieldBreakFX.length){
+      cube._invincShieldBreakFX.forEach(function(pt){
+        ctx.save();
+        ctx.globalAlpha=pt.timer/40;
+        ctx.fillStyle='#4fc3f7';
+        ctx.beginPath();
+        ctx.arc(pt.x,pt.y,pt.r*pt.timer/40,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+        pt.x+=pt.vx; pt.y+=pt.vy;
+        pt.vx*=0.92; pt.vy*=0.92;
+        pt.timer--;
+      });
+      cube._invincShieldBreakFX=cube._invincShieldBreakFX.filter(function(pt){return pt.timer>0;});
+    }
+  });
+}
+
 function processMirrorCubeAbilities(){
   if(!run) return;
   var now=Date.now();
@@ -3507,8 +3684,8 @@ function processMirrorCubeAbilities(){
     // Reflect watch: copy enemy's NEXT ability use
     if(_mc._mirrorReflectActive&&_me._mAbilityTime&&_me._mAbilityTime>(_mc._mirrorReflectTimer||0)){
       _mc._mirrorReflectActive=false;
-      let _mPollLabel=_me._mAbilityLabel||getMirrorAbilityLabel(_me.t);
-      spawnMirrorCopyFX(_mc.x,_mc.y,_mc.s,_mPollLabel,getMirrorAbilityColor(_me.t));
+      let _mRandAbil=pickRandomMirrorAbility();
+      spawnMirrorCopyFX(_mc.x,_mc.y,_mc.s,_mRandAbil.label,_mRandAbil.color);
       let _mPollSide=(_mc===p)?selectedPlayer:selectedEnemy;
       if(!bossMode&&_mPollSide==='MirrorCube')masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
       checkMasteries();
@@ -3614,10 +3791,9 @@ function applyDamage(victim,attacker,amount){
   // MirrorCube: Reflect - block incoming hit and return 1 damage to attacker
   if(victim&&victim.t==="MirrorCube"&&victim._mirrorReflectActive){
     victim._mirrorReflectActive=false;
-    // Copy enemy's ability visually (no damage — just a surprise!)
-    let _mAtkType=attacker?attacker.t:null;
-    let _mAbl=(attacker&&attacker._mAbilityLabel)?attacker._mAbilityLabel:getMirrorAbilityLabel(_mAtkType);
-    spawnMirrorCopyFX(victim.x,victim.y,victim.s,_mAbl,getMirrorAbilityColor(_mAtkType));
+    // Randomly pick one of the fixed ability copies
+    let _mRandHit=pickRandomMirrorAbility();
+    spawnMirrorCopyFX(victim.x,victim.y,victim.s,_mRandHit.label,_mRandHit.color);
     // Mastery: count reflected abilities
     let _mSide=(victim===p)?selectedPlayer:selectedEnemy;
     if(!bossMode&&_mSide==="MirrorCube")masteryProgress.MirrorCube=Math.min(masteryGoals.MirrorCube,(masteryProgress.MirrorCube||0)+1);
@@ -3634,6 +3810,21 @@ function applyDamage(victim,attacker,amount){
   }
   if(victim.t=="Ninja"&&victim.mastered&&victim.dashActive) return false;
   if(victim.huskyShield){victim.huskyShield=false;return false;}
+  // InvincibleCube shield — absorbs one hit then shatters
+  if(victim&&victim._invincShield){
+    victim._invincShield=false;
+    victim._invincShieldBreakFX=[];
+    for(let _i=0;_i<20;_i++){
+      let _a=(_i/20)*Math.PI*2;
+      victim._invincShieldBreakFX.push({x:victim.x,y:victim.y,vx:Math.cos(_a)*5*(0.7+Math.random()*0.6),vy:Math.sin(_a)*5*(0.7+Math.random()*0.6),timer:40,r:victim.s*0.9+Math.random()*8});
+    }
+    try{_sfxBeep('square',350,0.22,0.12);_sfxBeep('square',180,0.18,0.18,true,0.09);}catch(e){}
+    // Mastery: count blocks
+    let _iSide=(victim===p)?selectedPlayer:selectedEnemy;
+    if(!bossMode&&_iSide==="InvincibleCube")masteryProgress.InvincibleCube=Math.min(masteryGoals.InvincibleCube,(masteryProgress.InvincibleCube||0)+1);
+    checkMasteries();
+    return false;
+  }
   if(victim.t=="Normal"&&victim.mastered&&victim.masteryShield>0){
     victim.masteryShield--;
     return false;
@@ -4115,6 +4306,7 @@ function loop(ts){
   processHatchlings();
   p.draw(); o.draw();
   processBombCubeAbilities();
+  processInvincibleCubeAbilities();
   processMirrorCubeAbilities();
   // Boss HUD overlay
   if(bossMode&&o&&p){
