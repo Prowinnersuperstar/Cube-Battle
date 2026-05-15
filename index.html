@@ -785,7 +785,7 @@ constructor(type,X,Y,mastered){
     this._invincShieldBreakFX=[];
     this._invincVulnFX=[];
   }
-  this.hp=10;
+  if(type!=='InvincibleCube') this.hp=10;
   this.s=40;
   this.x=X; this.y=Y;
   let spd=2.5;
@@ -3486,22 +3486,24 @@ function evolverHit(ev){
   }
   function pickRandomMirrorAbility(){
     const _pool=[
-      {label:'Ninja Dash',color:'#00ffcc'},
-      {label:'Shadow Blink',color:'#9c27b0'},
-      {label:'Cannon Burst',color:'#ff5722'},
+      {label:'Royal Charge',color:'#ffd700'},
       {label:'Bomb Throw',color:'#ff1744'},
       {label:'Dragon Fire',color:'#ff6d00'},
-      {label:'Royal Charge',color:'#ffd700'}
+      {label:'Vampire Drain',color:'#8b0000'},
+      {label:'Ninja Shuriken',color:'#b0c4de'}
     ];
     return _pool[Math.floor(Math.random()*_pool.length)];
   }
     function spawnMirrorCopyFX(cx,cy,cs,label,color){
+    // big sparks
     let pts=[];
-    for(let i=0;i<14;i++){
-      let ang=(i/14)*Math.PI*2;
-      pts.push({x:cx,y:cy,vx:Math.cos(ang)*(2+Math.random()*3.5),vy:Math.sin(ang)*(2+Math.random()*3.5),r:3+Math.random()*3});
+    for(let i=0;i<24;i++){
+      let ang=(i/24)*Math.PI*2+(Math.random()-0.5)*0.4;
+      let spd=9+Math.random()*7;
+      pts.push({x:cx,y:cy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:8+Math.random()*5,col:(Math.random()<0.5)?color:'#ffffff'});
     }
-    mirrorAbilityCopyFX.push({x:cx,y:cy,s:cs,label,color,timer:90,pts});
+    // flash ring starts small, expands
+    mirrorAbilityCopyFX.push({x:cx,y:cy,s:cs,label,color,timer:110,pts,ring:{r:cs*0.3,alpha:1}});
   }
 function processInvincibleCubeAbilities(){
   if(!run) return;
@@ -3750,22 +3752,34 @@ function processMirrorCubeAbilities(){
     _fx.timer--;
     if(_fx.timer<=0){mirrorAbilityCopyFX.splice(_fi,1);continue;}
     let _prog=1-_fx.timer/90;
+    // flash ring
+    if(_fx.ring){
+      _fx.ring.r+=6; _fx.ring.alpha-=0.045;
+      if(_fx.ring.alpha>0){
+        x.save();x.globalAlpha=_fx.ring.alpha;
+        x.strokeStyle=_fx.color;x.lineWidth=5;x.shadowColor=_fx.color;x.shadowBlur=20;
+        x.beginPath();x.arc(_fx.x,_fx.y,_fx.ring.r,0,Math.PI*2);x.stroke();
+        x.strokeStyle='#ffffff';x.lineWidth=2;x.globalAlpha=_fx.ring.alpha*0.5;
+        x.beginPath();x.arc(_fx.x,_fx.y,_fx.ring.r*0.7,0,Math.PI*2);x.stroke();
+        x.restore();
+      }
+    }
     _fx.pts.forEach(_p=>{
-      _p.x+=_p.vx;_p.y+=_p.vy;_p.vx*=0.91;_p.vy*=0.91;
-      let _pa=Math.max(0,1-_prog*1.8);
+      _p.x+=_p.vx;_p.y+=_p.vy;_p.vx*=0.88;_p.vy*=0.88;
+      let _pa=Math.max(0,1-_prog*1.4);
       x.save();x.globalAlpha=_pa;
-      x.fillStyle=_fx.color;x.shadowColor=_fx.color;x.shadowBlur=10;
-      x.beginPath();x.arc(_p.x,_p.y,_p.r,0,Math.PI*2);x.fill();
+      x.fillStyle=_p.col||_fx.color;x.shadowColor=_p.col||_fx.color;x.shadowBlur=16;
+      x.beginPath();x.arc(_p.x,_p.y,_p.r*(1-_prog*0.5),0,Math.PI*2);x.fill();
       x.restore();
     });
-    if(_fx.timer>18){
-      let _ta=Math.min(1,(_fx.timer/90)*2)*Math.min(1,(90-_fx.timer)/12);
-      x.save();x.globalAlpha=_ta;
-      x.shadowColor=_fx.color;x.shadowBlur=14;
-      x.fillStyle=_fx.color;x.font='bold 10px Arial';x.textAlign='center';
-      x.fillText('������ COPIED!',_fx.x,_fx.y-_fx.s*0.7-10);
-      x.fillStyle='#fff';x.font='bold 9px Arial';
-      x.fillText(_fx.label,_fx.x,_fx.y-_fx.s*0.7-22);
+    if(_fx.timer>20){
+      let _ta=Math.min(1,(_fx.timer/110)*2.5)*Math.min(1,(110-_fx.timer)/10);
+      x.save();x.globalAlpha=Math.max(0,_ta);
+      x.shadowColor=_fx.color;x.shadowBlur=22;
+      x.fillStyle='#ffffff';x.font='bold 20px Arial';x.textAlign='center';
+      x.fillText('✨ COPIED!',_fx.x,_fx.y-_fx.s-14);
+      x.fillStyle=_fx.color;x.font='bold 16px Arial';x.shadowBlur=18;
+      x.fillText(_fx.label,_fx.x,_fx.y-_fx.s-34);
       x.restore();
     }
   }
