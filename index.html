@@ -2105,10 +2105,25 @@ move(){
 
   this.x+=this.vx; this.y+=this.vy;
   let half=this.s/2;
-  if(this.x<=half){this.x=half;this.vx=Math.abs(this.vx);}
-  if(this.x>=360-half){this.x=360-half;this.vx=-Math.abs(this.vx);}
-  if(this.y<=half){this.y=half;this.vy=Math.abs(this.vy);}
-  if(this.y>=360-half){this.y=360-half;this.vy=-Math.abs(this.vy);}
+  if(this.t==='WallCube'){
+    // WallCube phases through arena walls
+    let _inB2=(this.x>=half&&this.x<=360-half&&this.y>=half&&this.y<=360-half);
+    if(this._wcInBounds===undefined) this._wcInBounds=true;
+    if(this._wcInBounds && !_inB2){
+      this.hp=Math.max(0,this.hp-1);
+    }
+    this._wcInBounds=_inB2;
+    let _tot2=55;
+    if(this.x<-_tot2){this.x=360-half-2;this.vx=Math.abs(this.vx);}
+    else if(this.x>360+_tot2){this.x=half+2;this.vx=-Math.abs(this.vx);}
+    if(this.y<-_tot2){this.y=360-half-2;this.vy=Math.abs(this.vy);}
+    else if(this.y>360+_tot2){this.y=half+2;this.vy=-Math.abs(this.vy);}
+  } else {
+    if(this.x<=half){this.x=half;this.vx=Math.abs(this.vx);}
+    if(this.x>=360-half){this.x=360-half;this.vx=-Math.abs(this.vx);}
+    if(this.y<=half){this.y=half;this.vy=Math.abs(this.vy);}
+    if(this.y>=360-half){this.y=360-half;this.vy=-Math.abs(this.vy);}
+  }
 }
 }
 
