@@ -2106,19 +2106,31 @@ move(){
   this.x+=this.vx; this.y+=this.vy;
   let half=this.s/2;
   if(this.t==='WallCube'){
-    // WallCube phases through arena walls — takes 1 damage on crossing, no teleport
-    let _inB2=(this.x>=half&&this.x<=360-half&&this.y>=half&&this.y<=360-half);
-    if(this._wcInBounds===undefined) this._wcInBounds=_inB2;
-    if(this._wcInBounds && !_inB2){
-      this.hp=Math.max(0,this.hp-1);
-    }
-    this._wcInBounds=_inB2;
-    // Far soft boundary: reverse velocity so cube drifts back in — no teleport
-    let _far=130;
-    if(this.x<-_far){this.vx=Math.abs(this.vx);}
-    else if(this.x>360+_far){this.vx=-Math.abs(this.vx);}
-    if(this.y<-_far){this.vy=Math.abs(this.vy);}
-    else if(this.y>360+_far){this.vy=-Math.abs(this.vy);}
+    // WallCube: 50/50 per wall contact — bounce (no dmg) OR phase through (1 dmg)
+    if(!this._wcWC) this._wcWC={L:false,R:false,T:false,B:false,ph:{L:null,R:null,T:null,B:null}};
+    let _wchalf=this.s/2;
+    let _wcHits={L:this.x<_wchalf,R:this.x>360-_wchalf,T:this.y<_wchalf,B:this.y>360-_wchalf};
+    ['L','R','T','B'].forEach(_ws=>{
+      if(_wcHits[_ws]&&!this._wcWC[_ws]){
+        // New wall contact — roll 50/50
+        this._wcWC.ph[_ws]=Math.random()<0.5; // true=phase, false=bounce
+        if(this._wcWC.ph[_ws]) this.hp=Math.max(0,this.hp-1); // only phase takes damage
+      }
+      this._wcWC[_ws]=_wcHits[_ws];
+      // If bounce was rolled, push cube back and reverse velocity
+      if(_wcHits[_ws]&&this._wcWC.ph[_ws]===false){
+        if(_ws==='L'){this.x=_wchalf;this.vx=Math.abs(this.vx);}
+        if(_ws==='R'){this.x=360-_wchalf;this.vx=-Math.abs(this.vx);}
+        if(_ws==='T'){this.y=_wchalf;this.vy=Math.abs(this.vy);}
+        if(_ws==='B'){this.y=360-_wchalf;this.vy=-Math.abs(this.vy);}
+      }
+    });
+    // Hard cap: prevents cube going so far out that canvas drawing glitches
+    let _wcFar=90;
+    if(this.x<-_wcFar){this.x=-_wcFar+1;this.vx=Math.abs(this.vx);}
+    else if(this.x>360+_wcFar){this.x=360+_wcFar-1;this.vx=-Math.abs(this.vx);}
+    if(this.y<-_wcFar){this.y=-_wcFar+1;this.vy=Math.abs(this.vy);}
+    else if(this.y>360+_wcFar){this.y=360+_wcFar-1;this.vy=-Math.abs(this.vy);}
   } else {
     if(this.x<=half){this.x=half;this.vx=Math.abs(this.vx);}
     if(this.x>=360-half){this.x=360-half;this.vx=-Math.abs(this.vx);}
@@ -4142,6 +4154,9 @@ const _FRAME_TARGET = 1000 / 60; // ~16.67ms
 
 // ===== 💣 BOMB CUBE SYSTEM =====
 function _spawnWcWall(owner,fake){
+  if(!wallCubeWalls) wallCubeWalls=[];
+  // Safety cap: no more than 8 walls at once to prevent freeze
+  if(wallCubeWalls.length>=8) return;
   var _horiz=Math.random()<0.5;
   var _cx=70+Math.random()*220, _cy=70+Math.random()*220;
   wallCubeWalls.push({x:_cx,y:_cy,horiz:_horiz,fake:fake,bounces:0,revealed:false,alpha:1.0,born:Date.now(),owner:owner,alive:true});
