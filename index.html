@@ -347,7 +347,7 @@ canvas{touch-action:none}
     <div class="shop-tabs">
       <button class="shop-tab active" id="tab-normal" onclick="switchShopTab('normal')">Normal</button>
       <button class="shop-tab" id="tab-limited" onclick="switchShopTab('limited')">&#x1F381; Limited</button>
-      <button class="shop-tab" id="tab-skins" onclick="switchShopTab('skins')">&#x1F3A8; Skins</button>
+      <button class="shop-tab" id="tab-astral" onclick="switchShopTab('astral')">🌌 Astral</button>
     </div>
     <div class="shop-content" id="shop-content"></div>
     <button id="shop-close" onclick="closeShop()">Close</button>
@@ -529,6 +529,7 @@ let ehEggs=[];
 let ehCarrots=[];
 let hatchlings=[];
 let easterEggs=0;
+let spaceTokens=0;
 let coins=0;
 let _ghostEchoes=[];
 let mirrorGhostClones=[]; // MirrorCube phantom clones
@@ -537,7 +538,7 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false};
+const shopOwned={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false};
 let _shopTab="normal";
 let gummyPartner=null; // active partner half when Gummy has split
 let pandaLeaves=[];
@@ -616,9 +617,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0};
-const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0};
+const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -770,6 +771,11 @@ const CHARS=[
    quest:"Shrink 15 times",
    masteryDesc:"Shrinking gives a 1-hit shield while small. Speed burst shields you for its full duration.",
    shopSection:"normal", shopCost:56},
+  {type:"LaserCube", name:"Laser Cube", color:"#1e2d5a",
+   desc:"Passive laser always tracks the enemy — revealing their position. Every 13s: fires a charged beam dealing 2 damage. Every 20s: drain beam activates for 2–10s dealing 0.5 dmg/sec.",
+   quest:"Deal 15 drain ticks to the enemy",
+   masteryDesc:"Laser fire deals 3 damage. Drain beam deals 1 dmg/sec instead of 0.5.",
+   shopSection:"astral", shopCost:5}
 ];
 
 function checkMasteries(){
@@ -809,7 +815,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   // Stun (used by CubeCubePrank banana peels)
@@ -1724,6 +1730,46 @@ draw(){
     x.fillStyle="#FF9800";
     x.fillText(_ccpEl>=_ccpCd?"🍌 SPIN!":"🍌 "+Math.max(0,(_ccpCd-_ccpEl)/1000).toFixed(1)+"s",this.x,this.y-this.s/2-18);
     x.textAlign="left"; x.restore();
+  }
+
+
+  // 🔫 LASER CUBE: joystick head + passive tracking beam
+  if(this.t==='LaserCube'){
+    var _lcE=(this===p)?o:p;
+    var _lcNow2=Date.now();
+    var _lcBx=this.x,_lcBy=this.y-this.s/2;
+    var _lcTy=_lcBy-this.s*0.5;
+    var _lcTr=this.s*0.13;
+    var _lcFire=_lcNow2<(this._lcBrightEnd||0);
+    var _lcDr=!!this._lcDraining;
+    // Base plate
+    x.fillStyle='#333466';
+    x.fillRect(_lcBx-this.s*0.2,_lcBy-this.s*0.12,this.s*0.4,this.s*0.13);
+    // Stick
+    x.save();
+    x.strokeStyle=_lcFire?'#ff4400':_lcDr?'#ff8800':'#9988cc';
+    x.lineWidth=_lcFire?4:_lcDr?3:2;
+    if(_lcFire){x.shadowColor='#ff4400';x.shadowBlur=12;}
+    else if(_lcDr){x.shadowColor='#ff8800';x.shadowBlur=8;}
+    x.beginPath();x.moveTo(_lcBx,_lcBy-this.s*0.05);x.lineTo(_lcBx,_lcTy);x.stroke();
+    x.restore();
+    // Red tip
+    x.save();
+    x.fillStyle=_lcFire?'#ff2200':'#ff0000';
+    if(_lcFire){x.shadowColor='#ff4400';x.shadowBlur=18;}
+    x.beginPath();x.arc(_lcBx,_lcTy,_lcTr,0,Math.PI*2);x.fill();
+    x.restore();
+    // Tracking beam to enemy
+    if(_lcE){
+      x.save();
+      if(_lcFire){x.strokeStyle='rgba(255,80,0,0.95)';x.lineWidth=4;x.shadowColor='#ff4400';x.shadowBlur=18;}
+      else if(_lcDr){x.strokeStyle='rgba(255,150,0,0.8)';x.lineWidth=3;x.shadowColor='#ff8800';x.shadowBlur=10;}
+      else{x.strokeStyle='rgba(100,200,255,0.28)';x.lineWidth=1.5;x.shadowBlur=0;}
+      x.setLineDash(_lcFire||_lcDr?[]:[6,6]);
+      x.beginPath();x.moveTo(_lcBx,_lcTy);x.lineTo(_lcE.x,_lcE.y);x.stroke();
+      x.setLineDash([]);
+      x.restore();
+    }
   }
 
   // HP label
@@ -4334,6 +4380,64 @@ function processWallCubeAbilities(){
   }
 }
 
+
+function processLaserCubeAbilities(){
+  if(!run)return;
+  var _lNow=Date.now();
+  [p,o].forEach(function(cube){
+    if(!cube||cube.t!=='LaserCube')return;
+    var enemy=(cube===p)?o:p;
+    if(!enemy)return;
+    if(!cube._lcInited){
+      cube._lcInited=true;
+      cube._lcFireTimer=_lNow;
+      cube._lcDrainTimer=_lNow;
+      cube._lcBrightEnd=0;
+      cube._lcDraining=false;
+      cube._lcDrainEnd=0;
+      cube._lcDrainLast=_lNow;
+      cube._lcDrainAccum=0;
+    }
+    // Ability 1: every 13s fire (2 dmg, 3 mastered)
+    if(_lNow-cube._lcFireTimer>=13000){
+      cube._lcFireTimer=_lNow;
+      cube._lcBrightEnd=_lNow+500;
+      enemy.hp-=(cube.mastered?3:2);
+      cube._mAbilityLabel='Laser Fire';cube._mAbilityTime=_lNow;
+      SFX.hit();
+    }
+    // Ability 2: every 20s drain beam
+    if(!cube._lcDraining&&_lNow-cube._lcDrainTimer>=20000){
+      cube._lcDrainTimer=_lNow;
+      var _lcDurs=[2000,4000,6000,8000,10000];
+      cube._lcDraining=true;
+      cube._lcDrainEnd=_lNow+_lcDurs[Math.floor(Math.random()*5)];
+      cube._lcDrainLast=_lNow;
+      cube._lcDrainAccum=0;
+      cube._mAbilityLabel='Drain Beam';cube._mAbilityTime=_lNow;
+    }
+    // Drain tick: 0.5 dmg/s (1 mastered)
+    if(cube._lcDraining){
+      if(_lNow>=cube._lcDrainEnd){
+        cube._lcDraining=false;
+        cube._lcDrainTimer=_lNow;
+      } else {
+        var _lcEl=_lNow-cube._lcDrainLast;
+        if(_lcEl>=1000){
+          var _lcTk=Math.floor(_lcEl/1000);
+          cube._lcDrainAccum+=(cube.mastered?1:0.5)*_lcTk;
+          cube._lcDrainLast+=_lcTk*1000;
+          var _lcInt=Math.floor(cube._lcDrainAccum);
+          if(_lcInt>0){enemy.hp-=_lcInt;cube._lcDrainAccum-=_lcInt;}
+          if(!bossMode&&masteryProgress['LaserCube']!==undefined){
+            masteryProgress['LaserCube']=Math.min(masteryGoals['LaserCube'],masteryProgress['LaserCube']+_lcTk);
+          }
+        }
+      }
+    }
+  });
+}
+
 function processShrinkingCubeAbilities(){
   if(!run) return;
   var _scNow=Date.now();
@@ -4729,6 +4833,7 @@ function loop(ts){
   p.draw(); o.draw();
   processWallCubeAbilities();
   processShrinkingCubeAbilities();
+  processLaserCubeAbilities();
   processBombCubeAbilities();
   processInvincibleCubeAbilities();
   processMirrorCubeAbilities();
@@ -5125,9 +5230,18 @@ function updateEggDisplay(){
   let d=document.getElementById("egg-display");
   if(d)d.innerText="\u{1F95A} "+easterEggs+" Easter Egg"+(easterEggs===1?"":"s")+"  \u{1FA99} "+coins+" Coin"+(coins===1?"":"s");
   let badge=document.getElementById("shop-egg-count");
-  if(badge)badge.innerText="\u{1F95A} "+easterEggs+"  \u{1FA99} "+coins;
+  if(badge)badge.innerText="\u{1F95A} "+easterEggs+"  \u{1FA99} "+coins+"  🌌 "+spaceTokens;
 }
 
+function exchangeForTokens(type){
+  if(type==="eggs"){
+    if(easterEggs>=200){easterEggs-=200;spaceTokens++;saveProgress();updateEggDisplay();updateShopContent();}
+    else{alert("Need 200 Easter Eggs! You have "+easterEggs+".");}
+  } else if(type==="coins"){
+    if(coins>=150){coins-=150;spaceTokens++;saveProgress();updateEggDisplay();updateShopContent();}
+    else{alert("Need 150 Coins! You have "+coins+".");}
+  }
+}
 function openShop(){
   updateShopContent();
   let badge=document.getElementById("shop-egg-count");
@@ -5139,7 +5253,7 @@ function switchShopTab(tab){
   _shopTab=tab;
   document.getElementById("tab-normal").className="shop-tab"+(tab==="normal"?" active":"");
   document.getElementById("tab-limited").className="shop-tab"+(tab==="limited"?" active":"");
-  document.getElementById("tab-skins").className="shop-tab"+(tab==="skins"?" active":"");
+  document.getElementById("tab-astral").className="shop-tab"+(tab==="astral"?" active":"");
   updateShopContent();
 }
 function updateShopContent(){
@@ -5184,35 +5298,44 @@ function updateShopContent(){
     });
     return;
   }
-  if(_shopTab==="skins"){
-    let skinChars=CHARS.filter(function(cc){return cc.isSkin===true&&cc.shopSection!=="limited";});
-    if(!skinChars.length){cont.innerHTML="<p style='color:#666;font-size:13px;text-align:center;padding:20px'>No skins available yet.</p>";return;}
-    skinChars.forEach(function(ch){
-      let owned=shopOwned[ch.type]||false;
-      let canBuy=!owned&&coins>=ch.shopCost;
-      let card=document.createElement("div");
+  if(_shopTab==="astral"){
+    var _atDiv=document.createElement("div");
+    _atDiv.style.cssText="background:#0a0a2e;border:1px solid #334499;border-radius:8px;padding:12px;margin-bottom:12px;text-align:center;";
+    _atDiv.innerHTML="<div style='color:#aabbff;font-weight:bold;font-size:14px;margin-bottom:8px'>🌌 Space Tokens: <span style='color:#fff;font-size:18px'>"+spaceTokens+"</span></div>"
+      +"<div style='font-size:11px;color:#8899cc;margin-bottom:8px'>Convert your earnings into Astral currency</div>"
+      +"<div style='display:flex;gap:8px;justify-content:center;flex-wrap:wrap'>"
+      +"<button onclick='exchangeForTokens(\\"eggs\\")' style='background:#1a0a2e;color:#ffee88;border:1px solid #664400;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;line-height:1.4'>🥚 200 Eggs → 1 Token<br><span style='color:#888;font-size:10px'>You have "+easterEggs+"</span></button>"
+      +"<button onclick='exchangeForTokens(\\"coins\\")' style='background:#0a1a2e;color:#88ddff;border:1px solid #004488;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;line-height:1.4'>🪙 150 Coins → 1 Token<br><span style='color:#888;font-size:10px'>You have "+coins+"</span></button>"
+      +"</div>";
+    cont.appendChild(_atDiv);
+    var _astralChars=CHARS.filter(function(cc){return cc.shopSection==="astral";});
+    if(!_astralChars.length){var _np=document.createElement("p");_np.style.cssText="color:#666;font-size:13px;text-align:center;padding:20px";_np.textContent="More Astral items coming soon...";cont.appendChild(_np);return;}
+    _astralChars.forEach(function(ch){
+      var owned=shopOwned[ch.type]||false;
+      var canBuy=!owned&&spaceTokens>=ch.shopCost;
+      var card=document.createElement("div");
       card.className="shop-card "+(owned?"owned":canBuy?"buyable":"");
-      let costTxt=owned?"\u2705 Owned!":"\u{1FA99} "+ch.shopCost+" Coins"+(!canBuy&&!owned?" (need more)":"");
-      let nameCol=owned?"#4caf50":ch.color;
-      card.innerHTML="<div class='shop-icon' style='background:"+ch.color+"'>\u{1F3A8}</div>"
+      var costTxt=owned?"✅ Owned!":"🌌 "+ch.shopCost+" Space Token"+(ch.shopCost===1?"":"s")+(!canBuy&&!owned?" (need more)":"");
+      var nameCol=owned?"#4caf50":ch.color;
+      card.innerHTML="<div class='shop-icon' style='background:"+ch.color+"'>⚡</div>"
         +"<div class='shop-info'>"
-        +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"\u2705 ":"")+(ch.name||ch.type)+" <span style='font-size:10px;color:#aaa'>(Skin)</span></div>"
-        +"<div class='shop-desc'>\u{1F3AF} Skin of: "+ch.baseCube+"<br>"+ch.desc+"</div>"
+        +"<div class='shop-name' style='color:"+nameCol+"'>"+(owned?"✅ ":"")+(ch.name||ch.type)+"</div>"
+        +"<div class='shop-desc'>"+ch.desc+"</div>"
         +"<div class='shop-cost'>"+costTxt+"</div>"
         +"</div>";
       if(!owned){
         (function(chRef){
           card.onclick=function(){
-            if(coins>=chRef.shopCost){
-              coins-=chRef.shopCost;
+            if(spaceTokens>=chRef.shopCost){
+              spaceTokens-=chRef.shopCost;
               shopOwned[chRef.type]=true;
               SFX.buy();
               saveProgress();
               updateEggDisplay();
               updateShopContent();
-              alert(chRef.type+" skin unlocked! Find it in the character picker.");
+              alert((chRef.name||chRef.type)+" unlocked! Find it in the character picker.");
             } else {
-              alert("Need "+chRef.shopCost+" coins! You have "+coins+".");
+              alert("Need "+chRef.shopCost+" Space Token"+(chRef.shopCost===1?"":"s")+"! You have "+spaceTokens+".");
             }
           };
         })(ch);
@@ -5221,7 +5344,7 @@ function updateShopContent(){
     });
     return;
   }
-  let limitedChars=CHARS.filter(function(cc){return cc.shopSection==="limited";});
+    let limitedChars=CHARS.filter(function(cc){return cc.shopSection==="limited";});
   let shopIcons={EasterBunny:"\u{1F430}",EggHunter:"\u{1F95A}\u{1F3F9}",Gummy:"\u{1F36C}",CubeCubePrank:"\u{1F389}"};
   limitedChars.forEach(function(ch){
     let owned=shopOwned[ch.type]||false;
@@ -5682,6 +5805,7 @@ function saveProgress(){
       masteryProgress: masteryProgress,
       masteryUnlocked: masteryUnlocked,
       easterEggs: easterEggs,
+      spaceTokens: spaceTokens,
       coins: coins,
       shopOwned: shopOwned,
       bossProgress: bossProgress,
@@ -5699,6 +5823,7 @@ function loadProgress(){
     if(d.masteryProgress) Object.assign(masteryProgress, d.masteryProgress);
     if(d.masteryUnlocked) Object.assign(masteryUnlocked, d.masteryUnlocked);
     if(typeof d.easterEggs==="number") easterEggs=d.easterEggs;
+    if(typeof d.spaceTokens==="number") spaceTokens=d.spaceTokens;
     if(typeof d.coins==="number") coins=d.coins;
     if(d.shopOwned) Object.assign(shopOwned, d.shopOwned);
     if(d.bossProgress){for(let _bk in d.bossProgress){if(bossProgress[_bk])Object.assign(bossProgress[_bk],d.bossProgress[_bk]);}}
