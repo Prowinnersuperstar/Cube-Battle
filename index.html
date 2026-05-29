@@ -791,7 +791,8 @@ constructor(type,X,Y,mastered){
     this._invincShieldBreakFX=[];
     this._invincVulnFX=[];
   }
-  if(type!=='InvincibleCube') this.hp=10;
+  if(type!=='InvincibleCube'&&type!=='WallCube') this.hp=10;
+  if(type==='WallCube') this.hp=25;
   this.s=40;
   this.x=X; this.y=Y;
   let spd=2.5;
