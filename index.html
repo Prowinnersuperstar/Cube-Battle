@@ -225,6 +225,7 @@ canvas{touch-action:none}
   <button id="btn-quests" onclick="openQuests()" style="background:#b8860b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">📋 Quests</button>
   <button id="btn-boss" onclick="openBossPanel()" style="background:#c0392b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">⚔️ Boss Fight</button>
   <button onclick="openSettings()" style="background:#4a4a6a;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">⚙️ Settings</button>
+  <button id="btn-bonus" onclick="claimBonus()" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#111;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold" title="Claim +5 coins &amp; +5 Easter Eggs!">🎁 +5 Bonus</button>
 </div>
 <div id="score-display" style="font-size:13px;margin:2px 0 4px"><span id="egg-display" style="color:#ffe082;font-size:14px;font-weight:bold"></span></div>
 
@@ -5377,6 +5378,25 @@ function startOrRestart(){
 }
 
 // ===== SHOP + EGG DISPLAY =====
+function claimBonus(){
+  coins += 5;
+  easterEggs += 5;
+  saveProgress();
+  updateEggDisplay();
+  var btn=document.getElementById("btn-bonus");
+  if(btn){
+    var orig=btn.textContent;
+    btn.textContent="✅ +5 claimed!";
+    btn.disabled=true;
+    btn.style.opacity="0.6";
+    setTimeout(function(){
+      btn.textContent=orig;
+      btn.disabled=false;
+      btn.style.opacity="1";
+    },1000);
+  }
+}
+
 function updateEggDisplay(){
   let d=document.getElementById("egg-display");
   if(d)d.innerText="\u{1F95A} "+easterEggs+" Easter Egg"+(easterEggs===1?"":"s")+"  \u{1FA99} "+coins+" Coin"+(coins===1?"":"s");
