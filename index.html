@@ -4546,7 +4546,7 @@ function processAlienCubeAbilities(){
     var _clDist=Math.sqrt(_cldx*_cldx+_cldy*_cldy)||1;
     _cl.x+=(_cldx/_clDist)*2.5;
     _cl.y+=(_cldy/_clDist)*2.5;
-    if(_aNow>_cl.dmgCooldown&&_clDist<_cl.size+_clEnemy.s/2){
+    if(_aNow>_cl.dmgCooldown&&_clDist<_cl.size+_clEnemy.s/2&&_clEnemy!==_cl.owner){
       applyDamage(_clEnemy,_cl.owner,3);
       _cl.dmgCooldown=_aNow+800;
     }
@@ -5115,7 +5115,7 @@ function loop(ts){
       }
       // Final result
       bossMode=false;run=false;
-      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;
+      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];
       let _playerWon=o.hp<=0;
       if(_playerWon){
         let _bt=activeBossType||currentBossType;
@@ -5169,7 +5169,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];
     let pWins=p.hp>0&&o.hp<=0, oWins=o.hp>0&&p.hp<=0;
     if(pWins)SFX.win(); else SFX.death();
     if(pWins&&selectedPlayer=="Zigzag"){if(!bossMode)masteryProgress.Zigzag=1;checkMasteries();}
@@ -5946,7 +5946,7 @@ function confirmPartyFight(){
   bossPartyIdx=0;
   activeBossType=_savedBossType; // lock in boss type for win tracking
   // Start boss fight
-  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;}
+  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];}
   _lastLoopTs=0;
   bossMode=true;
   let bData=BOSSES.find(b=>b.type===currentBossType)||{color:"#f44336",label:"Boss"};
