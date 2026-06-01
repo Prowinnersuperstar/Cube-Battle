@@ -539,8 +539,9 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false};
+const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false};
 let _shopTab="normal";
+let _starterPickedDone=false;
 let gummyPartner=null; // active partner half when Gummy has split
 let pandaLeaves=[];
 let wallCubeWalls=[];
@@ -634,18 +635,21 @@ const CHARS=[
   {type:"Ninja",  color:"#2980b9",
    desc:"Dashes every 3s at 3× speed for 0.3s.",
    quest:"Dash 20 times",
-   masteryDesc:"Completely immune to damage while dashing"},
+   masteryDesc:"Completely immune to damage while dashing",
+   shopSection:"starter", shopCost:10},
   {type:"FocusedNinja", name:"Focused (Ninja)", color:"#1565c0",
    desc:"Dashes toward the enemy every 3s, phasing through on contact.",
    isSkin:true, baseCube:"Ninja", shopSection:"normal", shopCost:43},
   {type:"Stick",  color:"#8B4513",
    desc:"Spinning stick tip hits for 2 damage & knocks enemy.",
    quest:"Hit enemy with stick 10 times",
-   masteryDesc:"Stick tip now deals 3 damage instead of 2"},
+   masteryDesc:"Stick tip now deals 3 damage instead of 2",
+   shopSection:"starter", shopCost:10},
   {type:"Shield", color:"#00bcd4",
    desc:"Rotating shield arc — attackers bounce off for 1 damage.",
    quest:"Block 10 attacks with shield",
-   masteryDesc:"Shield now reflects 2 damage to attackers instead of 1"},
+   masteryDesc:"Shield now reflects 2 damage to attackers instead of 1",
+   shopSection:"starter", shopCost:10},
   {type:"Vampire",color:"#6a0dad",
    desc:"Every 15s fires a drain beam — steals 3 HP from the enemy.",
    quest:"Steal 10 HP total",
@@ -694,7 +698,7 @@ const CHARS=[
    desc:"Breathes fire randomly! Fire burns enemies — 1 dmg every 0.5s for 3s.",
    quest:"Deal 50 fire damage",
    masteryDesc:"Fire auto-aims at the enemy! Gains wings and 1.5× speed boost.",
-   shopCost:120, shopSection:"normal"},
+   shopCost:11, shopSection:"astral"},
   {type:"CubeCube", color:"#E040FB",
    desc:"Does absolutely nothing. Just vibes. 🎣",
    quest:"Play 100 games with Cube Cube",
@@ -5611,7 +5615,7 @@ function updateShopContent(){
   let cont=document.getElementById("shop-content");
   cont.innerHTML="";
   if(_shopTab==="normal"){
-    let normalChars=CHARS.filter(function(cc){return cc.shopSection==="normal";});
+    let normalChars=CHARS.filter(function(cc){return cc.shopSection==="normal"||cc.shopSection==="starter";});
     if(!normalChars.length){cont.innerHTML="<p style='color:#666;font-size:13px;text-align:center;padding:20px'>More items coming soon...</p>";return;}
     let shopIcons={Phantom:"\u{1F47B}"};
     normalChars.forEach(function(ch){
@@ -6160,7 +6164,8 @@ function saveProgress(){
       coins: coins,
       shopOwned: shopOwned,
       bossProgress: bossProgress,
-      dataVersion: 6
+      dataVersion: 7,
+      starterPickedDone: _starterPickedDone
     }));
     saveBossProgress(); // always mirror boss progress to dedicated key
   }catch(e){}
@@ -6182,6 +6187,10 @@ function loadProgress(){
     if((d.dataVersion||0)<3){ shopOwned.Dragon=false; }
     if((d.dataVersion||0)<5){ shopOwned.FocusedNinja=false; }
     if((d.dataVersion||0)<6){ shopOwned.Gummy=false; shopOwned.CubeCubePrank=false; }
+    // Restore starter owned flag
+    if(typeof d.starterPickedDone==="boolean") _starterPickedDone=d.starterPickedDone;
+    // Existing players who saved before starter system existed get all 3 for free
+    if(!_starterPickedDone){ shopOwned.Ninja=true; shopOwned.Stick=true; shopOwned.Shield=true; _starterPickedDone=true; }
     updateEggDisplay();
   } catch(e){ console.warn("Failed to load progress", e); }
   // Load dedicated boss progress key — always take higher wins
@@ -6758,7 +6767,10 @@ function downloadThisReplay(){
 </body>
 </html>`;
 }
+</script>
 
+<script>
+let _isFirstTime=!localStorage.getItem("cubeBattle_progress");
 loadProgress();
 
 
@@ -6856,10 +6868,55 @@ function loadSettings(){
 // close overlay on backdrop click
 document.addEventListener('DOMContentLoaded', function(){
   loadSettings();
+  if(_isFirstTime) showStarterModal();
   document.getElementById('settings-overlay').addEventListener('click', function(e){
     if(e.target === this) closeSettings();
   });
 });
+</script>
+
+<!-- Starter Cube Picker Modal -->
+<div id="starter-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="background:#1a1a2e;border:2px solid #4a9eff;border-radius:18px;padding:36px 40px;max-width:620px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+    <div style="font-size:32px;margin-bottom:8px;">🎮</div>
+    <h2 style="color:#fff;margin:0 0 6px;font-size:22px;font-weight:700;">Welcome to Cube Battle!</h2>
+    <p style="color:#aaa;margin:0 0 28px;font-size:14px;">Pick your <strong style="color:#4a9eff">starter cube</strong> — it’s yours for free!<br>The other two will be available in the shop for 🪙10 coins each.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <div onclick="pickStarterCube('Ninja')" style="background:#1e3a5f;border:2px solid #2980b9;border-radius:12px;padding:20px 18px;width:150px;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;" onmouseover="this.style.transform='scale(1.06)';this.style.boxShadow='0 0 18px #2980b9'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none'">
+        <div style="font-size:36px;margin-bottom:8px;">⚡</div>
+        <div style="color:#4fc3f7;font-size:16px;font-weight:700;margin-bottom:4px;">Ninja</div>
+        <div style="background:#2980b9;color:#fff;font-size:10px;font-weight:600;border-radius:20px;padding:2px 8px;margin-bottom:8px;display:inline-block;">SPEED</div>
+        <div style="color:#ccc;font-size:11px;line-height:1.4;">Dashes at 3× speed every 3s. Nimble and evasive.</div>
+      </div>
+      <div onclick="pickStarterCube('Stick')" style="background:#2e1a0a;border:2px solid #8B4513;border-radius:12px;padding:20px 18px;width:150px;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;" onmouseover="this.style.transform='scale(1.06)';this.style.boxShadow='0 0 18px #8B4513'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none'">
+        <div style="font-size:36px;margin-bottom:8px;">⚔️</div>
+        <div style="color:#d4a06a;font-size:16px;font-weight:700;margin-bottom:4px;">Stick</div>
+        <div style="background:#8B4513;color:#fff;font-size:10px;font-weight:600;border-radius:20px;padding:2px 8px;margin-bottom:8px;display:inline-block;">DAMAGE</div>
+        <div style="color:#ccc;font-size:11px;line-height:1.4;">Spinning tip hits for 2 damage and knocks the enemy back.</div>
+      </div>
+      <div onclick="pickStarterCube('Shield')" style="background:#0a2e35;border:2px solid #00bcd4;border-radius:12px;padding:20px 18px;width:150px;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;" onmouseover="this.style.transform='scale(1.06)';this.style.boxShadow='0 0 18px #00bcd4'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none'">
+        <div style="font-size:36px;margin-bottom:8px;">🛡️</div>
+        <div style="color:#4dd0e1;font-size:16px;font-weight:700;margin-bottom:4px;">Shield</div>
+        <div style="background:#00bcd4;color:#000;font-size:10px;font-weight:600;border-radius:20px;padding:2px 8px;margin-bottom:8px;display:inline-block;">DEFENSE</div>
+        <div style="color:#ccc;font-size:11px;line-height:1.4;">Rotating shield arc — attackers bounce off for 1 damage.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function showStarterModal(){
+  var el=document.getElementById('starter-overlay');
+  if(el){ el.style.display='flex'; }
+}
+function pickStarterCube(type){
+  shopOwned[type]=true;
+  _starterPickedDone=true;
+  _isFirstTime=false;
+  saveProgress();
+  var el=document.getElementById('starter-overlay');
+  if(el) el.style.display='none';
+  if(typeof pickerTarget!=='undefined'&&pickerTarget) openPicker(pickerTarget);
+}
 </script>
 </body>
 </html>
