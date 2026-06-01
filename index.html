@@ -5087,7 +5087,7 @@ function processSharkCubeAbilities(){
 function processTesseractCubeAbilities(){
   if(!run) return;
   var _tcNow=Date.now();
-  var W=canvas.width, H=canvas.height;
+  var W=c.width||360, H=c.height||360;
   var MARGIN=40;
 
   [p,o].forEach(function(cube){
