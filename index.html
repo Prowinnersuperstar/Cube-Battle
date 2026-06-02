@@ -827,7 +827,7 @@ const CHARS=[
    quest:"Hit the enemy with your ice sword 15 times",
    masteryDesc:"Ice sword deals 2 damage on hit; freeze lasts 3 seconds instead of 2.",
    shopSection:"normal", shopCost:1000, requiresOwned:"SwordCube"},
-  {type:"FrostfireSwordCube", name:"\u2744\ufe0f\ud83d\udd25 Frostfire Sword Cube", color:"#7C4DFF",
+  {type:"FrostfireSwordCube", hp:15, name:"\u2744\ufe0f\ud83d\udd25 Frostfire Sword Cube", color:"#7C4DFF",
    desc:"A blade forged from both ice and fire. Sword deals 1 damage on contact, then simultaneously freezes the enemy for 2 seconds (1 dmg/sec) AND burns them for 2 seconds (2 dmg/sec) — 7 total damage per hit. Mastered: 2 dmg on hit, 3s freeze, 2s burn — 9 total.",
    quest:"Hit the enemy with your frostfire sword 20 times",
    masteryDesc:"Sword deals 2 damage on hit; freeze lasts 3 seconds; burn deals 4 total — 9 damage per hit.",
@@ -864,6 +864,7 @@ constructor(type,X,Y,mastered){
   if(type!=='InvincibleCube'&&type!=='WallCube') this.hp=10;
   if(type==='WallCube') this.hp=25;
   if(type==='AlienCube') this.hp=20;
+  if(type==='FrostfireSwordCube') this.hp=15;
   this.s=40;
   this.x=X; this.y=Y;
   let spd=2.5;
