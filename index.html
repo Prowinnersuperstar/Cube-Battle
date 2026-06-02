@@ -987,6 +987,42 @@ draw(){
     this.stickTip={x:sx,y:sy};
   }
 
+    // ⚔️ SWORD CUBE & 🔥 FIRE SWORD CUBE — spinning sword draw
+    if(this.t==="SwordCube"||this.t==="FireSwordCube"){
+      this.swordAngle=(this.swordAngle||0)+0.038;
+      let _sang=this.swordAngle, _slen=54;
+      let _stx=this.x+Math.cos(_sang)*_slen, _sty=this.y+Math.sin(_sang)*_slen;
+      this.swordTip={x:_stx,y:_sty};
+      x.save();
+      x.translate(this.x,this.y);
+      x.rotate(_sang);
+      // Handle
+      x.fillStyle="#3E2723";
+      x.fillRect(-5,-3,15,6);
+      // Guard (crosspiece)
+      x.fillStyle=this.t==="FireSwordCube"?"#BF360C":"#90A4AE";
+      x.shadowBlur=0;
+      x.fillRect(9,-9,6,18);
+      // Blade
+      let _fireFlicker=this.t==="FireSwordCube"?0.6+0.4*Math.sin(Date.now()/80):1;
+      x.shadowColor=this.t==="FireSwordCube"?"#ff5722":"#CFD8DC";
+      x.shadowBlur=this.t==="FireSwordCube"?14:7;
+      x.fillStyle=this.t==="FireSwordCube"
+        ?(this.mastered?"#ff3d00":"#FF7043")
+        :(this.mastered?"#ffd700":"#ECEFF1");
+      x.beginPath();
+      x.moveTo(15,-4); x.lineTo(_slen,0); x.lineTo(15,4); x.closePath();
+      x.fill();
+      // Fire shimmer on blade
+      if(this.t==="FireSwordCube"){
+        x.globalAlpha=_fireFlicker*0.55;
+        x.strokeStyle="#FFCC02"; x.lineWidth=3;
+        x.shadowColor="#ff9800"; x.shadowBlur=18;
+        x.beginPath(); x.moveTo(15,0); x.lineTo(_slen-4,0); x.stroke();
+      }
+      x.restore();
+    } else { this.swordTip=null; }
+
   // 🛡 SHIELD
   if(this.t=="Shield"){
     this.angle+=0.025;
@@ -2476,42 +2512,6 @@ class Hatchling{
       x.beginPath(); x.moveTo(this.x,this.y); x.lineTo(sx,sy); x.stroke();
       this.stickTip={x:sx,y:sy};
     } else {this.stickTip=null;}
-
-    // ⚔️ SWORD CUBE & 🔥 FIRE SWORD CUBE — spinning sword draw
-    if(this.t==="SwordCube"||this.t==="FireSwordCube"){
-      this.swordAngle=(this.swordAngle||0)+0.038;
-      let _sang=this.swordAngle, _slen=54;
-      let _stx=this.x+Math.cos(_sang)*_slen, _sty=this.y+Math.sin(_sang)*_slen;
-      this.swordTip={x:_stx,y:_sty};
-      x.save();
-      x.translate(this.x,this.y);
-      x.rotate(_sang);
-      // Handle
-      x.fillStyle="#3E2723";
-      x.fillRect(-5,-3,15,6);
-      // Guard (crosspiece)
-      x.fillStyle=this.t==="FireSwordCube"?"#BF360C":"#90A4AE";
-      x.shadowBlur=0;
-      x.fillRect(9,-9,6,18);
-      // Blade
-      let _fireFlicker=this.t==="FireSwordCube"?0.6+0.4*Math.sin(Date.now()/80):1;
-      x.shadowColor=this.t==="FireSwordCube"?"#ff5722":"#CFD8DC";
-      x.shadowBlur=this.t==="FireSwordCube"?14:7;
-      x.fillStyle=this.t==="FireSwordCube"
-        ?(this.mastered?"#ff3d00":"#FF7043")
-        :(this.mastered?"#ffd700":"#ECEFF1");
-      x.beginPath();
-      x.moveTo(15,-4); x.lineTo(_slen,0); x.lineTo(15,4); x.closePath();
-      x.fill();
-      // Fire shimmer on blade
-      if(this.t==="FireSwordCube"){
-        x.globalAlpha=_fireFlicker*0.55;
-        x.strokeStyle="#FFCC02"; x.lineWidth=3;
-        x.shadowColor="#ff9800"; x.shadowBlur=18;
-        x.beginPath(); x.moveTo(15,0); x.lineTo(_slen-4,0); x.stroke();
-      }
-      x.restore();
-    } else { this.swordTip=null; }
 
     x.save(); x.globalAlpha=0.88;
     x.fillStyle=this.c;
