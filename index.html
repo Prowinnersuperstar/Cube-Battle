@@ -539,7 +539,7 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false};
+const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false};
 let _shopTab="normal";
 let _starterPickedDone=false;
 let gummyPartner=null; // active partner half when Gummy has split
@@ -630,9 +630,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0};
-const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0};
+const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -826,7 +826,12 @@ const CHARS=[
    desc:"A frozen variation of the Sword Cube. The ice blade hits for 1 damage and freezes the enemy for 2 seconds, dealing 1 damage per second while frozen. Mastered: 2 damage on hit; freeze lasts 3 seconds.",
    quest:"Hit the enemy with your ice sword 15 times",
    masteryDesc:"Ice sword deals 2 damage on hit; freeze lasts 3 seconds instead of 2.",
-   shopSection:"normal", shopCost:1000, requiresOwned:"SwordCube"}
+   shopSection:"normal", shopCost:1000, requiresOwned:"SwordCube"},
+  {type:"FrostfireSwordCube", name:"\u2744\ufe0f\ud83d\udd25 Frostfire Sword Cube", color:"#7C4DFF",
+   desc:"A blade forged from both ice and fire. Sword deals 1 damage on contact, then simultaneously freezes the enemy for 2 seconds (1 dmg/sec) AND burns them for 2 seconds (2 dmg/sec) — 7 total damage per hit. Mastered: 2 dmg on hit, 3s freeze, 2s burn — 9 total.",
+   quest:"Hit the enemy with your frostfire sword 20 times",
+   masteryDesc:"Sword deals 2 damage on hit; freeze lasts 3 seconds; burn deals 4 total — 9 damage per hit.",
+   shopSection:"normal", shopCost:2000, requiresAllOwned:["FireSwordCube","IceSwordCube"]}
 ];
 
 function checkMasteries(){
@@ -867,7 +872,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   // TesseractCube
@@ -993,7 +998,7 @@ draw(){
   }
 
     // ⚔️ SWORD CUBE & 🔥 FIRE SWORD CUBE — spinning sword draw
-    if(this.t==="SwordCube"||this.t==="FireSwordCube"||this.t==="IceSwordCube"){
+    if(this.t==="SwordCube"||this.t==="FireSwordCube"||this.t==="IceSwordCube"||this.t==="FrostfireSwordCube"){
       this.swordAngle=(this.swordAngle||0)+0.038;
       let _sang=this.swordAngle, _slen=54;
       let _stx=this.x+Math.cos(_sang)*_slen, _sty=this.y+Math.sin(_sang)*_slen;
@@ -1005,19 +1010,34 @@ draw(){
       x.fillStyle="#3E2723";
       x.fillRect(-5,-3,15,6);
       // Guard (crosspiece)
-      x.fillStyle=this.t==="FireSwordCube"?"#BF360C":this.t==="IceSwordCube"?"#0277BD":"#90A4AE";
+      x.fillStyle=this.t==="FireSwordCube"?"#BF360C":this.t==="IceSwordCube"?"#0277BD":this.t==="FrostfireSwordCube"?"#4A148C":"#90A4AE";
       x.shadowBlur=0;
       x.fillRect(9,-9,6,18);
       // Blade
-      let _fireFlicker=this.t==="FireSwordCube"?0.6+0.4*Math.sin(Date.now()/80):1;
-      x.shadowColor=this.t==="FireSwordCube"?"#ff5722":this.t==="IceSwordCube"?"#29B6F6":"#CFD8DC";
-      x.shadowBlur=this.t==="FireSwordCube"?14:7;
+      let _fireFlicker=this.t==="FireSwordCube"?0.6+0.4*Math.sin(Date.now()/80):this.t==="FrostfireSwordCube"?0.7+0.3*Math.sin(Date.now()/100):1;
+      x.shadowColor=this.t==="FireSwordCube"?"#ff5722":this.t==="IceSwordCube"?"#29B6F6":this.t==="FrostfireSwordCube"?"#CE93D8":"#CFD8DC";
+      x.shadowBlur=this.t==="FireSwordCube"?14:this.t==="FrostfireSwordCube"?18:7;
       x.fillStyle=this.t==="FireSwordCube"
         ?(this.mastered?"#ff3d00":"#FF7043")
+        :this.t==="FrostfireSwordCube"
+        ?(this.mastered?"#B388FF":"#9C4DFF")
         :(this.mastered?"#ffd700":"#ECEFF1");
       x.beginPath();
       x.moveTo(15,-4); x.lineTo(_slen,0); x.lineTo(15,4); x.closePath();
       x.fill();
+      // Frostfire dual shimmer on blade (ice tip + fire base)
+      if(this.t==="FrostfireSwordCube"){
+        let _fft=Date.now();
+        // Ice half (tip)
+        x.globalAlpha=_fireFlicker*0.45;
+        x.fillStyle="#29B6F6";
+        x.beginPath(); x.moveTo(35,-3); x.lineTo(54,0); x.lineTo(35,3); x.closePath(); x.fill();
+        // Fire half (base)
+        x.globalAlpha=_fireFlicker*0.45;
+        x.fillStyle="#FF7043";
+        x.beginPath(); x.moveTo(15,-3); x.lineTo(36,0); x.lineTo(15,3); x.closePath(); x.fill();
+        x.globalAlpha=1.0;
+      }
       // Fire shimmer on blade
       if(this.t==="FireSwordCube"){
         x.globalAlpha=_fireFlicker*0.55;
@@ -4191,13 +4211,13 @@ function stickDamage(stick,enemy){
 // ⚔️ SWORD DAMAGE (SwordCube / FireSwordCube)
 function swordDamage(sword,enemy){
   if(!sword||!sword.swordTip||sword.hp<=0||!enemy||enemy.hp<=0) return;
-  if(sword.t!=="SwordCube"&&sword.t!=="FireSwordCube"&&sword.t!=="IceSwordCube") return;
+  if(sword.t!=="SwordCube"&&sword.t!=="FireSwordCube"&&sword.t!=="IceSwordCube"&&sword.t!=="FrostfireSwordCube") return;
   let tip=sword.swordTip, half=enemy.s/2;
   if(Math.abs(tip.x-enemy.x)<half+8&&Math.abs(tip.y-enemy.y)<half+8){
     let now=Date.now();
     if(now-enemy.lastHit>400){
       if(checkStopField(enemy)){ enemy.lastHit=now; return; }
-      let dmg=(sword.t==="IceSwordCube")?(sword.mastered?3:2):(sword.mastered?5:4);
+      let dmg=(sword.t==="FrostfireSwordCube")?(sword.mastered?2:1):(sword.t==="IceSwordCube")?(sword.mastered?3:2):(sword.mastered?5:4);
       let hit=applyDamage(enemy,sword,dmg);
       if(hit){
         if(!bossMode){
@@ -4215,6 +4235,17 @@ function swordDamage(sword,enemy){
           enemy._iscFreezeTick=now;
           enemy._iscFrozenSpeed=enemy.spd; // save speed
           enemy.spd=0; // frozen — no movement
+        }
+        if(sword.t==="FrostfireSwordCube"){
+          // Freeze component
+          let ffFreezeDur=sword.mastered?3000:2000;
+          enemy._ffFreezeUntil=now+ffFreezeDur;
+          enemy._ffFreezeTick=now;
+          enemy._ffFrozenSpeed=enemy.spd;
+          enemy.spd=0;
+          // Burn component (2 dmg/sec for 2s)
+          enemy._ffBurnUntil=now+2000;
+          enemy._ffBurnTick=now;
         }
       }
       // Knockback away from tip
@@ -4278,6 +4309,49 @@ function processIceFreeze(){
       if(cube._iscFrozenSpeed!=null){ cube.spd=cube._iscFrozenSpeed; cube._iscFrozenSpeed=null; }
       cube._iscFreezeUntil=null;
       cube._iscFreezeTick=null;
+    }
+  });
+}
+
+// ❄️🔥 FROSTFIRE SWORD — freeze + burn ticks
+function processFrostfireSword(){
+  let _ffNow=Date.now();
+  [p,o].forEach(function(cube){
+    if(!cube||cube.hp<=0) return;
+    // FREEZE component
+    if(cube._ffFreezeUntil && _ffNow<cube._ffFreezeUntil){
+      cube.spd=0; cube.vx=0; cube.vy=0;
+      if(!cube._ffFreezeTick) cube._ffFreezeTick=_ffNow;
+      if(_ffNow-cube._ffFreezeTick>=1000){
+        cube.hp=Math.max(0,cube.hp-1);
+        cube._ffFreezeTick=_ffNow;
+      }
+      // Ice+purple visual
+      x.save();
+      x.globalAlpha=0.5+0.2*Math.sin(_ffNow/130);
+      x.strokeStyle="#B39DDB"; x.lineWidth=3;
+      x.shadowColor="#7C4DFF"; x.shadowBlur=20;
+      x.beginPath(); x.arc(cube.x,cube.y,cube.s/2+9,0,Math.PI*2); x.stroke();
+      x.globalAlpha=1; x.restore();
+    } else if(cube._ffFreezeUntil && _ffNow>=cube._ffFreezeUntil){
+      if(cube._ffFrozenSpeed!==undefined){ cube.spd=cube._ffFrozenSpeed; cube._ffFrozenSpeed=undefined; }
+      cube._ffFreezeUntil=null; cube._ffFreezeTick=null;
+    }
+    // BURN component (2 dmg/sec)
+    if(cube._ffBurnUntil && _ffNow<cube._ffBurnUntil){
+      if(!cube._ffBurnTick) cube._ffBurnTick=_ffNow;
+      if(_ffNow-cube._ffBurnTick>=1000){
+        cube.hp=Math.max(0,cube.hp-2);
+        cube._ffBurnTick=_ffNow;
+      }
+      // Fire+purple glow
+      x.save();
+      x.strokeStyle="rgba(180,50,255,0.8)"; x.lineWidth=2.5;
+      x.shadowColor="#FF7043"; x.shadowBlur=14;
+      x.beginPath(); x.arc(cube.x,cube.y,cube.s/2+13,0,Math.PI*2); x.stroke();
+      x.restore();
+    } else if(cube._ffBurnUntil && _ffNow>=cube._ffBurnUntil){
+      cube._ffBurnUntil=null; cube._ffBurnTick=null;
     }
   });
 }
@@ -5830,6 +5904,7 @@ function loop(ts){
   swordDamage(p,o); swordDamage(o,p);
   processSwordBurn();
     processIceFreeze();
+    processFrostfireSword();
   vampireDrain(p,o); vampireDrain(o,p);
   swapperAbility(p,o); swapperAbility(o,p);
   if(p&&p.t==="EasterBunny")easterBunnySpawn(p,o);
@@ -6392,6 +6467,7 @@ function updateShopContent(){
     let normalChars=CHARS.filter(function(cc){
       if(cc.shopSection!=="normal"&&cc.shopSection!=="starter") return false;
       if(cc.requiresOwned&&!shopOwned[cc.requiresOwned]) return false;
+      if(cc.requiresAllOwned&&cc.requiresAllOwned.some(function(r){return!shopOwned[r];})) return false;
       return true;
     });
     if(!normalChars.length){cont.innerHTML="<p style='color:#666;font-size:13px;text-align:center;padding:20px'>More items coming soon...</p>";return;}
