@@ -4197,7 +4197,7 @@ function swordDamage(sword,enemy){
     let now=Date.now();
     if(now-enemy.lastHit>400){
       if(checkStopField(enemy)){ enemy.lastHit=now; return; }
-      let dmg=(sword.t==="IceSwordCube")?(sword.mastered?2:1):(sword.mastered?5:4);
+      let dmg=(sword.t==="IceSwordCube")?(sword.mastered?3:2):(sword.mastered?5:4);
       let hit=applyDamage(enemy,sword,dmg);
       if(hit){
         if(!bossMode){
