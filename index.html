@@ -797,9 +797,9 @@ const CHARS=[
    masteryDesc:"Invisibility grants a 1.6× speed boost during stealth. Water Splash deals 4 damage. Blood Frenzy deals 4 damage on contact.",
    shopSection:"astral", shopCost:1},
   {type:"TesseractCube", name:"Tesseract Cube", color:"#4a00e0",
-   desc:"A dimensional cube. Every 20s: spawns a black hole that pulls the enemy to its core for 3 damage + 1s stun. Every 10s: toggles gravity on/off. Every 5s: dimension-shifts slightly behind its own position dealing 1 damage.",
+   desc:"A dimensional cube. Every 20s: spawns a black hole that pulls the enemy to its core for 2 damage + 1s stun. Every 10s: toggles gravity on/off. Every 5s: dimension-shifts slightly behind its own position dealing 1 damage.",
    quest:"Stun the enemy with the black hole 10 times",
-   masteryDesc:"Black hole deals 5 damage on capture. Dimension shift deals 2 damage.",
+   masteryDesc:"Black hole deals 3 damage on capture. Dimension shift deals 2 damage.",
    shopSection:"astral", shopCost:5}
 ];
 
@@ -5149,7 +5149,7 @@ function processTesseractCubeAbilities(){
       // Check if enemy reached core
       if(dist<18){
         // Stun + damage
-        var bhDmg=cube.mastered?5:3;
+        var bhDmg=cube.mastered?3:2;
         applyDamage(enemy, cube, bhDmg);
         enemy.stunUntil=_tcNow+1000;
         enemy.vx*=0.1; enemy.vy*=0.1;
