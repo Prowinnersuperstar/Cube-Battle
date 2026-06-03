@@ -539,7 +539,7 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false};
+const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false};
 let _shopTab="normal";
 let _starterPickedDone=false;
 let gummyPartner=null; // active partner half when Gummy has split
@@ -548,10 +548,12 @@ let wallCubeWalls=[];
 let wallCubeParticles=[];
 let paintGunBlobs=[];
 let paintGunPuddles=[];
+let hoverboardWaves=[];
+let dragonfruitProjectiles=[];
 let shrinkingCubeGhosts=[];
 let shrinkingCubeParticles2=[];
 let alienPlanets=[];   // {x,y,vx,vy,type,dmg,radius,owner,born,hit}
-let alienClones=[];paintGunBlobs=[];paintGunPuddles=[];
+let alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
 let sharkSplashes=[];  // {x,y,vx,vy,owner,enemy,dmg,hit,life}
 let iceCreamProjectiles=[];  // {x,y,vx,vy,owner,enemy,flavor,dmg,hit,life}
 let iceCreamSlowEnd={p:0,o:0}; // for strawberry slow per-side
@@ -632,9 +634,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0};
-const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0};
+const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10,HoverboardCube:10,DragonfruitCube:20};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -798,7 +800,7 @@ const CHARS=[
    desc:"Passive laser always tracks the enemy — revealing their position. Every 13s: fires a charged beam dealing 2 damage. Every 20s: drain beam activates for 2–10s dealing 0.5 dmg/sec.",
    quest:"Deal 15 drain ticks to the enemy",
    masteryDesc:"Laser fire deals 3 damage. Drain beam deals 1 dmg/sec instead of 0.5.",
-   shopSection:"astral", shopCost:2},
+   shopSection:"astral", shopCost:6},
   {type:"AlienCube", name:"Alien Cube", color:"#2ecc71",
    desc:"Every 14s: summons Mars and hurls it at the enemy for 5 damage. Every 25s: spawns an alien clone with 5 HP that deals 3 damage on contact.",
    quest:"Hit the enemy with a planet 10 times",
@@ -808,12 +810,12 @@ const CHARS=[
    desc:"Gray shark cube with a fin. Every 9s: turns invisible for 4s — fin still visible. When enemy HP ≤ 5: Blood Frenzy — 1.5× speed and 2× contact damage. Every 16s: Water Splash hurls water at enemy for 2 damage and slows them for 3s.",
    quest:"Hit the enemy with Water Splash 10 times",
    masteryDesc:"Invisibility grants a 1.6× speed boost during stealth. Water Splash deals 4 damage. Blood Frenzy deals 4 damage on contact.",
-   shopSection:"astral", shopCost:1},
+   shopSection:"astral", shopCost:6},
   {type:"TesseractCube", name:"Tesseract Cube", color:"#4a00e0",
    desc:"A dimensional cube. Every 20s: spawns a black hole that pulls the enemy to its core for 2 damage + 1s stun. Every 10s: toggles gravity on/off. Every 5s: dimension-shifts slightly behind its own position dealing 1 damage.",
    quest:"Stun the enemy with the black hole 10 times",
    masteryDesc:"Black hole deals 3 damage on capture. Dimension shift deals 2 damage.",
-   shopSection:"astral", shopCost:5},
+   shopSection:"astral", shopCost:9},
   {type:"SwordCube", name:"⚔️ Sword Cube", color:"#78909C",
    desc:"Wields a powerful spinning sword. The blade tip deals 4 damage on contact. Mastered: 5 damage.",
    quest:"Hit the enemy with your sword 20 times",
@@ -843,7 +845,17 @@ const CHARS=[
    desc:"Has 2 legs (each destroyed in 2 hits) and a tail (destroyed in 3 hits). Every 20s a random destroyed part regrows. Mastered: regrows every 12s.",
    quest:"Regrow 10 body parts",
    masteryDesc:"Regrows every 12s instead of 20s.",
-   shopSection:"astral", shopCost:4, shopCurrency:"spaceTokens"}
+   shopSection:"astral", shopCost:4, shopCurrency:"spaceTokens"},
+  {type:"HoverboardCube", name:"\u{1F6F9} Hoverboard Cube", color:"#29B6F6",
+   desc:"Floats on a glowing electric hoverboard! Every 12s: zooms to a random spot while firing 5-8 EM waves (1 damage each). Every 20s: phases through the next wall it hits, unleashing an EM wave.",
+   quest:"Activate the hoverboard drive 10 times",
+   masteryDesc:"Drive fires extra EM waves; wall-phase EM wave deals 2 damage.",
+   shopSection:"normal", shopCost:80},
+  {type:"DragonfruitCube", name:"\uD83D\uDC09 Dragonfruit Cube", color:"#E91E63",
+   desc:"A spiky, exotic cube that hurls dragonfruits at enemies and snacks on them to heal. Every 9s: throws a homing dragonfruit (1 damage + 0.5 dmg/sec burn for 3s). Every 15s: eats a dragonfruit and heals 3 HP.",
+   quest:"Throw 20 dragonfruits",
+   masteryDesc:"Throw 2 dragonfruits at once; burn lasts 5 seconds instead of 3.",
+   shopSection:"normal", shopCost:6767, requiresOwned:"Dragon"}
 
 ];
 
@@ -887,7 +899,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   if(type==="AxolotlCube"){this._axLeg1HP=2;this._axLeg2HP=2;this._axTailHP=3;this._axRegenTimer=Date.now();}
@@ -1188,6 +1200,99 @@ draw(){
     x.restore();
   }
 
+  // 🛹 HOVERBOARD CUBE
+  if(this.t==="HoverboardCube"){
+    let _hx=this.x,_hy=this.y,_hs=this.s,_ht=Date.now();
+    let _hBob=Math.sin(_ht/220)*2.5; // gentle hover bob
+    x.save();
+    // Board glow
+    x.shadowColor="#00E5FF"; x.shadowBlur=14;
+    // Board platform (wider than cube, below body)
+    let _bw=_hs*1.5, _bh=_hs*0.18;
+    let _bx=_hx-_bw/2, _by=_hy+_hs*0.48+_hBob;
+    x.fillStyle="#0288D1";
+    x.beginPath();
+    x.fillRect(_bx,_by,_bw,_bh);
+    // Board highlight stripe
+    x.fillStyle="#B3E5FC"; x.shadowBlur=0;
+    x.fillRect(_bx+4,_by+2,_bw-8,_bh*0.3);
+    // Thruster glow dots underneath board
+    x.shadowColor="#00E5FF"; x.shadowBlur=10;
+    x.fillStyle="rgba(0,229,255,0.7)";
+    for(let _td=0;_td<3;_td++){
+      let _tx=_bx+_bw*0.2+_td*_bw*0.3;
+      x.beginPath(); x.arc(_tx,_by+_bh+3+Math.abs(_hBob)*0.4,3,0,Math.PI*2); x.fill();
+    }
+    x.shadowBlur=0;
+    // Cube body (elevated by bob)
+    x.fillStyle="#29B6F6";
+    x.shadowColor="#29B6F6"; x.shadowBlur=8;
+    x.fillRect(_hx-_hs/2,_hy-_hs/2+_hBob,_hs,_hs);
+    // Speed lines when driving
+    if(this._hbDriving){
+      x.strokeStyle="rgba(255,255,255,0.55)"; x.lineWidth=1.5; x.shadowBlur=0;
+      for(let _sl=0;_sl<4;_sl++){
+        let _sy=_hy-_hs*0.3+_sl*_hs*0.2+_hBob;
+        x.beginPath(); x.moveTo(_hx-_hs*0.9,_sy); x.lineTo(_hx-_hs*0.55,_sy); x.stroke();
+        x.beginPath(); x.moveTo(_hx+_hs*0.55,_sy); x.lineTo(_hx+_hs*0.9,_sy); x.stroke();
+      }
+    }
+    // Phase-ready indicator
+    if(this._hbPhaseReady){
+      x.strokeStyle="#E1F5FE"; x.lineWidth=2; x.shadowColor="#00E5FF"; x.shadowBlur=12;
+      x.strokeRect(_hx-_hs/2-3,_hy-_hs/2+_hBob-3,_hs+6,_hs+6);
+      x.font="bold 8px Arial"; x.textAlign="center"; x.fillStyle="#E1F5FE"; x.shadowBlur=4;
+      x.fillText("PHASE",_hx,_hy-_hs/2+_hBob-7);
+    }
+    x.restore();
+  }
+
+  // 🛹 HOVERBOARD WAVES (drawn globally for both cubes)
+  if(hoverboardWaves&&hoverboardWaves.length){
+    x.save();
+    for(let _hw=hoverboardWaves.length-1;_hw>=0;_hw--){
+      let _w=hoverboardWaves[_hw];
+      let _alpha=((_w.maxLife>0?_w.life/_w.maxLife:1))*0.7;
+      x.globalAlpha=_alpha;
+      x.strokeStyle="#00E5FF"; x.lineWidth=2;
+      x.shadowColor="#00E5FF"; x.shadowBlur=8;
+      x.beginPath(); x.arc(_w.x,_w.y,_w.r,0,Math.PI*2); x.stroke();
+    }
+    x.globalAlpha=1; x.restore();
+  
+  // 🐉 DRAGONFRUIT CUBE APPEARANCE
+  if(this.t==="DragonfruitCube"){
+    let _dfx=this.x, _dfy=this.y, _dfs=this.s;
+    // Cube body already drawn above; add dragonfruit icon on face
+    x.save();
+    x.translate(_dfx,_dfy);
+    // Outer fruit body (hot pink oval)
+    x.beginPath();
+    x.ellipse(0,2,_dfs*0.28,_dfs*0.38,0,0,Math.PI*2);
+    x.fillStyle="#ffffff"; x.fill();
+    x.beginPath();
+    x.ellipse(0,2,_dfs*0.24,_dfs*0.33,0,0,Math.PI*2);
+    x.fillStyle="#fce4ec"; x.fill();
+    // Black seeds
+    x.fillStyle="#222";
+    let _seeds=[[-4,-1],[4,-1],[0,3],[-3,5],[3,5],[0,-3]];
+    _seeds.forEach(function(s){
+      x.beginPath(); x.arc(s[0],s[1],1.2,0,Math.PI*2); x.fill();
+    });
+    // Green crown spikes at top
+    x.strokeStyle="#2E7D32"; x.lineWidth=2; x.lineCap="round";
+    let _topY=_dfy<0?0:2-_dfs*0.33;
+    for(let _sk=0;_sk<5;_sk++){
+      let _baseAng=(_sk/5)*Math.PI-Math.PI/2;
+      let _bx=Math.cos(_baseAng)*(_dfs*0.18);
+      x.beginPath();
+      x.moveTo(_bx,_topY);
+      x.lineTo(_bx+Math.cos(_baseAng)*5, _topY-7);
+      x.stroke();
+    }
+    x.restore();
+  }
+}
 
   // 🛡 SHIELD
   if(this.t=="Shield"){
@@ -4413,29 +4518,286 @@ function processAxolotlCube(){
   let now=Date.now();
   [p,o].forEach(function(cube){
     if(!cube||cube.hp<=0||cube.t!=="AxolotlCube") return;
-    if(!cube._axLeg1HP&&!cube._axLeg2HP&&!cube._axTailHP) return; // not yet init
+    if(!("_axLeg1HP" in cube)) return; // not yet init
     if(!cube._axRegenTimer) cube._axRegenTimer=now;
     let interval=cube.mastered?12000:20000;
     if(now-cube._axRegenTimer<interval) return;
     cube._axRegenTimer=now;
-    let destroyed=[];
-    if((cube._axLeg1HP||0)<=0) destroyed.push("leg1");
-    if((cube._axLeg2HP||0)<=0) destroyed.push("leg2");
-    if((cube._axTailHP||0)<=0) destroyed.push("tail");
-    if(destroyed.length===0) return;
-    let pick=destroyed[Math.floor(Math.random()*destroyed.length)];
-    if(pick==="leg1") cube._axLeg1HP=2;
-    else if(pick==="leg2") cube._axLeg2HP=2;
-    else cube._axTailHP=3;
-    if(!bossMode){
-      masteryProgress.AxolotlCube=Math.min(masteryGoals.AxolotlCube,(masteryProgress.AxolotlCube||0)+1);
-      checkMasteries();
+    try{
+      let destroyed=[];
+      if((cube._axLeg1HP||0)<=0) destroyed.push("leg1");
+      if((cube._axLeg2HP||0)<=0) destroyed.push("leg2");
+      if((cube._axTailHP||0)<=0) destroyed.push("tail");
+      if(destroyed.length===0) return;
+      let pick=destroyed[Math.floor(Math.random()*destroyed.length)];
+      if(pick==="leg1") cube._axLeg1HP=2;
+      else if(pick==="leg2") cube._axLeg2HP=2;
+      else cube._axTailHP=3;
+      if(!bossMode){
+        masteryProgress.AxolotlCube=Math.min(masteryGoals.AxolotlCube,(masteryProgress.AxolotlCube||0)+1);
+        saveProgress();
+      }
+      // Sparkle regrow effect
+      if(Array.isArray(particles)){
+        for(let _ap=0;_ap<14;_ap++){
+          particles.push({x:cube.x+(Math.random()-0.5)*cube.s,y:cube.y+(Math.random()-0.5)*cube.s,
+            vx:(Math.random()-0.5)*3.5,vy:(Math.random()-0.5)*3.5,life:35,color:"#FF80AB"});
+        }
+      }
+    }catch(e){}
+  });
+}
+
+// 🛹 HOVERBOARD CUBE ABILITIES
+function processHoverboardCube(){
+  try {
+    let now=Date.now();
+    let _cW=c.width||360, _cH=c.height||360;
+
+    // ── Advance / expire / damage EM waves ──
+    for(let _i=hoverboardWaves.length-1;_i>=0;_i--){
+      let _w=hoverboardWaves[_i];
+      _w.r+=3; _w.life--;
+      if(_w.life<=0){hoverboardWaves.splice(_i,1); continue;}
+      if(_w._hit) continue;
+      let _wEnemy=(_w.owner===p)?o:p;
+      if(!_wEnemy||_wEnemy.hp<=0) continue;
+      let _wdx=_wEnemy.x-_w.x, _wdy=_wEnemy.y-_w.y;
+      let _wdist=Math.sqrt(_wdx*_wdx+_wdy*_wdy);
+      if(Math.abs(_wdist-_w.r)<(_wEnemy.s/2+7)){
+        applyDamage(_wEnemy,_w.owner,_w.dmg||1);
+        _w._hit=true;
+      }
     }
-    // Sparkle regrow effect
-    for(let _ap=0;_ap<14;_ap++){
-      particles.push({x:cube.x+(Math.random()-0.5)*cube.s,y:cube.y+(Math.random()-0.5)*cube.s,
-        vx:(Math.random()-0.5)*3.5,vy:(Math.random()-0.5)*3.5,life:35,color:"#FF80AB"});
+
+    [p,o].forEach(function(cube){
+      if(!cube||cube.hp<=0||cube.t!=="HoverboardCube") return;
+      if(checkStopField(cube)) return;
+
+      // ── One-time init ──
+      if(!cube._hbInit){
+        cube._hbInit=true;
+        cube._hbDriveTimer=now-11000;   // first drive after ~1s
+        cube._hbPhaseTimer=now-19500;   // first phase after ~0.5s
+        cube._hbPhaseReady=false;
+        cube._hbDriving=false;
+        cube._hbDriveEnd=0;
+        cube._hbWaveTimer=0;
+        cube._hbWaveCount=0;
+        cube._hbWaveMax=5;
+      }
+
+      // ── Ability 2: arm wall-phase every 20s ──
+      if(!cube._hbPhaseReady && now-cube._hbPhaseTimer>=20000) cube._hbPhaseReady=true;
+
+      // ── Wall-phase trigger: cube near a wall while phase is armed ──
+      if(cube._hbPhaseReady){
+        let _h=cube.s/2;
+        if(cube.x-_h<=3||cube.x+_h>=_cW-3||cube.y-_h<=3||cube.y+_h>=_cH-3){
+          cube._hbPhaseReady=false;
+          cube._hbPhaseTimer=now;
+          hoverboardWaves.push({x:cube.x,y:cube.y,r:6,maxLife:28,life:28,
+            owner:cube,dmg:cube.mastered?2:1,_hit:false});
+        }
+      }
+
+      // ── End drive when time is up ──
+      if(cube._hbDriving && now>=cube._hbDriveEnd){
+        cube._hbDriving=false;
+        // Smoothly bleed off excess speed to normal (~2.5 px/frame)
+        let _spd=Math.sqrt(cube.vx*cube.vx+cube.vy*cube.vy)||2.5;
+        cube.vx=(cube.vx/_spd)*2.5;
+        cube.vy=(cube.vy/_spd)*2.5;
+      }
+
+      // ── Start drive every 12s ──
+      if(!cube._hbDriving && now-cube._hbDriveTimer>=12000){
+        cube._hbDriving=true;
+        cube._hbDriveTimer=now;
+        cube._hbDriveEnd=now+1400; // drive lasts 1.4s then stops itself
+        cube._hbWaveTimer=now;
+        cube._hbWaveCount=0;
+        cube._hbWaveMax=5+Math.floor(Math.random()*(cube.mastered?4:3));
+
+        // ONE-TIME velocity kick — pick a spot away from the enemy
+        // (physics engine handles movement; we do NOT touch vx/vy again until drive ends)
+        let _enemy=(cube===p)?o:p;
+        let _ex=_enemy?_enemy.x:_cW/2, _ey=_enemy?_enemy.y:_cH/2;
+        let _tx=(_ex<_cW/2)?(_cW*0.65+Math.random()*(_cW*0.28)):(_cW*0.07+Math.random()*(_cW*0.28));
+        let _ty=(_ey<_cH/2)?(_cH*0.65+Math.random()*(_cH*0.28)):(_cH*0.07+Math.random()*(_cH*0.28));
+        let _dx=_tx-cube.x, _dy=_ty-cube.y;
+        let _d=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+        let _spd=cube.mastered?8.0:6.5;
+        cube.vx=(_dx/_d)*_spd;
+        cube.vy=(_dy/_d)*_spd;
+
+        if(!bossMode){
+          masteryProgress.HoverboardCube=Math.min(masteryGoals.HoverboardCube,
+            (masteryProgress.HoverboardCube||0)+1);
+          saveProgress();
+        }
+      }
+
+      // ── During drive: emit EM waves; block contact damage ──
+      if(cube._hbDriving){
+        cube.lastHit=now; // prevents contact damage while zooming
+        if(cube._hbWaveCount<cube._hbWaveMax && now-cube._hbWaveTimer>=250){
+          cube._hbWaveTimer=now;
+          cube._hbWaveCount++;
+          hoverboardWaves.push({x:cube.x,y:cube.y,r:5,maxLife:28,life:28,
+            owner:cube,dmg:1,_hit:false});
+        }
+      }
+    });
+  } catch(e){ /* silent guard */ }
+}
+
+// 🐉 DRAGONFRUIT CUBE ABILITIES
+function processDragonfruitCube(){
+  try {
+    let now=Date.now();
+    let _cW=c.width||360, _cH=c.height||360;
+
+    // ── Advance dragonfruit projectiles ──
+    for(let _i=dragonfruitProjectiles.length-1; _i>=0; _i--){
+      let _df=dragonfruitProjectiles[_i];
+      // Homing: steer toward enemy each frame
+      let _dfEnemy=(_df.owner===p)?o:p;
+      if(_dfEnemy && _dfEnemy.hp>0){
+        let _ddx=_dfEnemy.x-_df.x, _ddy=_dfEnemy.y-_df.y;
+        let _ddist=Math.sqrt(_ddx*_ddx+_ddy*_ddy)||1;
+        let _topSpd=8.5;
+        _df.vx=(_ddx/_ddist)*_topSpd;
+        _df.vy=(_ddy/_ddist)*_topSpd;
+      }
+      _df.x+=_df.vx; _df.y+=_df.vy; _df.life--;
+      _df.spin=((_df.spin||0)+0.15)%(Math.PI*2);
+
+      // Hit check
+      if(_dfEnemy && _dfEnemy.hp>0 && !_df._hit){
+        let _dex=Math.abs(_df.x-_dfEnemy.x), _dey=Math.abs(_df.y-_dfEnemy.y);
+        if(_dex<_dfEnemy.s/2+9 && _dey<_dfEnemy.s/2+9){
+          _df._hit=true;
+          applyDamage(_dfEnemy,_df.owner,1);
+          // Apply burn: 0.5 dmg/sec for 3s (mastered 5s)
+          let _burnDur=(_df.owner&&_df.owner.mastered)?5000:3000;
+          _dfEnemy._dfBurnUntil=now+_burnDur;
+          _dfEnemy._dfBurnTick=now;
+          // Splat particles
+          if(Array.isArray(particles)){
+            for(let _sp=0;_sp<10;_sp++){
+              particles.push({x:_dfEnemy.x+(Math.random()-0.5)*20,
+                y:_dfEnemy.y+(Math.random()-0.5)*20,
+                vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,
+                life:30,color:Math.random()>0.5?"#E91E63":"#ffffff"});
+            }
+          }
+          // Mastery tracking
+          if(!bossMode){
+            masteryProgress.DragonfruitCube=Math.min(
+              masteryGoals.DragonfruitCube,(masteryProgress.DragonfruitCube||0)+1);
+            saveProgress();
+          }
+        }
+      }
+      if(_df._hit || _df.life<=0){ dragonfruitProjectiles.splice(_i,1); continue; }
+      // Draw dragonfruit projectile
+      x.save();
+      x.translate(_df.x,_df.y);
+      x.rotate(_df.spin);
+      // Pink oval body
+      x.beginPath();
+      x.ellipse(0,0,9,12,0,0,Math.PI*2);
+      x.fillStyle="#E91E63"; x.shadowColor="#E91E63"; x.shadowBlur=10;
+      x.fill();
+      // White inner flesh
+      x.beginPath();
+      x.ellipse(0,0,5,7,0,0,Math.PI*2);
+      x.fillStyle="#ffffff"; x.fill();
+      // Black seeds
+      x.fillStyle="#222";
+      [[-2,-2],[2,-2],[0,0],[-2,2],[2,2]].forEach(function(s){
+        x.beginPath(); x.arc(s[0],s[1],1,0,Math.PI*2); x.fill();
+      });
+      // Green crown spikes
+      x.strokeStyle="#4CAF50"; x.lineWidth=1.5;
+      for(let _sk=0;_sk<5;_sk++){
+        let _a=(_sk/5)*Math.PI*2-Math.PI/2;
+        x.beginPath(); x.moveTo(Math.cos(_a)*7,Math.sin(_a)*7-12);
+        x.lineTo(Math.cos(_a)*4,Math.sin(_a)*4-9); x.stroke();
+      }
+      x.restore();
     }
+
+    // ── Per-cube timers / abilities ──
+    [p,o].forEach(function(cube){
+      if(!cube||cube.hp<=0||cube.t!=="DragonfruitCube") return;
+      if(checkStopField(cube)) return;
+
+      if(!cube._dfInit){
+        cube._dfInit=true;
+        cube._dfThrowTimer=now-8000; // first throw after ~1s
+        cube._dfEatTimer=now-14000;  // first eat after ~1s
+      }
+
+      // ── Ability 1: throw dragonfruit every 9s ──
+      if(now-cube._dfThrowTimer>=9000){
+        cube._dfThrowTimer=now;
+        let _enemy=(cube===p)?o:p;
+        if(_enemy && _enemy.hp>0){
+          let _dx=_enemy.x-cube.x, _dy=_enemy.y-cube.y, _d=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+          let _spd=8.5;
+          dragonfruitProjectiles.push({
+            x:cube.x,y:cube.y,
+            vx:(_dx/_d)*_spd,vy:(_dy/_d)*_spd,
+            life:180,owner:cube,_hit:false,spin:0
+          });
+          // Mastered: fire a second dragonfruit with a slight angle offset
+          if(cube.mastered){
+            let _ang=Math.atan2(_dy,_dx)+0.25;
+            dragonfruitProjectiles.push({
+              x:cube.x,y:cube.y,
+              vx:Math.cos(_ang)*_spd,vy:Math.sin(_ang)*_spd,
+              life:180,owner:cube,_hit:false,spin:0
+            });
+          }
+        }
+      }
+
+      // ── Ability 2: eat dragonfruit and heal 3 HP every 15s ──
+      if(now-cube._dfEatTimer>=15000){
+        cube._dfEatTimer=now;
+        cube.hp=Math.min((cube.t==="InvincibleCube"?100:10), cube.hp+3);
+        // Heal sparkle
+        if(Array.isArray(particles)){
+          for(let _hp=0;_hp<12;_hp++){
+            particles.push({x:cube.x+(Math.random()-0.5)*cube.s,
+              y:cube.y+(Math.random()-0.5)*cube.s,
+              vx:(Math.random()-0.5)*3,vy:-Math.random()*3,
+              life:35,color:Math.random()>0.5?"#E91E63":"#4CAF50"});
+          }
+        }
+      }
+    });
+  }catch(e){}
+}
+
+// 🐉 Dragonfruit burn tick
+function processDragonfruitBurn(){
+  let _now=Date.now();
+  [p,o].forEach(function(cube){
+    if(!cube||cube.hp<=0||!cube._dfBurnUntil||_now>=cube._dfBurnUntil) return;
+    if(!cube._dfBurnTick) cube._dfBurnTick=_now;
+    if(_now-cube._dfBurnTick>=2000){  // 0.5 dmg/sec = 1 dmg every 2s
+      cube.hp=Math.max(0,cube.hp-1);
+      cube._dfBurnTick=_now;
+    }
+    // Burn glow
+    x.save();
+    x.strokeStyle="rgba(233,30,99,0.7)"; x.lineWidth=2.5;
+    x.shadowColor="#E91E63"; x.shadowBlur=14;
+    x.beginPath(); x.arc(cube.x,cube.y,cube.s/2+6,0,Math.PI*2); x.stroke();
+    x.restore();
   });
 }
 
@@ -6194,6 +6556,9 @@ function loop(ts){
   processSwordBurn();
     processPaintGunCube();
     processAxolotlCube();
+    processHoverboardCube();
+    processDragonfruitCube();
+    processDragonfruitBurn();
     processIceFreeze();
     processFrostfireSword();
   vampireDrain(p,o); vampireDrain(o,p);
@@ -6433,7 +6798,7 @@ function loop(ts){
       }
       // Final result
       bossMode=false;run=false;
-      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];paintGunBlobs=[];paintGunPuddles=[];
+      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -6490,7 +6855,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];paintGunBlobs=[];paintGunPuddles=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -7276,7 +7641,7 @@ function confirmPartyFight(){
   bossPartyIdx=0;
   activeBossType=_savedBossType; // lock in boss type for win tracking
   // Start boss fight
-  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];paintGunBlobs=[];paintGunPuddles=[];
+  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];}
