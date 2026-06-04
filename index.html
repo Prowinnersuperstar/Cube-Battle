@@ -4706,10 +4706,10 @@ function processDragonfruitCube(){
             }
           }
           // Mastery tracking
-          if(!bossMode){
+          if(!bossMode && _df.owner===p){
             masteryProgress.DragonfruitCube=Math.min(
               masteryGoals.DragonfruitCube,(masteryProgress.DragonfruitCube||0)+1);
-            saveProgress();
+            checkMasteries();
           }
         }
       }
