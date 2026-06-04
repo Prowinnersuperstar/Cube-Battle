@@ -634,9 +634,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0};
 const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10,HoverboardCube:10,DragonfruitCube:20};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -1279,17 +1279,30 @@ draw(){
     _seeds.forEach(function(s){
       x.beginPath(); x.arc(s[0],s[1],1.2,0,Math.PI*2); x.fill();
     });
-    // Green crown spikes at top
-    x.strokeStyle="#2E7D32"; x.lineWidth=2; x.lineCap="round";
-    let _topY=_dfy<0?0:2-_dfs*0.33;
-    for(let _sk=0;_sk<5;_sk++){
-      let _baseAng=(_sk/5)*Math.PI-Math.PI/2;
-      let _bx=Math.cos(_baseAng)*(_dfs*0.18);
+    // Green dragonfruit hair — long curved spikes above cube
+    x.save();
+    let _hairY = -_dfs*0.42;
+    let _spikeAngles=[-70,-45,-20,0,20,45,70];
+    let _spikeLens=[11,15,18,20,18,15,11];
+    _spikeAngles.forEach(function(_ang,_si){
+      let _rad=_ang*Math.PI/180;
+      let _len=_spikeLens[_si];
+      let _bx=(_si-3)*(_dfs*0.065);
+      x.strokeStyle="#1B5E20"; x.lineWidth=3; x.lineCap="round";
       x.beginPath();
-      x.moveTo(_bx,_topY);
-      x.lineTo(_bx+Math.cos(_baseAng)*5, _topY-7);
+      x.moveTo(_bx, _hairY);
+      x.bezierCurveTo(
+        _bx+Math.sin(_rad)*_len*0.4, _hairY-_len*0.4,
+        _bx+Math.sin(_rad)*_len*0.8, _hairY-_len*0.8,
+        _bx+Math.sin(_rad)*_len, _hairY-_len
+      );
       x.stroke();
-    }
+      x.fillStyle="#2E7D32";
+      x.beginPath();
+      let _tx=_bx+Math.sin(_rad)*_len, _ty=_hairY-_len;
+      x.arc(_tx,_ty,2.5,0,Math.PI*2); x.fill();
+    });
+    x.restore();
     x.restore();
   }
 }
@@ -4680,7 +4693,7 @@ function processDragonfruitCube(){
           _df._hit=true;
           applyDamage(_dfEnemy,_df.owner,1);
           // Apply burn: 0.5 dmg/sec for 3s (mastered 5s)
-          let _burnDur=(_df.owner&&_df.owner.mastered)?7000:5000;
+          let _burnDur=(_df.owner&&_df.owner.mastered)?5000:4000;
           _dfEnemy._dfBurnUntil=now+_burnDur;
           _dfEnemy._dfBurnTick=now;
           // Splat particles
@@ -6905,7 +6918,7 @@ function openPicker(target){
     let unlocked=masteryUnlocked[ch.type];
     let curType=target==="player"?selectedPlayer:selectedEnemy;
     let curMastered=target==="player"?playerMastered:enemyMastered;
-    let prog=Math.min(masteryProgress[ch.type],masteryGoals[ch.type]);
+    let prog=Math.min(masteryProgress[ch.type]||0,masteryGoals[ch.type]||0);
     let goal=masteryGoals[ch.type];
     let pct=Math.round((prog/goal)*100);
 
@@ -7690,7 +7703,7 @@ function loadProgress(){
     let raw=localStorage.getItem("cubeBattle_progress");
     if(!raw) return;
     let d=JSON.parse(raw);
-    if(d.masteryProgress) Object.assign(masteryProgress, d.masteryProgress);
+    if(d.masteryProgress){ Object.assign(masteryProgress, d.masteryProgress); for(let _mk in masteryProgress){ if(typeof masteryProgress[_mk]!=='number'||isNaN(masteryProgress[_mk])) masteryProgress[_mk]=0; } }
     if(d.masteryUnlocked) Object.assign(masteryUnlocked, d.masteryUnlocked);
     if(typeof d.easterEggs==="number") easterEggs=d.easterEggs;
     if(typeof d.spaceTokens==="number") spaceTokens=d.spaceTokens;
