@@ -292,7 +292,7 @@ canvas{touch-action:none}
 <!-- Quest Panel -->
 <div id="quest-panel">
   <div id="quest-box">
-    <h3>📋 Boss Quests</h3>
+    <h3>📋 Quests</h3>
     <div id="quest-list"></div>
     <button id="quest-close" onclick="closeQuests()">Close</button>
   </div>
@@ -539,7 +539,7 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false};
+const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false};
 let _shopTab="normal";
 let _starterPickedDone=false;
 let gummyPartner=null; // active partner half when Gummy has split
@@ -550,10 +550,11 @@ let paintGunBlobs=[];
 let paintGunPuddles=[];
 let hoverboardWaves=[];
 let dragonfruitProjectiles=[];
+let whiteHoleProjectiles=[],whiteHolePortalBombs=[],whiteHoleMysteryHoles=[];
 let shrinkingCubeGhosts=[];
 let shrinkingCubeParticles2=[];
 let alienPlanets=[];   // {x,y,vx,vy,type,dmg,radius,owner,born,hit}
-let alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+let alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
 let sharkSplashes=[];  // {x,y,vx,vy,owner,enemy,dmg,hit,life}
 let iceCreamProjectiles=[];  // {x,y,vx,vy,owner,enemy,flavor,dmg,hit,life}
 let iceCreamSlowEnd={p:0,o:0}; // for strawberry slow per-side
@@ -630,6 +631,7 @@ const BOSSES=[
    reward:"Conquer the darkness itself."},
 ];
 const bossProgress={CubeKing:{wins:0,owned:false},ShadowCube:{wins:0,owned:false}};
+let specialQuests={bombInBlackHole:{done:false}};
 let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBossType=null;
 let _bossPartyPicked=[];
 
@@ -855,7 +857,12 @@ const CHARS=[
    desc:"A spiky, exotic cube that hurls dragonfruits at enemies and snacks on them to heal. Every 9s: throws a homing dragonfruit (1 damage + 0.5 dmg/sec burn for 3s). Every 15s: eats a dragonfruit and heals 3 HP.",
    quest:"Throw 20 dragonfruits",
    masteryDesc:"Throw 2 dragonfruits at once; burn lasts 5 seconds instead of 3.",
-   shopSection:"normal", shopCost:6767, requiresOwned:"Dragon"}
+   shopSection:"normal", shopCost:6767, requiresOwned:"Dragon"},
+
+  {type:"WhiteHoleCube", name:"⚪ White Hole Cube", color:"#FFFFFF",
+   desc:"A mysterious reward cube that bends space itself. Every 16s: hurls a white hole to a random spot — pushes enemies away and deals 2 damage. Every 20s: opens a portal ejecting 4 bombs in cardinal directions (1 damage each). Every 30s: spawns a mystery hole that becomes a black or white hole for 10s.",
+   quest:null, masteryDesc:null,
+   shopSection:"reward", questReward:true}
 
 ];
 
@@ -899,7 +906,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   if(type==="AxolotlCube"){this._axLeg1HP=2;this._axLeg2HP=2;this._axTailHP=3;this._axRegenTimer=Date.now();}
@@ -4827,6 +4834,204 @@ function processDragonfruitBurn(){
   });
 }
 
+function processWhiteHoleCube(){
+  if(!run) return;
+  var _whNow=Date.now();
+  var W=c.width||360, H=c.height||360;
+
+  [p,o].forEach(function(cube){
+    if(!cube||cube.t!=='WhiteHoleCube'||cube.hp<=0) return;
+    var enemy=(cube===p)?o:p;
+    if(!enemy) return;
+    if(!cube._whTimer1) cube._whTimer1=_whNow-14000;
+    if(!cube._whTimer2) cube._whTimer2=_whNow-18000;
+    if(!cube._whTimer3) cube._whTimer3=_whNow-28000;
+
+    // ── Ability 1: White Hole Throw (every 16s) ──
+    if(_whNow-cube._whTimer1>=16000){
+      cube._whTimer1=_whNow;
+      var tx=40+Math.random()*(W-80), ty=40+Math.random()*(H-80);
+      var dx=tx-cube.x, dy=ty-cube.y, dist=Math.hypot(dx,dy)||1;
+      var spd=8;
+      whiteHoleProjectiles.push({
+        x:cube.x, y:cube.y, tx:tx, ty:ty,
+        vx:(dx/dist)*spd, vy:(dy/dist)*spd,
+        owner:cube, r:6, life:120, arrived:false,
+        expandR:0, expandLife:0
+      });
+    }
+
+    // ── Ability 2: Portal Bombs (every 20s) ──
+    if(_whNow-cube._whTimer2>=20000){
+      cube._whTimer2=_whNow;
+      var dirs=[[0,-1],[1,0],[0,1],[-1,0]]; // N E S W
+      for(var _di=0;_di<dirs.length;_di++){
+        whiteHolePortalBombs.push({
+          x:cube.x, y:cube.y,
+          vx:dirs[_di][0]*6, vy:dirs[_di][1]*6,
+          owner:cube, life:90, hit:false, r:6
+        });
+      }
+    }
+
+    // ── Ability 3: Mystery Hole (every 30s) ──
+    if(_whNow-cube._whTimer3>=30000){
+      cube._whTimer3=_whNow;
+      var mx=60+Math.random()*(W-120), my=60+Math.random()*(H-120);
+      whiteHoleMysteryHoles.push({
+        x:mx, y:my, owner:cube,
+        born:_whNow, r:8, maxR:40,
+        type: Math.random()<0.5?'black':'white',
+        active:false, hitEnemy:false
+      });
+    }
+  });
+
+  // ── Update White Hole projectiles ──
+  for(var _wi=whiteHoleProjectiles.length-1;_wi>=0;_wi--){
+    var _wh=whiteHoleProjectiles[_wi];
+    if(!_wh.arrived){
+      _wh.x+=_wh.vx; _wh.y+=_wh.vy; _wh.life--;
+      var _td=Math.hypot(_wh.tx-_wh.x,_wh.ty-_wh.y);
+      if(_td<14||_wh.life<=0){
+        _wh.arrived=true; _wh.x=_wh.tx; _wh.y=_wh.ty;
+        _wh.expandR=0; _wh.expandLife=40;
+      }
+    } else {
+      _wh.expandR=Math.min(55,_wh.expandR+3);
+      _wh.expandLife--;
+      // Push enemy away + damage if inside expanding ring
+      var _wEnemy=(_wh.owner===p)?o:p;
+      if(_wEnemy&&_wEnemy.hp>0&&!_wh._dealtDmg){
+        var _wed=Math.hypot(_wEnemy.x-_wh.x,_wEnemy.y-_wh.y);
+        if(_wed<_wh.expandR+20){
+          _wh._dealtDmg=true;
+          applyDamage(_wEnemy,_wh.owner,2);
+          var _wdd=_wed||1;
+          _wEnemy.vx+=(_wEnemy.x-_wh.x)/_wdd*8;
+          _wEnemy.vy+=(_wEnemy.y-_wh.y)/_wdd*8;
+        }
+      }
+      if(_wh.expandLife<=0) whiteHoleProjectiles.splice(_wi,1);
+    }
+  }
+
+  // ── Update Portal Bombs ──
+  for(var _pbi=whiteHolePortalBombs.length-1;_pbi>=0;_pbi--){
+    var _pb=whiteHolePortalBombs[_pbi];
+    _pb.x+=_pb.vx; _pb.y+=_pb.vy; _pb.life--;
+    if(_pb.x<6||_pb.x>W-6) _pb.vx=-_pb.vx;
+    if(_pb.y<6||_pb.y>H-6) _pb.vy=-_pb.vy;
+    if(!_pb.hit){
+      var _pbEnemy=(_pb.owner===p)?o:p;
+      if(_pbEnemy&&_pbEnemy.hp>0&&Math.hypot(_pbEnemy.x-_pb.x,_pbEnemy.y-_pb.y)<_pbEnemy.s/2+_pb.r){
+        _pb.hit=true;
+        applyDamage(_pbEnemy,_pb.owner,1);
+      }
+    }
+    if(_pb.life<=0||_pb.hit) whiteHolePortalBombs.splice(_pbi,1);
+  }
+
+  // ── Update Mystery Holes ──
+  for(var _mhi=whiteHoleMysteryHoles.length-1;_mhi>=0;_mhi--){
+    var _mh=whiteHoleMysteryHoles[_mhi];
+    var _mhAge=_whNow-_mh.born;
+    if(_mhAge>3000) _mh.active=true;
+    if(_mh.active){
+      _mh.r=Math.min(_mh.maxR,_mh.r+0.5);
+      var _mhEnemy=(_mh.owner===p)?o:p;
+      if(_mhEnemy&&_mhEnemy.hp>0&&!_mh.hitEnemy){
+        var _mhd=Math.hypot(_mhEnemy.x-_mh.x,_mhEnemy.y-_mh.y);
+        if(_mh.type==='black'){
+          // Pull enemy in
+          var _mhf=4*(1+30/_mhd);
+          _mhEnemy.vx+=(_mh.x-_mhEnemy.x)/_mhd*_mhf*0.016;
+          _mhEnemy.vy+=(_mh.y-_mhEnemy.y)/_mhd*_mhf*0.016;
+          if(_mhd<16&&!_mh.hitEnemy){
+            _mh.hitEnemy=true;
+            applyDamage(_mhEnemy,_mh.owner,2);
+            _mhEnemy.stunUntil=_whNow+800;
+          }
+        } else {
+          // Push enemy away on contact
+          if(_mhd<_mh.r+_mhEnemy.s/2&&!_mh.hitEnemy){
+            _mh.hitEnemy=true;
+            applyDamage(_mhEnemy,_mh.owner,2);
+            _mhEnemy.vx+=(_mhEnemy.x-_mh.x)/_mhd*9;
+            _mhEnemy.vy+=(_mhEnemy.y-_mh.y)/_mhd*9;
+          }
+        }
+      }
+    }
+    if(_mhAge>10000) whiteHoleMysteryHoles.splice(_mhi,1);
+  }
+
+
+  // ── Draw White Hole Projectiles ──
+  whiteHoleProjectiles.forEach(function(_wdp){
+    if(!_wdp.arrived){
+      x.save(); x.translate(_wdp.x, _wdp.y);
+      x.beginPath(); x.arc(0,0,_wdp.r,0,Math.PI*2);
+      x.fillStyle="#FFFFFF"; x.shadowBlur=12; x.shadowColor="#FFFFFF";
+      x.fill(); x.restore();
+    } else {
+      var _wda=_wdp.expandLife/40;
+      x.save(); x.translate(_wdp.x, _wdp.y);
+      x.beginPath(); x.arc(0,0,_wdp.expandR,0,Math.PI*2);
+      x.strokeStyle="rgba(255,255,255,"+_wda+")";
+      x.lineWidth=4; x.shadowBlur=20; x.shadowColor="#FFFFFF";
+      x.stroke();
+      x.beginPath(); x.arc(0,0,_wdp.expandR*0.6,0,Math.PI*2);
+      x.strokeStyle="rgba(200,220,255,"+(_wda*0.6)+")";
+      x.lineWidth=2; x.stroke();
+      x.restore();
+    }
+  });
+
+  // ── Draw Portal Bombs ──
+  whiteHolePortalBombs.forEach(function(_wpb){
+    x.save(); x.translate(_wpb.x, _wpb.y);
+    x.beginPath(); x.arc(0,0,_wpb.r,0,Math.PI*2);
+    x.fillStyle="#E3F2FD"; x.shadowBlur=8; x.shadowColor="#90CAF9";
+    x.fill();
+    x.strokeStyle="#FFFFFF"; x.lineWidth=1.5; x.stroke();
+    x.restore();
+  });
+
+  // ── Draw Mystery Holes ──
+  whiteHoleMysteryHoles.forEach(function(_wmh){
+    x.save(); x.translate(_wmh.x, _wmh.y);
+    var _wma=Math.min(1,(_whNow-_wmh.born)/3000);
+    if(!_wmh.active){
+      // Growing void
+      x.beginPath(); x.arc(0,0,_wmh.r*_wma,0,Math.PI*2);
+      x.fillStyle="rgba(30,0,50,0.7)";
+      x.shadowBlur=10; x.shadowColor=_wmh.type==='black'?"#9c27b0":"#FFFFFF";
+      x.fill();
+    } else {
+      // Active hole
+      var _col=_wmh.type==='black'?"#9c27b0":"#FFFFFF";
+      x.beginPath(); x.arc(0,0,_wmh.r,0,Math.PI*2);
+      x.fillStyle=_wmh.type==='black'?"rgba(0,0,0,0.85)":"rgba(240,240,255,0.15)";
+      x.fill();
+      x.strokeStyle=_col; x.lineWidth=2.5;
+      x.shadowBlur=16; x.shadowColor=_col;
+      x.stroke();
+      // Spinning inner ring
+      var _wsp=(_whNow/400)%( Math.PI*2);
+      x.beginPath();
+      x.arc(0,0,_wmh.r*0.55,_wsp,_wsp+Math.PI*1.3);
+      x.strokeStyle=_col; x.lineWidth=1.5; x.stroke();
+      // Label
+      x.fillStyle=_col; x.font="bold 9px sans-serif";
+      x.textAlign="center"; x.textBaseline="middle";
+      x.fillText(_wmh.type==='black'?"BH":"WH",0,0);
+    }
+    x.restore();
+  });
+}
+
+
 // 🎨 PAINT GUN CUBE ABILITIES
 function processPaintGunCube(){
   let now=Date.now();
@@ -6128,6 +6333,25 @@ function processTesseractCubeAbilities(){
         }
       }
 
+      // Special quest: bomb cube bomb absorbed by black hole
+      if(!specialQuests.bombInBlackHole.done){
+        for(var _sqbi=bombCubeBombs.length-1;_sqbi>=0;_sqbi--){
+          var _sqb=bombCubeBombs[_sqbi];
+          if(!_sqb.exploded&&Math.hypot(_sqb.x-bh.x,_sqb.y-bh.y)<22){
+            specialQuests.bombInBlackHole.done=true;
+            bombCubeBombs.splice(_sqbi,1);
+            shopOwned.WhiteHoleCube=true;
+            saveProgress();
+            // Show quest toast
+            var _qt=document.createElement('div');
+            _qt.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;border:2px solid #FFFFFF;padding:12px 22px;border-radius:10px;font-size:15px;font-weight:bold;z-index:9999;pointer-events:none;box-shadow:0 0 20px #ffffff88';
+            _qt.textContent='⚪ Quest Complete! White Hole Cube unlocked!';
+            document.body.appendChild(_qt);
+            setTimeout(function(){_qt.remove();},4000);
+            break;
+          }
+        }
+      }
       // Auto-expire black hole after 8s if enemy never reaches
       if(_tcNow-bh.born>8000){
         tesseractBHFX.splice(tesseractBHFX.indexOf(bh),1);
@@ -6585,6 +6809,7 @@ function loop(ts){
     processHoverboardCube();
     processDragonfruitCube();
     processDragonfruitBurn();
+    processWhiteHoleCube();
     processIceFreeze();
     processFrostfireSword();
   vampireDrain(p,o); vampireDrain(o,p);
@@ -6824,7 +7049,7 @@ function loop(ts){
       }
       // Final result
       bossMode=false;run=false;
-      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -6881,7 +7106,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -6944,6 +7169,18 @@ function openPicker(target){
         <div class="char-name" style="color:${ch.color}">${ch.name||ch.type}${curType===ch.type?" ✓":""} <span style="font-size:10px;color:#ffd700;background:#333;padding:1px 4px;border-radius:4px">👑 Boss Reward</span></div>
         <div class="char-desc">${ch.desc}</div>
         <div class="char-quest" style="color:#aaa">🏆 Unlocked by defeating this boss 3 times</div>
+      </div>`;
+      card.onclick=()=>pickChar(ch.type,false);
+      list.appendChild(card);
+      return;
+    }
+    if(ch.questReward){
+      card.innerHTML=`
+      ${charIconHTML(ch,"outline:3px solid #E0E0E0;box-shadow:0 0 12px #FFFFFF66")}
+      <div class="char-info">
+        <div class="char-name" style="color:#E0E0E0">${ch.name||ch.type}${curType===ch.type?" ✓":""} <span style="font-size:10px;color:#E0E0E0;background:#333;padding:1px 4px;border-radius:4px">⚪ Quest Reward</span></div>
+        <div class="char-desc">${ch.desc}</div>
+        <div class="char-quest" style="color:#aaa">🌌 Unlocked by completing the White Hole Seeker quest</div>
       </div>`;
       card.onclick=()=>pickChar(ch.type,false);
       list.appendChild(card);
@@ -7559,6 +7796,13 @@ function toggleAutoplay(){
 function openQuests(){
   let list=document.getElementById("quest-list");
   list.innerHTML="";
+
+  // Boss fights header
+  let bossHdr=document.createElement("div");
+  bossHdr.style.cssText="font-size:13px;color:#f44336;font-weight:bold;margin-bottom:6px";
+  bossHdr.textContent="⚔️ Boss Fights";
+  list.appendChild(bossHdr);
+
   BOSSES.forEach(function(b){
     let bp=bossProgress[b.type]||{wins:0,owned:false};
     let pct=Math.min(100,Math.round((bp.wins/3)*100));
@@ -7566,11 +7810,31 @@ function openQuests(){
     row.className="bq-row"+(bp.owned?" owned":"");
     row.innerHTML="<div class='bq-name' style='color:"+b.color+"'>"+b.label+"</div>"
       +"<div class='bq-sub'>"+b.desc+"</div>"
-      +"<div class='bq-sub' style='color:#ccc'>Wins: "+bp.wins+"/3"+(!bp.owned?" — beat it "+(3-bp.wins)+" more time"+(3-bp.wins===1?"":"s")+"!":"")+"</div>"
+      +"<div class='bq-sub' style='color:#ccc'>Wins: "+bp.wins+"/3"+(!bp.owned?" — beat it "+(3-bp.wins)+" more time"+(3-bp.wins===1?"":"s")+"!":"")+""
       +(bp.owned?"<div class='bq-owned'>👑 BOSS OWNED!</div>":"")
       +"<div class='bq-bar-wrap'><div class='bq-bar' style='width:"+pct+"%'></div></div>";
     list.appendChild(row);
   });
+
+  // Special Quests header
+  let sqHdr=document.createElement("div");
+  sqHdr.style.cssText="font-size:13px;color:#aaa;font-weight:bold;margin:12px 0 6px";
+  sqHdr.textContent="🌌 Special Quests";
+  list.appendChild(sqHdr);
+
+  // Quest: Bomb in Black Hole
+  let sq1Done=specialQuests.bombInBlackHole.done;
+  let sq1=document.createElement("div");
+  sq1.className="bq-row"+(sq1Done?" owned":"");
+  sq1.innerHTML="<div class='bq-name' style='color:#E0E0E0'>⚪ White Hole Seeker</div>"
+    +"<div class='bq-sub'>Get a Bomb Cube to throw its bomb into a Tesseract's Black Hole.</div>"
+    +"<div class='bq-sub' style='color:#ffe082'>🎁 Reward: White Hole Cube</div>"
+    +(sq1Done
+      ?"<div class='bq-owned' style='color:#E0E0E0'>⚪ COMPLETE — White Hole Cube unlocked!</div>"
+      :"<div class='bq-sub' style='color:#777'>Not yet completed...</div>")
+    +"<div class='bq-bar-wrap'><div class='bq-bar' style='width:"+(sq1Done?100:0)+"%;background:#E0E0E0'></div></div>";
+  list.appendChild(sq1);
+
   document.getElementById("quest-panel").classList.add("open");
 }
 function closeQuests(){document.getElementById("quest-panel").classList.remove("open");}
@@ -7667,7 +7931,7 @@ function confirmPartyFight(){
   bossPartyIdx=0;
   activeBossType=_savedBossType; // lock in boss type for win tracking
   // Start boss fight
-  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];}
@@ -7705,7 +7969,8 @@ function saveProgress(){
       shopOwned: shopOwned,
       bossProgress: bossProgress,
       dataVersion: 7,
-      starterPickedDone: _starterPickedDone
+      starterPickedDone: _starterPickedDone,
+      specialQuests: specialQuests
     }));
     saveBossProgress(); // always mirror boss progress to dedicated key
   }catch(e){}
@@ -7723,6 +7988,7 @@ function loadProgress(){
     if(typeof d.coins==="number") coins=d.coins;
     if(d.shopOwned) Object.assign(shopOwned, d.shopOwned);
     if(d.bossProgress){for(let _bk in d.bossProgress){if(bossProgress[_bk])Object.assign(bossProgress[_bk],d.bossProgress[_bk]);}}
+    if(d.specialQuests){Object.assign(specialQuests,d.specialQuests);}
     if((d.dataVersion||0)<2){ shopOwned.Phantom=false; }
     if((d.dataVersion||0)<3){ shopOwned.Dragon=false; }
     if((d.dataVersion||0)<5){ shopOwned.FocusedNinja=false; }
