@@ -225,7 +225,7 @@ canvas{touch-action:none}
   <button id="btn-quests" onclick="openQuests()" style="background:#b8860b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">📋 Quests</button>
   <button id="btn-boss" onclick="openBossPanel()" style="background:#c0392b;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">⚔️ Boss Fight</button>
   <button onclick="openSettings()" style="background:#4a4a6a;color:#fff;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold">⚙️ Settings</button>
-  <button id="btn-bonus" onclick="claimBonus()" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#111;padding:10px 18px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold" title="Claim +5 coins &amp; +5 Easter Eggs!">🎁 +5 Bonus</button>
+  
 </div>
 <div id="score-display" style="font-size:13px;margin:2px 0 4px"><span id="egg-display" style="color:#ffe082;font-size:14px;font-weight:bold"></span></div>
 
@@ -284,6 +284,14 @@ canvas{touch-action:none}
     </div>
     <div class="srow" style="justify-content:center">
       <button id="btn-delete-progress" onclick="deleteProgress()" style="background:#6b2b2b;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:bold;">🗑 Delete Progress</button>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #555;">
+      <div style="font-weight:bold;margin-bottom:6px;font-size:13px;">🔑 Redeem Code</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="code-input" type="text" placeholder="Enter code..." style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid #555;background:#1e1e1e;color:#fff;font-size:13px;" onkeydown="if(event.key==='Enter')redeemCode()">
+        <button onclick="redeemCode()" style="padding:8px 14px;background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:bold;">Redeem</button>
+      </div>
+      <div id="code-msg" style="margin-top:6px;font-size:12px;min-height:16px;"></div>
     </div>
     <button id="settings-close" onclick="closeSettings()">Done</button>
   </div>
@@ -632,6 +640,7 @@ const BOSSES=[
    reward:"Conquer the darkness itself."},
 ];
 const bossProgress={CubeKing:{wins:0,owned:false},ShadowCube:{wins:0,owned:false}};
+let redeemedCodes={}; // tracks which 1-time codes have been used
 let specialQuests={bombInBlackHole:{done:false},pirateBeatShark:{done:false}};
 let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBossType=null;
 let _bossPartyPicked=[];
@@ -639,7 +648,7 @@ let _bossPartyPicked=[];
 // ===== MASTERY STATE =====
 const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0,WhiteHoleCube:0,KrakenCube:0};
 const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10,HoverboardCube:10,DragonfruitCube:20,WhiteHoleCube:0,KrakenCube:10};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,KrakenCube:false};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,KrakenCube:false,TestCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -869,7 +878,10 @@ const CHARS=[
    desc:"A beast from the deep. Its power is shrouded in mystery.",
    quest:"Strike the enemy with a tentacle 10 times",
    masteryDesc:"Tentacles deal 2 damage; nautilus squirts every 8s instead of 15s",
-   shopSection:"reward", questReward:true}
+   shopSection:"reward", questReward:true},
+  {type:"TestCube", name:"🧪 Test Cube", color:"#e0e0e0",
+   desc:"A mysterious test cube. Seems indestructible...",
+   shopSection:"none"}
 
 ];
 
@@ -900,7 +912,8 @@ constructor(type,X,Y,mastered){
     this._invincShieldBreakFX=[];
     this._invincVulnFX=[];
   }
-  if(type!=='InvincibleCube'&&type!=='WallCube') this.hp=10;
+  if(type!=='InvincibleCube'&&type!=='WallCube'&&type!=='TestCube') this.hp=10;
+  if(type==='TestCube') this.hp=999;
   if(type==='WallCube') this.hp=25;
   if(type==='AlienCube') this.hp=20;
   if(type==='FrostfireSwordCube') this.hp=15;
@@ -913,7 +926,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":type==="KrakenCube"?"#1a237e":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":type==="KrakenCube"?"#1a237e":type==="TestCube"?"#e0e0e0":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   if(type==="AxolotlCube"){this._axLeg1HP=2;this._axLeg2HP=2;this._axTailHP=3;this._axRegenTimer=Date.now();}
@@ -5508,7 +5521,7 @@ function handleCombat(a,b){
   let aNearBStick=b.t=="Stick"&&b.stickTip&&Math.abs(b.stickTip.x-a.x)<a.s/2+10&&Math.abs(b.stickTip.y-a.y)<a.s/2+10;
   let bNearAStick=a.t=="Stick"&&a.stickTip&&Math.abs(a.stickTip.x-b.x)<b.s/2+10&&Math.abs(a.stickTip.y-b.y)<b.s/2+10;
 
-  if(aTo&&!aNearBStick&&now-b.lastHit>400&&a.t!=="PaintGunCube"){
+  if(aTo&&!aNearBStick&&now-b.lastHit>400&&a.t!=="PaintGunCube"&&a.t!=="TestCube"){
     let dmg=1;
     if(a.t==="CubeKing"||a.t==="ShadowCube") dmg=2;
     if(a.t==="Predictor"&&a.mastered&&a.predMode==="predicting") dmg=2;
@@ -5519,7 +5532,7 @@ function handleCombat(a,b){
     applyDamage(b,a,dmg); b.lastHit=now;
     if(a.t==="Predictor"&&a.predMode==="predicting"){a.predMode="scared";a.predTimer=now;a.predCooldown=1500+Math.random()*1000;}
   }
-  if(bTo&&!bNearAStick&&now-a.lastHit>400&&b.t!=="PaintGunCube"){
+  if(bTo&&!bNearAStick&&now-a.lastHit>400&&b.t!=="PaintGunCube"&&b.t!=="TestCube"){
     let dmg=1;
     if(b.t==="CubeKing"||b.t==="ShadowCube") dmg=2;
     if(b.t==="Predictor"&&b.mastered&&b.predMode==="predicting") dmg=2;
@@ -7529,24 +7542,7 @@ function startOrRestart(){
 }
 
 // ===== SHOP + EGG DISPLAY =====
-function claimBonus(){
-  coins += 5;
-  easterEggs += 5;
-  saveProgress();
-  updateEggDisplay();
-  var btn=document.getElementById("btn-bonus");
-  if(btn){
-    var orig=btn.textContent;
-    btn.textContent="✅ +5 claimed!";
-    btn.disabled=true;
-    btn.style.opacity="0.6";
-    setTimeout(function(){
-      btn.textContent=orig;
-      btn.disabled=false;
-      btn.style.opacity="1";
-    },1000);
-  }
-}
+
 
 function updateEggDisplay(){
   let d=document.getElementById("egg-display");
@@ -8182,7 +8178,8 @@ function saveProgress(){
       bossProgress: bossProgress,
       dataVersion: 7,
       starterPickedDone: _starterPickedDone,
-      specialQuests: specialQuests
+      specialQuests: specialQuests,
+      redeemedCodes: redeemedCodes
     }));
     saveBossProgress(); // always mirror boss progress to dedicated key
   }catch(e){}
@@ -8201,6 +8198,7 @@ function loadProgress(){
     if(d.shopOwned) Object.assign(shopOwned, d.shopOwned);
     if(d.bossProgress){for(let _bk in d.bossProgress){if(bossProgress[_bk])Object.assign(bossProgress[_bk],d.bossProgress[_bk]);}}
     if(d.specialQuests){Object.assign(specialQuests,d.specialQuests);}
+    if(d.redeemedCodes){Object.assign(redeemedCodes,d.redeemedCodes);}
     if((d.dataVersion||0)<2){ shopOwned.Phantom=false; }
     if((d.dataVersion||0)<3){ shopOwned.Dragon=false; }
     if((d.dataVersion||0)<5){ shopOwned.FocusedNinja=false; }
@@ -8809,6 +8807,57 @@ function openSettings(){
   document.getElementById('sbtn-auto-on').classList.toggle('active', autoPlay);
   document.getElementById('sbtn-auto-off').classList.toggle('active', !autoPlay);
   document.getElementById('settings-overlay').classList.add('open');
+}
+function redeemCode(){
+  var raw=document.getElementById('code-input').value||'';
+  var code=raw.trim();
+  var upper=code.toUpperCase();
+  var msg='';
+  if(upper==='RELEASE'){
+    if(redeemedCodes['RELEASE']){
+      msg='⚠️ Code already used!';
+    } else {
+      redeemedCodes['RELEASE']=true;
+      coins+=15; easterEggs+=8;
+      saveProgress(); updateEggDisplay();
+      msg='✅ Code accepted! +15 🪙 +8 🥚';
+    }
+  } else if(upper==='POOBAZOOBA'){
+    if(redeemedCodes['POOBAZOOBA']){
+      msg='⚠️ Code already used!';
+    } else {
+      redeemedCodes['POOBAZOOBA']=true;
+      easterEggs+=67;
+      saveProgress(); updateEggDisplay();
+      msg='✅ Code accepted! +67 🥚';
+    }
+  } else if(upper==='232TICKETS'){
+    if(redeemedCodes['232TICKETS']){
+      msg='⚠️ Code already used!';
+    } else {
+      redeemedCodes['232TICKETS']=true;
+      coins+=232;
+      saveProgress(); updateEggDisplay();
+      msg='✅ Code accepted! +232 🪙';
+    }
+  } else if(code==='Zyrquandoflixenbloopraxium9067'){
+    coins+=500; easterEggs+=500;
+    saveProgress(); updateEggDisplay();
+    msg='✅ Code accepted! +500 🪙 +500 🥚';
+  } else if(upper==='TEST'){
+    if(!shopOwned.TestCube){
+      shopOwned.TestCube=true;
+      saveProgress();
+      msg='🧪 Secret code! Test Cube unlocked!';
+    } else {
+      msg='⚠️ You already own Test Cube!';
+    }
+  } else {
+    msg='❌ Unknown code.';
+  }
+  var msgEl=document.getElementById('code-msg');
+  if(msgEl){ msgEl.textContent=msg; msgEl.style.color=msg.startsWith('✅')||msg.startsWith('🧪')?'#66ff66':'#ff8888'; }
+  document.getElementById('code-input').value='';
 }
 function closeSettings(){
   document.getElementById('settings-overlay').classList.remove('open');
