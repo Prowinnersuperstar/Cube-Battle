@@ -4717,12 +4717,7 @@ function processDragonfruitCube(){
                 life:30,color:Math.random()>0.5?"#E91E63":"#ffffff"});
             }
           }
-          // Mastery tracking
-          if(!bossMode && selectedPlayer==="DragonfruitCube" && _df.owner===p){
-            masteryProgress.DragonfruitCube=Math.min(
-              masteryGoals.DragonfruitCube,(masteryProgress.DragonfruitCube||0)+1);
-            checkMasteries();
-          }
+
         }
       }
       if(_df._hit || _df.life<=0){ dragonfruitProjectiles.splice(_i,1); continue; }
@@ -4777,6 +4772,12 @@ function processDragonfruitCube(){
             vx:(_dx/_d)*_spd,vy:(_dy/_d)*_spd,
             life:180,owner:cube,_hit:false,spin:0
           });
+          // Mastery tracking: count on throw
+          if(!bossMode && cube===p && p.t==="DragonfruitCube"){
+            masteryProgress.DragonfruitCube=Math.min(
+              masteryGoals.DragonfruitCube,(masteryProgress.DragonfruitCube||0)+1);
+            checkMasteries();
+          }
           // Mastered: fire a second dragonfruit with a slight angle offset
           if(cube.mastered){
             let _ang=Math.atan2(_dy,_dx)+0.25;
