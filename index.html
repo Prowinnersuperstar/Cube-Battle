@@ -551,10 +551,11 @@ let paintGunPuddles=[];
 let hoverboardWaves=[];
 let dragonfruitProjectiles=[];
 let whiteHoleProjectiles=[],whiteHolePortalBombs=[],whiteHoleMysteryHoles=[];
+let krakenTentacles=[],krakenProjectiles=[],krakenNautilus=null;
 let shrinkingCubeGhosts=[];
 let shrinkingCubeParticles2=[];
 let alienPlanets=[];   // {x,y,vx,vy,type,dmg,radius,owner,born,hit}
-let alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+let alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
 let sharkSplashes=[];  // {x,y,vx,vy,owner,enemy,dmg,hit,life}
 let iceCreamProjectiles=[];  // {x,y,vx,vy,owner,enemy,flavor,dmg,hit,life}
 let iceCreamSlowEnd={p:0,o:0}; // for strawberry slow per-side
@@ -631,14 +632,14 @@ const BOSSES=[
    reward:"Conquer the darkness itself."},
 ];
 const bossProgress={CubeKing:{wins:0,owned:false},ShadowCube:{wins:0,owned:false}};
-let specialQuests={bombInBlackHole:{done:false}};
+let specialQuests={bombInBlackHole:{done:false},pirateBeatShark:{done:false}};
 let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBossType=null;
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0};
-const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10,HoverboardCube:10,DragonfruitCube:20};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0,WhiteHoleCube:0,KrakenCube:0};
+const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10,HoverboardCube:10,DragonfruitCube:20,WhiteHoleCube:0,KrakenCube:10};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,KrakenCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -862,6 +863,12 @@ const CHARS=[
   {type:"WhiteHoleCube", name:"⚪ White Hole Cube", color:"#FFFFFF",
    desc:"A mysterious reward cube that bends space itself. Every 16s: hurls a white hole to a random spot — pushes enemies away and deals 2 damage. Every 20s: opens a portal ejecting 4 bombs in cardinal directions (1 damage each). Every 30s: spawns a mystery hole that becomes a black or white hole for 10s.",
    quest:null, masteryDesc:null,
+   shopSection:"reward", questReward:true},
+
+  {type:"KrakenCube", name:"🦑 Kraken Cube", color:"#1a237e",
+   desc:"A beast from the deep. Its power is shrouded in mystery.",
+   quest:"Strike the enemy with a tentacle 10 times",
+   masteryDesc:"Tentacles deal 2 damage; nautilus squirts every 8s instead of 15s",
    shopSection:"reward", questReward:true}
 
 ];
@@ -906,7 +913,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":type==="KrakenCube"?"#1a237e":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   if(type==="AxolotlCube"){this._axLeg1HP=2;this._axLeg2HP=2;this._axTailHP=3;this._axRegenTimer=Date.now();}
@@ -4988,6 +4995,82 @@ function processWhiteHoleCube(){
     }
   });
 
+  // ── Draw Kraken Tentacles ──
+  krakenTentacles.forEach(function(_kt){
+    var _tipX=_kt.ox+(_kt.tx-_kt.ox)*_kt.prog;
+    var _tipY=_kt.oy+(_kt.ty-_kt.oy)*_kt.prog;
+    x.save();
+    x.strokeStyle='#3949AB';
+    x.lineWidth=7+_kt.prog*3;
+    x.lineCap='round';
+    x.globalAlpha=0.8;
+    x.beginPath();
+    x.moveTo(_kt.ox,_kt.oy);
+    var _cx=(_kt.ox+_kt.tx)/2+(_kt.ty-_kt.oy)*0.4;
+    var _cy=(_kt.oy+_kt.ty)/2-(_kt.tx-_kt.ox)*0.4;
+    x.quadraticCurveTo(_cx,_cy,_tipX,_tipY);
+    x.stroke();
+    x.fillStyle='#9FA8DA';
+    x.beginPath(); x.arc(_tipX,_tipY,7,0,Math.PI*2); x.fill();
+    x.restore();
+  });
+  // ── Draw Kraken Projectiles ──
+  krakenProjectiles.forEach(function(_kp){
+    x.save();
+    x.globalAlpha=0.92;
+    if(_kp.type==='cannon'){
+      x.fillStyle='#37474F';
+      x.beginPath(); x.arc(_kp.x,_kp.y,9,0,Math.PI*2); x.fill();
+      x.strokeStyle='#90A4AE'; x.lineWidth=2; x.stroke();
+    } else if(_kp.type==='sail'){
+      x.fillStyle='#ECEFF1';
+      x.beginPath();
+      x.moveTo(_kp.x,_kp.y-13);
+      x.lineTo(_kp.x+11,_kp.y+9);
+      x.lineTo(_kp.x-11,_kp.y+9);
+      x.closePath(); x.fill();
+      x.strokeStyle='#78909C'; x.lineWidth=1.5; x.stroke();
+    } else {
+      x.fillStyle='#29B6F6';
+      x.globalAlpha=0.85;
+      x.beginPath(); x.arc(_kp.x,_kp.y,7,0,Math.PI*2); x.fill();
+    }
+    x.restore();
+  });
+  // ── Draw Kraken Nautilus ──
+  if(krakenNautilus){
+    var _kn=krakenNautilus;
+    x.save();
+    // Shell
+    x.fillStyle='#EDE7F6';
+    x.beginPath(); x.arc(_kn.x,_kn.y,14,0,Math.PI*2); x.fill();
+    x.strokeStyle='#7B1FA2'; x.lineWidth=2.5; x.stroke();
+    // Spiral
+    x.strokeStyle='#B39DDB'; x.lineWidth=1.5;
+    x.beginPath();
+    for(var _a=0;_a<Math.PI*3;_a+=0.15){
+      var _r=2+_a*1.3;
+      var _sx=_kn.x+Math.cos(_a)*_r;
+      var _sy=_kn.y+Math.sin(_a)*_r;
+      if(_a===0) x.moveTo(_sx,_sy); else x.lineTo(_sx,_sy);
+    }
+    x.stroke();
+    // Tentacles
+    x.strokeStyle='#9575CD'; x.lineWidth=2.5;
+    for(var _ti=0;_ti<3;_ti++){
+      x.beginPath();
+      x.moveTo(_kn.x+(_ti-1)*6,_kn.y+12);
+      x.lineTo(_kn.x+(_ti-1)*8+Math.sin(Date.now()/300+_ti)*5,_kn.y+23);
+      x.stroke();
+    }
+    // Label
+    x.fillStyle='#CE93D8'; x.font='8px Arial'; x.textAlign='center';
+    x.fillText('nautilus',_kn.x,_kn.y-17);
+    x.textAlign='left';
+    x.restore();
+  }
+
+
   // ── Draw Portal Bombs ──
   whiteHolePortalBombs.forEach(function(_wpb){
     x.save(); x.translate(_wpb.x, _wpb.y);
@@ -5029,6 +5112,111 @@ function processWhiteHoleCube(){
     }
     x.restore();
   });
+}
+
+
+// 🦑 KRAKEN CUBE ABILITIES
+function processKrakenCubeAbilities(){
+  if(!run) return;
+  var now=Date.now();
+  var W=c.width||360, H=c.height||360;
+  [p,o].forEach(function(_kc){
+    if(!_kc||_kc.t!=='KrakenCube') return;
+    var _en=(_kc===p)?o:p;
+    if(!_en||_en.hp<=0) return;
+    if(!_kc._kcTentTimer) _kc._kcTentTimer=now;
+    if(!_kc._kcThrowTimer) _kc._kcThrowTimer=now;
+    if(!_kc._kcNautilusSpawned) _kc._kcNautilusSpawned=false;
+    if(!_kc._kcStartTime) _kc._kcStartTime=now;
+
+    // Ability 1: Tentacle every 10s
+    if(now-_kc._kcTentTimer>10000){
+      _kc._kcTentTimer=now;
+      krakenTentacles.push({
+        ox:_kc.x, oy:_kc.y,
+        tx:_en.x+((Math.random()-0.5)*40),
+        ty:_en.y+((Math.random()-0.5)*40),
+        prog:0, hit:false, owner:_kc,
+        life:60, maxLife:60
+      });
+    }
+
+    // Ability 2: Cannon or Sail throw every 16s
+    if(now-_kc._kcThrowTimer>16000){
+      _kc._kcThrowTimer=now;
+      var _ptype=Math.random()<0.5?'cannon':'sail';
+      var _dx=_en.x-_kc.x, _dy=_en.y-_kc.y;
+      var _dist=Math.hypot(_dx,_dy)||1;
+      krakenProjectiles.push({
+        x:_kc.x, y:_kc.y,
+        vx:(_dx/_dist)*7, vy:(_dy/_dist)*7,
+        type:_ptype, owner:_kc, hit:false, life:90
+      });
+    }
+
+    // Ability 3: Nautilus once after 30s
+    if(!_kc._kcNautilusSpawned && now-_kc._kcStartTime>30000){
+      _kc._kcNautilusSpawned=true;
+      krakenNautilus={
+        x:30+Math.random()*(W-60),
+        y:30+Math.random()*(H-60),
+        squirtTimer:now, owner:_kc
+      };
+    }
+  });
+
+  // Update tentacles
+  for(var i=krakenTentacles.length-1;i>=0;i--){
+    var _kt=krakenTentacles[i];
+    _kt.prog+=0.045;
+    if(_kt.prog>1) _kt.prog=1;
+    _kt.life--;
+    var _enemy=(_kt.owner===p)?o:p;
+    if(_enemy&&!_kt.hit&&_kt.prog>0.8){
+      var tipX=_kt.ox+(_kt.tx-_kt.ox)*_kt.prog;
+      var tipY=_kt.oy+(_kt.ty-_kt.oy)*_kt.prog;
+      if(Math.hypot(tipX-_enemy.x,tipY-_enemy.y)<_enemy.s+14){
+        _kt.hit=true;
+        var _dmg=(_kt.owner&&_kt.owner.mastered)?2:1;
+        applyDamage(_enemy,_dmg,_kt.owner);
+        if(_kt.owner&&_kt.owner.t==='KrakenCube'&&!bossMode){
+          masteryProgress.KrakenCube=(masteryProgress.KrakenCube||0)+1;
+          saveProgress();
+        }
+      }
+    }
+    if(_kt.life<=0) krakenTentacles.splice(i,1);
+  }
+
+  // Update Kraken projectiles
+  for(var j=krakenProjectiles.length-1;j>=0;j--){
+    var _kp=krakenProjectiles[j];
+    _kp.x+=_kp.vx; _kp.y+=_kp.vy; _kp.life--;
+    var _kenemy=(_kp.owner===p)?o:p;
+    if(_kenemy&&!_kp.hit&&Math.hypot(_kp.x-_kenemy.x,_kp.y-_kenemy.y)<_kenemy.s+10){
+      _kp.hit=true;
+      applyDamage(_kenemy,2,_kp.owner);
+    }
+    if(_kp.life<=0||_kp.hit) krakenProjectiles.splice(j,1);
+  }
+
+  // Nautilus squirt
+  if(krakenNautilus){
+    var _sqInt=(krakenNautilus.owner&&krakenNautilus.owner.mastered)?8000:15000;
+    if(now-krakenNautilus.squirtTimer>_sqInt){
+      krakenNautilus.squirtTimer=now;
+      var _ne=(krakenNautilus.owner===p)?o:p;
+      if(_ne&&_ne.hp>0){
+        var _ndx=_ne.x-krakenNautilus.x, _ndy=_ne.y-krakenNautilus.y;
+        var _nd=Math.hypot(_ndx,_ndy)||1;
+        krakenProjectiles.push({
+          x:krakenNautilus.x, y:krakenNautilus.y,
+          vx:(_ndx/_nd)*5, vy:(_ndy/_nd)*5,
+          type:'water', owner:krakenNautilus.owner, hit:false, life:100
+        });
+      }
+    }
+  }
 }
 
 
@@ -6810,6 +6998,7 @@ function loop(ts){
     processDragonfruitCube();
     processDragonfruitBurn();
     processWhiteHoleCube();
+  processKrakenCubeAbilities();
     processIceFreeze();
     processFrostfireSword();
   vampireDrain(p,o); vampireDrain(o,p);
@@ -7049,7 +7238,7 @@ function loop(ts){
       }
       // Final result
       bossMode=false;run=false;
-      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -7106,7 +7295,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -7134,6 +7323,16 @@ function loop(ts){
     easterEggs++;
     coins++;
     updateEggDisplay();
+    // Special quest: Pirate wins against Shark
+    if(!specialQuests.pirateBeatShark.done){
+      var _pirateWon=(p.t==='Pirate'&&o.hp<=0)||(o.t==='Pirate'&&p.hp<=0);
+      var _sharkPresent=(p.t==='SharkCube'||o.t==='SharkCube');
+      if(_pirateWon&&_sharkPresent){
+        specialQuests.pirateBeatShark.done=true;
+        shopOwned.KrakenCube=true;
+        showToast('🦑 Quest Complete! Kraken Cube unlocked!','#0288D1');
+      }
+    }
     saveProgress();
     document.getElementById("btn-start").innerText="▶ Start Battle";
     document.getElementById('topbar').style.visibility='';document.getElementById('score-display').style.visibility='';
@@ -7827,13 +8026,26 @@ function openQuests(){
   let sq1=document.createElement("div");
   sq1.className="bq-row"+(sq1Done?" owned":"");
   sq1.innerHTML="<div class='bq-name' style='color:#E0E0E0'>⚪ White Hole Seeker</div>"
-    +"<div class='bq-sub'>Get a Bomb Cube to throw its bomb into a Tesseract's Black Hole.</div>"
+    +"<div class=\'bq-sub\' style=\'color:#555\'>??? Something explosive... something dimensional... Find the connection.</div>"
     +"<div class='bq-sub' style='color:#ffe082'>🎁 Reward: White Hole Cube</div>"
     +(sq1Done
       ?"<div class='bq-owned' style='color:#E0E0E0'>⚪ COMPLETE — White Hole Cube unlocked!</div>"
       :"<div class='bq-sub' style='color:#777'>Not yet completed...</div>")
     +"<div class='bq-bar-wrap'><div class='bq-bar' style='width:"+(sq1Done?100:0)+"%;background:#E0E0E0'></div></div>";
   list.appendChild(sq1);
+
+  // Quest: Pirate beats Shark
+  let sq2Done=specialQuests.pirateBeatShark.done;
+  let sq2=document.createElement("div");
+  sq2.className="bq-row"+(sq2Done?" owned":"");
+  sq2.innerHTML="<div class=\'bq-name\' style=\'color:#0288D1\'>🦑 Depths of the Sea</div>"
+    +"<div class=\'bq-sub\' style=\'color:#555\'>??? Two creatures of the sea... only one can reign supreme.</div>"
+    +"<div class=\'bq-sub\' style=\'color:#ffe082\'>🎁 Reward: Kraken Cube</div>"
+    +(sq2Done
+      ?"<div class=\'bq-owned\' style=\'color:#29B6F6\'>🦑 COMPLETE — Kraken Cube unlocked!</div>"
+      :"<div class=\'bq-sub\' style=\'color:#777\'>Not yet completed...</div>")
+    +"<div class=\'bq-bar-wrap\'><div class=\'bq-bar\' style=\'width:"+(sq2Done?100:0)+"%;background:#0288D1\'></div></div>";
+  list.appendChild(sq2);
 
   document.getElementById("quest-panel").classList.add("open");
 }
@@ -7931,7 +8143,7 @@ function confirmPartyFight(){
   bossPartyIdx=0;
   activeBossType=_savedBossType; // lock in boss type for win tracking
   // Start boss fight
-  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];}
