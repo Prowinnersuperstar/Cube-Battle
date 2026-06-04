@@ -4680,7 +4680,7 @@ function processDragonfruitCube(){
           _df._hit=true;
           applyDamage(_dfEnemy,_df.owner,1);
           // Apply burn: 0.5 dmg/sec for 3s (mastered 5s)
-          let _burnDur=(_df.owner&&_df.owner.mastered)?5000:3000;
+          let _burnDur=(_df.owner&&_df.owner.mastered)?7000:5000;
           _dfEnemy._dfBurnUntil=now+_burnDur;
           _dfEnemy._dfBurnTick=now;
           // Splat particles
