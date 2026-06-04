@@ -1279,28 +1279,40 @@ draw(){
     _seeds.forEach(function(s){
       x.beginPath(); x.arc(s[0],s[1],1.2,0,Math.PI*2); x.fill();
     });
-    // Green dragonfruit hair — long curved spikes above cube
+    // Green dragonfruit crown leaves — wide teardrop shapes above cube
     x.save();
-    let _hairY = -_dfs*0.42;
-    let _spikeAngles=[-70,-45,-20,0,20,45,70];
-    let _spikeLens=[11,15,18,20,18,15,11];
-    _spikeAngles.forEach(function(_ang,_si){
-      let _rad=_ang*Math.PI/180;
-      let _len=_spikeLens[_si];
-      let _bx=(_si-3)*(_dfs*0.065);
-      x.strokeStyle="#1B5E20"; x.lineWidth=3; x.lineCap="round";
+    let _crownBase = -_dfs*0.5; // start right at top edge
+    // 5 leaves: center tall, two medium sides, two short outer
+    let _leaves=[
+      {ox:0,        lean:0,    len:_dfs*0.65, w:_dfs*0.18},
+      {ox:-_dfs*0.22, lean:-0.55, len:_dfs*0.52, w:_dfs*0.14},
+      {ox: _dfs*0.22, lean: 0.55, len:_dfs*0.52, w:_dfs*0.14},
+      {ox:-_dfs*0.38, lean:-1.0, len:_dfs*0.38, w:_dfs*0.11},
+      {ox: _dfs*0.38, lean: 1.0, len:_dfs*0.38, w:_dfs*0.11}
+    ];
+    _leaves.forEach(function(_lf){
+      // tip position
+      let _tx = _lf.ox + Math.sin(_lf.lean)*_lf.len*0.5;
+      let _ty = _crownBase - _lf.len;
+      // draw filled teardrop leaf
       x.beginPath();
-      x.moveTo(_bx, _hairY);
+      x.moveTo(_lf.ox, _crownBase);
       x.bezierCurveTo(
-        _bx+Math.sin(_rad)*_len*0.4, _hairY-_len*0.4,
-        _bx+Math.sin(_rad)*_len*0.8, _hairY-_len*0.8,
-        _bx+Math.sin(_rad)*_len, _hairY-_len
+        _lf.ox - _lf.w + Math.sin(_lf.lean)*_lf.len*0.3, _crownBase - _lf.len*0.4,
+        _tx - _lf.w*0.4, _ty + _lf.len*0.25,
+        _tx, _ty
       );
-      x.stroke();
-      x.fillStyle="#2E7D32";
+      x.bezierCurveTo(
+        _tx + _lf.w*0.4, _ty + _lf.len*0.25,
+        _lf.ox + _lf.w + Math.sin(_lf.lean)*_lf.len*0.3, _crownBase - _lf.len*0.4,
+        _lf.ox, _crownBase
+      );
+      x.fillStyle="#2E7D32"; x.fill();
+      // midrib line
       x.beginPath();
-      let _tx=_bx+Math.sin(_rad)*_len, _ty=_hairY-_len;
-      x.arc(_tx,_ty,2.5,0,Math.PI*2); x.fill();
+      x.moveTo(_lf.ox, _crownBase);
+      x.lineTo(_tx, _ty);
+      x.strokeStyle="#1B5E20"; x.lineWidth=1.5; x.stroke();
     });
     x.restore();
     x.restore();
@@ -4706,7 +4718,7 @@ function processDragonfruitCube(){
             }
           }
           // Mastery tracking
-          if(!bossMode && _df.owner===p){
+          if(!bossMode && selectedPlayer==="DragonfruitCube" && _df.owner===p){
             masteryProgress.DragonfruitCube=Math.min(
               masteryGoals.DragonfruitCube,(masteryProgress.DragonfruitCube||0)+1);
             checkMasteries();
@@ -7012,7 +7024,7 @@ function openMastery(){
   let list=document.getElementById("mastery-list");
   list.innerHTML="";
   CHARS.filter(ch=>(!ch.shopSection||shopOwned[ch.type])&&!ch.isSkin&&!ch.bossUnlock).forEach(ch=>{
-    let prog=Math.min(masteryProgress[ch.type],masteryGoals[ch.type]);
+    let prog=Math.min(masteryProgress[ch.type]||0,masteryGoals[ch.type]||0);
     let goal=masteryGoals[ch.type];
     let pct=Math.round((prog/goal)*100);
     let unlocked=masteryUnlocked[ch.type];
