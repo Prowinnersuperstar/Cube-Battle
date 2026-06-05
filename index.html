@@ -5191,7 +5191,7 @@ function processKrakenCubeAbilities(){
       if(Math.hypot(tipX-_enemy.x,tipY-_enemy.y)<_enemy.s+14){
         _kt.hit=true;
         var _dmg=(_kt.owner&&_kt.owner.mastered)?2:1;
-        applyDamage(_enemy,_dmg,_kt.owner);
+        applyDamage(_enemy,_kt.owner,_dmg);
         if(_kt.owner&&_kt.owner.t==='KrakenCube'&&!bossMode){
           masteryProgress.KrakenCube=(masteryProgress.KrakenCube||0)+1;
           saveProgress();
@@ -5208,7 +5208,7 @@ function processKrakenCubeAbilities(){
     var _kenemy=(_kp.owner===p)?o:p;
     if(_kenemy&&!_kp.hit&&Math.hypot(_kp.x-_kenemy.x,_kp.y-_kenemy.y)<_kenemy.s+10){
       _kp.hit=true;
-      applyDamage(_kenemy,2,_kp.owner);
+      applyDamage(_kenemy,_kp.owner,2);
     }
     if(_kp.life<=0||_kp.hit) krakenProjectiles.splice(j,1);
   }
@@ -8035,7 +8035,7 @@ function openQuests(){
   let sq2=document.createElement("div");
   sq2.className="bq-row"+(sq2Done?" owned":"");
   sq2.innerHTML="<div class=\'bq-name\' style=\'color:#0288D1\'>🦑 Depths of the Sea</div>"
-    +"<div class=\'bq-sub\' style=\'color:#555\'>??? Two creatures of the sea... only one can reign supreme.</div>"
+    +"<div class=\'bq-sub\' style=\'color:#555\'>??? One creature and one man of the sea... only one can reign supreme.</div>"
     +"<div class=\'bq-sub\' style=\'color:#ffe082\'>🎁 Reward: Kraken Cube</div>"
     +(sq2Done
       ?"<div class=\'bq-owned\' style=\'color:#29B6F6\'>🦑 COMPLETE — Kraken Cube unlocked!</div>"
