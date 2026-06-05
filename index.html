@@ -547,7 +547,7 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false};
+const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,CatCube:false};
 let _shopTab="normal";
 let _starterPickedDone=false;
 let gummyPartner=null; // active partner half when Gummy has split
@@ -560,10 +560,11 @@ let hoverboardWaves=[];
 let dragonfruitProjectiles=[];
 let whiteHoleProjectiles=[],whiteHolePortalBombs=[],whiteHoleMysteryHoles=[];
 let krakenTentacles=[],krakenProjectiles=[],krakenNautilus=null;
+let catMiniCubes=[];let catProjectiles=[];
 let shrinkingCubeGhosts=[];
 let shrinkingCubeParticles2=[];
 let alienPlanets=[];   // {x,y,vx,vy,type,dmg,radius,owner,born,hit}
-let alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+let alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;catMiniCubes=[];catProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
 let sharkSplashes=[];  // {x,y,vx,vy,owner,enemy,dmg,hit,life}
 let iceCreamProjectiles=[];  // {x,y,vx,vy,owner,enemy,flavor,dmg,hit,life}
 let iceCreamSlowEnd={p:0,o:0}; // for strawberry slow per-side
@@ -641,14 +642,14 @@ const BOSSES=[
 ];
 const bossProgress={CubeKing:{wins:0,owned:false},ShadowCube:{wins:0,owned:false}};
 let redeemedCodes={}; // tracks which 1-time codes have been used
-let specialQuests={bombInBlackHole:{done:false},pirateBeatShark:{done:false}};
+let specialQuests={bombInBlackHole:{done:false},pirateBeatShark:{done:false},killTestCube:{done:false}};
 let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBossType=null;
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0,WhiteHoleCube:0,KrakenCube:0};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0,WhiteHoleCube:0,KrakenCube:0,CatCube:0};
 const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10,HoverboardCube:10,DragonfruitCube:20,WhiteHoleCube:0,KrakenCube:10};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,KrakenCube:false,TestCube:false};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,KrakenCube:false,CatCube:false,TestCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -881,7 +882,10 @@ const CHARS=[
    shopSection:"reward", questReward:true},
   {type:"TestCube", name:"🧪 Test Cube", color:"#e0e0e0",
    desc:"A mysterious test cube. Seems indestructible...",
-   shopSection:"none"}
+   shopSection:"none"},
+  {type:"CatCube", name:"\uD83D\uDC31 Cat Cube", color:"#CE93D8",
+   desc:"A feline fighter with mysterious origins. Meow.",
+   shopSection:"none", questReward:true}
 
 ];
 
@@ -926,7 +930,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":type==="KrakenCube"?"#1a237e":type==="TestCube"?"#e0e0e0":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":type==="KrakenCube"?"#1a237e":type==="TestCube"?"#e0e0e0":type==="CatCube"?"#CE93D8":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   if(type==="AxolotlCube"){this._axLeg1HP=2;this._axLeg2HP=2;this._axTailHP=3;this._axRegenTimer=Date.now();}
@@ -1791,6 +1795,57 @@ draw(){
     x.restore();
   }
 
+  // 🐱 CAT CUBE: purple square body with cat ears
+  if(this.t==="CatCube"){
+    var _ccx=this.x,_ccy=this.y,_ccs=this.s;
+    x.save();
+    // Ear glow
+    x.shadowColor='#CE93D8'; x.shadowBlur=8;
+    x.fillStyle='#9C27B0';
+    // Left ear (triangle)
+    x.beginPath();
+    x.moveTo(_ccx-_ccs*0.28,_ccy-_ccs*0.5);
+    x.lineTo(_ccx-_ccs*0.1,_ccy-_ccs*0.82);
+    x.lineTo(_ccx+_ccs*0.05,_ccy-_ccs*0.5);
+    x.closePath(); x.fill();
+    // Right ear (triangle)
+    x.beginPath();
+    x.moveTo(_ccx+_ccs*0.28,_ccy-_ccs*0.5);
+    x.lineTo(_ccx+_ccs*0.1,_ccy-_ccs*0.82);
+    x.lineTo(_ccx-_ccs*0.05,_ccy-_ccs*0.5);
+    x.closePath(); x.fill();
+    // Inner ear pink
+    x.fillStyle='#F48FB1'; x.shadowBlur=0;
+    x.beginPath();
+    x.moveTo(_ccx-_ccs*0.22,_ccy-_ccs*0.52);
+    x.lineTo(_ccx-_ccs*0.1,_ccy-_ccs*0.74);
+    x.lineTo(_ccx+_ccs*0.0,_ccy-_ccs*0.52);
+    x.closePath(); x.fill();
+    x.beginPath();
+    x.moveTo(_ccx+_ccs*0.22,_ccy-_ccs*0.52);
+    x.lineTo(_ccx+_ccs*0.1,_ccy-_ccs*0.74);
+    x.lineTo(_ccx-_ccs*0.0,_ccy-_ccs*0.52);
+    x.closePath(); x.fill();
+    // Cube body
+    x.shadowColor='#CE93D8'; x.shadowBlur=10;
+    x.fillStyle='#CE93D8';
+    x.fillRect(_ccx-_ccs/2,_ccy-_ccs/2,_ccs,_ccs);
+    // Eyes
+    x.fillStyle='#4A148C'; x.shadowBlur=0;
+    x.beginPath(); x.arc(_ccx-_ccs*0.18,_ccy-_ccs*0.08,_ccs*0.08,0,Math.PI*2); x.fill();
+    x.beginPath(); x.arc(_ccx+_ccs*0.18,_ccy-_ccs*0.08,_ccs*0.08,0,Math.PI*2); x.fill();
+    // Eye shine
+    x.fillStyle='#fff';
+    x.beginPath(); x.arc(_ccx-_ccs*0.15,_ccy-_ccs*0.11,_ccs*0.03,0,Math.PI*2); x.fill();
+    x.beginPath(); x.arc(_ccx+_ccs*0.21,_ccy-_ccs*0.11,_ccs*0.03,0,Math.PI*2); x.fill();
+    // Whiskers
+    x.strokeStyle='#7B1FA2'; x.lineWidth=1; x.shadowBlur=0;
+    x.beginPath(); x.moveTo(_ccx-_ccs*0.35,_ccy+_ccs*0.1); x.lineTo(_ccx-_ccs*0.05,_ccy+_ccs*0.05); x.stroke();
+    x.beginPath(); x.moveTo(_ccx-_ccs*0.35,_ccy+_ccs*0.2); x.lineTo(_ccx-_ccs*0.05,_ccy+_ccs*0.15); x.stroke();
+    x.beginPath(); x.moveTo(_ccx+_ccs*0.35,_ccy+_ccs*0.1); x.lineTo(_ccx+_ccs*0.05,_ccy+_ccs*0.05); x.stroke();
+    x.beginPath(); x.moveTo(_ccx+_ccs*0.35,_ccy+_ccs*0.2); x.lineTo(_ccx+_ccs*0.05,_ccy+_ccs*0.15); x.stroke();
+    x.restore();
+  }
   // 🐼 PANDA: draw just the head (top 65% of image, centred)
   if(this.t==="Panda"){
     x.save();
@@ -5129,6 +5184,95 @@ function processWhiteHoleCube(){
 
 
 // 🦑 KRAKEN CUBE ABILITIES
+// 🐱 CAT CUBE ABILITIES
+function processCatCubeAbilities(){
+  if(!run) return;
+  var now=Date.now();
+  var W=c.width||360, H=c.height||360;
+  [p,o].forEach(function(_cc){
+    if(!_cc||_cc.t!=='CatCube'||_cc.hp<=0) return;
+    var _en=(_cc===p)?o:p;
+    if(!_en||_en.hp<=0) return;
+    if(!_cc._catMiniTimer) _cc._catMiniTimer=now;
+    if(!_cc._catThrowTimer) _cc._catThrowTimer=now;
+
+    // Ability 1: Spawn 2 mini cats every 10s
+    if(now-_cc._catMiniTimer>10000){
+      _cc._catMiniTimer=now;
+      for(var _cmi=0;_cmi<2;_cmi++){
+        var _ang=Math.random()*Math.PI*2;
+        var _off=_cc.s/2+8;
+        var _cmx=Math.max(12,Math.min(348,_cc.x+Math.cos(_ang)*_off));
+        var _cmy=Math.max(12,Math.min(348,_cc.y+Math.sin(_ang)*_off));
+        var _cdx=_en.x-_cmx,_cdy=_en.y-_cmy,_cmd=Math.sqrt(_cdx*_cdx+_cdy*_cdy)||1;
+        catMiniCubes.push({x:_cmx,y:_cmy,vx:(_cdx/_cmd)*2.5,vy:(_cdy/_cmd)*2.5,hp:5,s:12,owner:_cc===p?'p':'o',lastHit:0});
+      }
+    }
+
+    // Ability 2: Throw a cat at enemy every 15s
+    if(now-_cc._catThrowTimer>15000){
+      _cc._catThrowTimer=now;
+      var _tdx=_en.x-_cc.x,_tdy=_en.y-_cc.y;
+      var _td=Math.sqrt(_tdx*_tdx+_tdy*_tdy)||1;
+      catProjectiles.push({x:_cc.x,y:_cc.y,vx:(_tdx/_td)*7,vy:(_tdy/_td)*7,owner:_cc,hit:false,life:80});
+    }
+  });
+
+  // Update mini cats
+  var _now_cm=Date.now();
+  catMiniCubes=catMiniCubes.filter(function(_mk){
+    if(_mk.hp<=0) return false;
+    var _mkEn=(_mk.owner==='p')?o:p;
+    if(_mkEn){
+      var _dx=_mkEn.x-_mk.x,_dy=_mkEn.y-_mk.y,_d=Math.sqrt(_dx*_dx+_dy*_dy)||1;
+      _mk.vx+=(_dx/_d)*0.12; _mk.vy+=(_dy/_d)*0.12;
+      var _spd=Math.sqrt(_mk.vx*_mk.vx+_mk.vy*_mk.vy);
+      if(_spd>3){_mk.vx*=3/_spd;_mk.vy*=3/_spd;}
+      if(_mk.x<_mk.s/2||_mk.x>360-_mk.s/2) _mk.vx*=-1;
+      if(_mk.y<_mk.s/2||_mk.y>360-_mk.s/2) _mk.vy*=-1;
+      _mk.x=Math.max(_mk.s/2,Math.min(360-_mk.s/2,_mk.x+_mk.vx));
+      _mk.y=Math.max(_mk.s/2,Math.min(360-_mk.s/2,_mk.y+_mk.vy));
+      var _ax=Math.abs(_mk.x-_mkEn.x),_ay=Math.abs(_mk.y-_mkEn.y);
+      if(_ax<(_mk.s/2+_mkEn.s/2)&&_ay<(_mk.s/2+_mkEn.s/2)&&_now_cm-_mk.lastHit>600){
+        applyDamage(_mkEn,null,1);
+        _mk.hp-=1;
+        _mk.lastHit=_now_cm;
+      }
+    }
+    // Draw mini cat: small purple square with tiny ears
+    x.save();
+    x.fillStyle='#9C27B0'; x.shadowColor='#CE93D8'; x.shadowBlur=6;
+    // Ears
+    x.beginPath(); x.moveTo(_mk.x-_mk.s*0.28,_mk.y-_mk.s*0.5); x.lineTo(_mk.x-_mk.s*0.1,_mk.y-_mk.s*0.82); x.lineTo(_mk.x+_mk.s*0.05,_mk.y-_mk.s*0.5); x.closePath(); x.fill();
+    x.beginPath(); x.moveTo(_mk.x+_mk.s*0.28,_mk.y-_mk.s*0.5); x.lineTo(_mk.x+_mk.s*0.1,_mk.y-_mk.s*0.82); x.lineTo(_mk.x-_mk.s*0.05,_mk.y-_mk.s*0.5); x.closePath(); x.fill();
+    x.fillStyle='#CE93D8';
+    x.fillRect(_mk.x-_mk.s/2,_mk.y-_mk.s/2,_mk.s,_mk.s);
+    x.restore();
+    return true;
+  });
+
+  // Update cat projectiles
+  for(var j=catProjectiles.length-1;j>=0;j--){
+    var _cp=catProjectiles[j];
+    _cp.x+=_cp.vx; _cp.y+=_cp.vy; _cp.life--;
+    var _cpen=(_cp.owner===p)?o:p;
+    if(_cpen&&!_cp.hit&&Math.hypot(_cp.x-_cpen.x,_cp.y-_cpen.y)<_cpen.s+8){
+      _cp.hit=true;
+      applyDamage(_cpen,_cp.owner,2);
+    }
+    // Draw: small purple circle with ears
+    x.save();
+    x.fillStyle='#9C27B0'; x.shadowColor='#CE93D8'; x.shadowBlur=8;
+    x.beginPath(); x.arc(_cp.x,_cp.y,7,0,Math.PI*2); x.fill();
+    // Tiny ears on projectile
+    x.fillStyle='#CE93D8';
+    x.beginPath(); x.moveTo(_cp.x-5,_cp.y-6); x.lineTo(_cp.x-2,_cp.y-11); x.lineTo(_cp.x+1,_cp.y-6); x.closePath(); x.fill();
+    x.beginPath(); x.moveTo(_cp.x+5,_cp.y-6); x.lineTo(_cp.x+2,_cp.y-11); x.lineTo(_cp.x-1,_cp.y-6); x.closePath(); x.fill();
+    x.restore();
+    if(_cp.life<=0||_cp.hit) catProjectiles.splice(j,1);
+  }
+}
+
 function processKrakenCubeAbilities(){
   if(!run) return;
   var now=Date.now();
@@ -7011,6 +7155,7 @@ function loop(ts){
     processDragonfruitCube();
     processDragonfruitBurn();
     processWhiteHoleCube();
+  processCatCubeAbilities();
   processKrakenCubeAbilities();
     processIceFreeze();
     processFrostfireSword();
@@ -7344,6 +7489,15 @@ function loop(ts){
         specialQuests.pirateBeatShark.done=true;
         shopOwned.KrakenCube=true;
         showToast('🦑 Quest Complete! Kraken Cube unlocked!','#0288D1');
+      }
+    }
+    // Special quest: kill the Test Cube
+    if(!specialQuests.killTestCube.done){
+      var _testDead=(p.t==='TestCube'&&p.hp<=0)||(o.t==='TestCube'&&o.hp<=0);
+      if(_testDead){
+        specialQuests.killTestCube.done=true;
+        shopOwned.CatCube=true;
+        showToast('\uD83D\uDC31 Quest Complete! Cat Cube unlocked!','#CE93D8');
       }
     }
     saveProgress();
@@ -8042,6 +8196,19 @@ function openQuests(){
       :"<div class=\'bq-sub\' style=\'color:#777\'>Not yet completed...</div>")
     +"<div class=\'bq-bar-wrap\'><div class=\'bq-bar\' style=\'width:"+(sq2Done?100:0)+"%;background:#0288D1\'></div></div>";
   list.appendChild(sq2);
+
+  // Quest 3: Kill the Test Cube
+  let sq3Done=specialQuests.killTestCube&&specialQuests.killTestCube.done;
+  let sq3=document.createElement("div");
+  sq3.className="bq-row"+(sq3Done?" owned":"");
+  sq3.innerHTML="<div class=\'bq-name\' style=\'color:#CE93D8\'>🐱 The Indestructible</div>"
+    +"<div class=\'bq-sub\' style=\'color:#555\'>??? Something impossibly tough lurks out there... can it truly be defeated?</div>"
+    +"<div class=\'bq-sub\' style=\'color:#ffe082\'>🎁 Reward: Cat Cube</div>"
+    +(sq3Done
+      ?"<div class=\'bq-owned\' style=\'color:#CE93D8\'>🐱 COMPLETE — Cat Cube unlocked!</div>"
+      :"<div class=\'bq-sub\' style=\'color:#777\'>Not yet completed...</div>")
+    +"<div class=\'bq-bar-wrap\'><div class=\'bq-bar\' style=\'width:"+(sq3Done?100:0)+"%;background:#CE93D8\'></div></div>";
+  list.appendChild(sq3);
 
   document.getElementById("quest-panel").classList.add("open");
 }
