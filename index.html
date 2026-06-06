@@ -547,7 +547,7 @@ let mirrorEchoRings=[]; // MirrorCube echo ring particles
 let winnerGrowsLarger=false; // Settings: winner grows larger
 let dragonParticles=[];
 let autoPlay=false;
-const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,CatCube:false};
+const shopOwned={Ninja:false,Stick:false,Shield:false,BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,FocusedNinja:false,Gummy:false,CubeCubePrank:false,ChaosCube:false,Samurai:false,LaserCube:false,AlienCube:false,SharkCube:false,TesseractCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,CatCube:false,BreadJamCube:false};
 let _shopTab="normal";
 let _starterPickedDone=false;
 let gummyPartner=null; // active partner half when Gummy has split
@@ -560,11 +560,11 @@ let hoverboardWaves=[];
 let dragonfruitProjectiles=[];
 let whiteHoleProjectiles=[],whiteHolePortalBombs=[],whiteHoleMysteryHoles=[];
 let krakenTentacles=[],krakenProjectiles=[],krakenNautilus=null;
-let catMiniCubes=[];let catProjectiles=[];
+let catMiniCubes=[];let catProjectiles=[];let breadJamProjectiles=[];
 let shrinkingCubeGhosts=[];
 let shrinkingCubeParticles2=[];
 let alienPlanets=[];   // {x,y,vx,vy,type,dmg,radius,owner,born,hit}
-let alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;catMiniCubes=[];catProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+let alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;catMiniCubes=[];catProjectiles=[];breadJamProjectiles=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
 let sharkSplashes=[];  // {x,y,vx,vy,owner,enemy,dmg,hit,life}
 let iceCreamProjectiles=[];  // {x,y,vx,vy,owner,enemy,flavor,dmg,hit,life}
 let iceCreamSlowEnd={p:0,o:0}; // for strawberry slow per-side
@@ -647,9 +647,9 @@ let bossMode=false, bossParty=[], bossPartyIdx=0, currentBossType=null, activeBo
 let _bossPartyPicked=[];
 
 // ===== MASTERY STATE =====
-const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0,WhiteHoleCube:0,KrakenCube:0,CatCube:0};
+const masteryProgress={BombCube:0,MirrorCube:0,InvincibleCube:0,Warrior:0,Pirate:0,Vergas:0,Normal:0,Ninja:0,Stick:0,Shield:0,Vampire:0,Zigzag:0,Cloner:0,Swapper:0,Stopper:0,Predictor:0,Rebirth:0,EasterBunny:0,EggHunter:0,Phantom:0,Dragon:0,CubeCube:0,Gummy:0,Panda:0,Tiger:0,Samurai:0,Husky:0,ChaosCube:0,WallCube:0,ShrinkingCube:0,LaserCube:0,AlienCube:0,SharkCube:0,TesseractCube:0,IceCreamCube:0,SwordCube:0,FireSwordCube:0,IceSwordCube:0,FrostfireSwordCube:0,PaintGunCube:0,AxolotlCube:0,HoverboardCube:0,DragonfruitCube:0,WhiteHoleCube:0,KrakenCube:0,CatCube:0,BreadJamCube:0};
 const masteryGoals={BombCube:15,MirrorCube:10,InvincibleCube:10,Warrior:15,Pirate:4,Vergas:5,Normal:25,Ninja:20,Stick:10,Shield:10,Vampire:10,Zigzag:1,Cloner:2,Swapper:3,Stopper:5,Predictor:3,Rebirth:5,EasterBunny:30,EggHunter:40,Phantom:30,Dragon:50,CubeCube:100,Gummy:40,Panda:20,Tiger:15,Samurai:15,Husky:25,ChaosCube:15,WallCube:10,ShrinkingCube:15,LaserCube:15,AlienCube:10,SharkCube:10,TesseractCube:10,IceCreamCube:7,SwordCube:20,FireSwordCube:20,IceSwordCube:15,FrostfireSwordCube:20,PaintGunCube:5,AxolotlCube:10,HoverboardCube:10,DragonfruitCube:20,WhiteHoleCube:0,KrakenCube:10};
-const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,KrakenCube:false,CatCube:false,TestCube:false};
+const masteryUnlocked={BombCube:false,MirrorCube:false,InvincibleCube:false,Pirate:false,Vergas:false,Normal:false,Ninja:false,Stick:false,Shield:false,Vampire:false,Zigzag:false,Cloner:false,Swapper:false,Stopper:false,Predictor:false,Rebirth:false,EasterBunny:false,EggHunter:false,Phantom:false,Dragon:false,CubeCube:false,Gummy:false,Tiger:false,Husky:false,ChaosCube:false,Warrior:false,WallCube:false,ShrinkingCube:false,LaserCube:false,AlienCube:false,TesseractCube:false,IceCreamCube:false,SwordCube:false,FireSwordCube:false,IceSwordCube:false,FrostfireSwordCube:false,PaintGunCube:false,AxolotlCube:false,HoverboardCube:false,DragonfruitCube:false,WhiteHoleCube:false,KrakenCube:false,CatCube:false,TestCube:false,BreadJamCube:false};
 
 const CHARS=[
   {type:"Normal", color:"#c0392b",
@@ -885,6 +885,10 @@ const CHARS=[
    shopSection:"none"},
   {type:"CatCube", name:"\uD83D\uDC31 Cat Cube", color:"#CE93D8",
    desc:"A feline fighter with mysterious origins. Meow.",
+   shopSection:"none", questReward:true},
+
+  {type:"BreadJamCube", name:"\uD83C\uDF5E Bread & Jam Cube", color:"#D2691E",
+   desc:"A sweet slice with a jammy secret. Freshly baked and ready to fight.",
    shopSection:"none", questReward:true}
 
 ];
@@ -930,7 +934,7 @@ constructor(type,X,Y,mastered){
   this.vx=Math.cos(ang)*spd;
   this.vy=Math.sin(ang)*spd;
   this.dashActive=false; this.dashThrough=false;
-  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":type==="KrakenCube"?"#1a237e":type==="TestCube"?"#e0e0e0":type==="CatCube"?"#CE93D8":"#00ff99";
+  this.c=type=="Normal"?"#c0392b":type=="Ninja"?"#2980b9":type=="Stick"?"#8B4513":type=="Shield"?"#00bcd4":type=="Vampire"?"#6a0dad":type=="Cloner"?"#e91e63":type=="Swapper"?"#ff6f00":type=="Stopper"?"#9e9e9e":type=="Predictor"?"#ce93d8":type=="Evolver"?"#43a047":type=="Rebirth"?"#ff7043":type=="EasterBunny"?"#ff9fc5":type=="EggHunter"?"#e67e22":type=="Phantom"?"#7b00d4":type=="Dragon"?"#cc3300":type=="FocusedNinja"?"#1565c0":type==="Husky"?"#607d8b":type=="CubeCubePrank"?"#FF9800":type=="Gummy"?["#4caf50","#ff9800","#f44336","#2196f3"][Math.floor(Math.random()*4)]:type=="BombCube"?"#000000":type==="InvincibleCube"?"#c0c0c0":type==="WallCube"?"#6D4C41":type==="ShrinkingCube"?"#9C27B0":type==="LaserCube"?"#1e2d5a":type==="SharkCube"?"#9E9E9E":type==="TesseractCube"?"#4a00e0":type==="CubeKing"?"#ffd700":type==="ShadowCube"?"#9c27b0":type==="IceCreamCube"?"#f48fb1":type==="SwordCube"?"#78909C":type==="FireSwordCube"?"#BF360C":type==="IceSwordCube"?"#42A5F5":type==="FrostfireSwordCube"?"#7C4DFF":type==="PaintGunCube"?"#FF4081":type==="AxolotlCube"?"#FF80AB":type==="HoverboardCube"?"#29B6F6":type==="DragonfruitCube"?"#E91E63":type==="WhiteHoleCube"?"#FFFFFF":type==="KrakenCube"?"#1a237e":type==="TestCube"?"#e0e0e0":type==="BreadJamCube"?"#D2691E":type==="CatCube"?"#CE93D8":"#00ff99";
   // Gummy state
   this.gummyState="whole"; this.gummySplitTimer=Date.now(); this.gummyShields=0; this.gummyCanSplit=true;
   if(type==="AxolotlCube"){this._axLeg1HP=2;this._axLeg2HP=2;this._axTailHP=3;this._axRegenTimer=Date.now();}
@@ -1844,6 +1848,29 @@ draw(){
     x.beginPath(); x.moveTo(_ccx-_ccs*0.35,_ccy+_ccs*0.2); x.lineTo(_ccx-_ccs*0.05,_ccy+_ccs*0.15); x.stroke();
     x.beginPath(); x.moveTo(_ccx+_ccs*0.35,_ccy+_ccs*0.1); x.lineTo(_ccx+_ccs*0.05,_ccy+_ccs*0.05); x.stroke();
     x.beginPath(); x.moveTo(_ccx+_ccs*0.35,_ccy+_ccs*0.2); x.lineTo(_ccx+_ccs*0.05,_ccy+_ccs*0.15); x.stroke();
+    x.restore();
+  }
+  // 🍞 BREAD & JAM CUBE draw
+  if(this.t==="BreadJamCube"){
+    var _bjx=this.x,_bjy=this.y,_bjs=this.s;
+    x.save();
+    x.shadowColor='#8B4513'; x.shadowBlur=8;
+    x.fillStyle='#F5DEB3';
+    x.fillRect(_bjx-_bjs/2,_bjy-_bjs/2,_bjs,_bjs);
+    x.strokeStyle='#8B6914'; x.lineWidth=3;
+    x.strokeRect(_bjx-_bjs/2,_bjy-_bjs/2,_bjs,_bjs);
+    x.shadowBlur=0;
+    x.fillStyle='#C0392B';
+    x.beginPath();
+    x.ellipse(_bjx,_bjy-_bjs*0.12,_bjs*0.34,_bjs*0.22,0,0,Math.PI*2);
+    x.fill();
+    x.fillStyle='rgba(255,120,120,0.5)';
+    x.beginPath();
+    x.ellipse(_bjx-_bjs*0.07,_bjy-_bjs*0.18,_bjs*0.1,_bjs*0.06,-0.4,0,Math.PI*2);
+    x.fill();
+    x.strokeStyle='rgba(180,140,60,0.5)'; x.lineWidth=1.5;
+    x.beginPath(); x.moveTo(_bjx-_bjs*0.3,_bjy+_bjs*0.1); x.lineTo(_bjx+_bjs*0.3,_bjy+_bjs*0.1); x.stroke();
+    x.beginPath(); x.moveTo(_bjx-_bjs*0.25,_bjy+_bjs*0.25); x.lineTo(_bjx+_bjs*0.25,_bjy+_bjs*0.25); x.stroke();
     x.restore();
   }
   // 🐼 PANDA: draw just the head (top 65% of image, centred)
@@ -5273,6 +5300,49 @@ function processCatCubeAbilities(){
   }
 }
 
+// 🍞 BREAD & JAM CUBE ABILITIES
+function processBreadJamCubeAbilities(){
+  if(!run) return;
+  var now=Date.now();
+  [p,o].forEach(function(_bj){
+    if(!_bj||_bj.t!=='BreadJamCube'||_bj.hp<=0) return;
+    var _en=(_bj===p)?o:p;
+    if(!_en||_en.hp<=0) return;
+    if(!_bj._bjThrowTimer) _bj._bjThrowTimer=now;
+    if(now-_bj._bjThrowTimer>=10000){
+      _bj._bjThrowTimer=now;
+      var dx=_en.x-_bj.x, dy=_en.y-_bj.y;
+      var dist=Math.sqrt(dx*dx+dy*dy)||1;
+      var spd=7;
+      breadJamProjectiles.push({x:_bj.x,y:_bj.y,vx:(dx/dist)*spd,vy:(dy/dist)*spd,owner:_bj,life:90,hit:false,rot:0});
+    }
+  });
+  for(var j=breadJamProjectiles.length-1;j>=0;j--){
+    var _bp=breadJamProjectiles[j];
+    _bp.x+=_bp.vx; _bp.y+=_bp.vy; _bp.rot+=0.15; _bp.life--;
+    var _en2=(_bp.owner===p)?o:p;
+    if(_en2&&_en2.hp>0&&!_bp.hit){
+      var ddx=_bp.x-_en2.x,ddy=_bp.y-_en2.y;
+      if(Math.sqrt(ddx*ddx+ddy*ddy)<_en2.s/2+8){
+        _bp.hit=true;
+        applyDamage(_en2,_bp.owner,1);
+      }
+    }
+    x.save();
+    x.translate(_bp.x,_bp.y);
+    x.rotate(_bp.rot);
+    x.fillStyle='#F5DEB3';
+    x.strokeStyle='#8B6914'; x.lineWidth=2;
+    x.fillRect(-9,-9,18,18);
+    x.strokeRect(-9,-9,18,18);
+    x.fillStyle='#C0392B';
+    x.beginPath(); x.ellipse(0,-2,5,4,0,0,Math.PI*2); x.fill();
+    x.restore();
+    if(_bp.life<=0||_bp.hit) breadJamProjectiles.splice(j,1);
+  }
+}
+
+
 function processKrakenCubeAbilities(){
   if(!run) return;
   var now=Date.now();
@@ -7156,6 +7226,7 @@ function loop(ts){
     processDragonfruitBurn();
     processWhiteHoleCube();
   processCatCubeAbilities();
+  processBreadJamCubeAbilities();
   processKrakenCubeAbilities();
     processIceFreeze();
     processFrostfireSword();
@@ -9011,6 +9082,15 @@ function redeemCode(){
     coins+=500; easterEggs+=500;
     saveProgress(); updateEggDisplay();
     msg='✅ Code accepted! +500 🪙 +500 🥚';
+  } else if(upper==='BREADJAM'){
+    if(redeemedCodes['BREADJAM']){
+      msg='⚠️ Code already used!';
+    } else {
+      redeemedCodes['BREADJAM']=true;
+      shopOwned.BreadJamCube=true;
+      saveProgress();
+      msg='✅ Bread & Jam Cube unlocked! 🍞';
+    }
   } else if(upper==='TEST'){
     if(!shopOwned.TestCube){
       shopOwned.TestCube=true;
