@@ -5357,7 +5357,7 @@ function processSpiderCubeAbilities(){
     if(vxFlip||vyFlip){
       var bx=cube.x, by=cube.y;
       if(cube._spLastBX!==null){
-        spiderWebs.push({x1:cube._spLastBX,y1:cube._spLastBY,x2:bx,y2:by,born:now,owner:cube,lastHit:0});
+        spiderWebs.push({x1:cube._spLastBX,y1:cube._spLastBY,x2:bx,y2:by,born:now,owner:cube,lastHit:0,drawProg:0,drawDone:false});
       }
       cube._spLastBX=bx; cube._spLastBY=by;
     }
@@ -5387,17 +5387,33 @@ function processSpiderCubeAbilities(){
   });
   spiderWebs.forEach(function(w){
     var age=now-w.born;
+    // Animate string drawing: extend from x1,y1 to x2,y2 over 0.35s
+    if(!w.drawDone){
+      w.drawProg=Math.min(1,(age/350));
+      if(w.drawProg>=1) w.drawDone=true;
+    }
+    var prog=w.drawProg||0;
+    var ex=w.x1+(w.x2-w.x1)*prog, ey=w.y1+(w.y2-w.y1)*prog;
     var alpha=Math.max(0,1-age/12000)*0.85;
     x.save();
     x.globalAlpha=alpha;
     x.strokeStyle='#e0e0e0';
     x.lineWidth=1.5;
     x.setLineDash([4,3]);
-    x.beginPath();x.moveTo(w.x1,w.y1);x.lineTo(w.x2,w.y2);x.stroke();
+    x.beginPath();x.moveTo(w.x1,w.y1);x.lineTo(ex,ey);x.stroke();
     x.setLineDash([]);
     x.fillStyle='#bdbdbd';
     x.beginPath();x.arc(w.x1,w.y1,2.5,0,Math.PI*2);x.fill();
-    x.beginPath();x.arc(w.x2,w.y2,2.5,0,Math.PI*2);x.fill();
+    if(prog>=1){x.beginPath();x.arc(w.x2,w.y2,2.5,0,Math.PI*2);x.fill();}
+    // Glowing tip while drawing
+    if(!w.drawDone){
+      x.globalAlpha=alpha*0.9;
+      x.fillStyle='#ffffff';
+      x.beginPath();x.arc(ex,ey,3.5,0,Math.PI*2);x.fill();
+      x.globalAlpha=alpha*0.4;
+      x.fillStyle='#c0c0ff';
+      x.beginPath();x.arc(ex,ey,6,0,Math.PI*2);x.fill();
+    }
     x.restore();
   });
 }
@@ -7528,7 +7544,7 @@ function loop(ts){
       }
       // Final result
       bossMode=false;run=false;
-      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+      clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];piratePellets=[];pirateShips=[];pirateClams=[];pirateWindParticles=[];pirateWaves=[];wallCubeWalls=[];pirateWindEnd={p:0,o:0};_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;spiderWebs=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -7585,7 +7601,7 @@ function loop(ts){
     replayRecording=false;
     saveReplayToStorage(_replayResult);
     run=false;
-    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+    clones=[]; eggs=[]; hatchlings=[]; ehEggs=[]; ehCarrots=[]; _ghostEchoes=[]; dragonParticles=[]; pandaLeaves=[]; _pandaLeafTimer=0; mirrorGhostClones=[]; mirrorAbilityCopyFX=[]; mirrorEchoRings=[]; wallCubeWalls=[]; wallCubeParticles=[]; shrinkingCubeGhosts=[]; shrinkingCubeParticles2=[]; alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;spiderWebs=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];
@@ -8438,7 +8454,7 @@ function confirmPartyFight(){
   bossPartyIdx=0;
   activeBossType=_savedBossType; // lock in boss type for win tracking
   // Start boss fight
-  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
+  if(run){run=false;p=null;o=null;clones=[];eggs=[];hatchlings=[];ehEggs=[];ehCarrots=[];_ghostEchoes=[];dragonParticles=[];pandaLeaves=[];_pandaLeafTimer=0;ninjaShurikens=[];gummyPartner=null;window.bananaPeels=[];pandaLeaves=[];_pandaLeafTimer=0;alienClones=[];dragonfruitProjectiles=[];whiteHoleProjectiles=[];whiteHolePortalBombs=[];whiteHoleMysteryHoles=[];krakenTentacles=[];krakenProjectiles=[];krakenNautilus=null;spiderWebs=[];paintGunBlobs=[];paintGunPuddles=[];hoverboardWaves=[];
     tesseractBHFX=[];
     if(p&&p.t==="TesseractCube")p._tcBH=null;
     if(o&&o.t==="TesseractCube")o._tcBH=null;sharkSplashes=[];sharkSlowEnd={p:0,o:0};iceCreamProjectiles=[];iceCreamSlowEnd={p:0,o:0};iceCreamSpeedEnd={p:0,o:0};iceCreamSpeedBoosted={p:false,o:false};shadowDarkWaves=[];kingMiniCubes=[];}
